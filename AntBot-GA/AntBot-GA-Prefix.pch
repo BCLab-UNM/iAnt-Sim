@@ -6,6 +6,7 @@
     #define SEARCH_DELAY 4
     #define RETURN_DELAY 0
     #define CROSSOVER_RATE 10
+    #define READ_RATE 1.0
     #define STEP_COUNT 6750
     #define GRID_WIDTH 90
     #define GRID_HEIGHT 90

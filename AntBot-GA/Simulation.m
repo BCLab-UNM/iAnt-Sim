@@ -149,7 +149,7 @@
                         ant.target = NSMakePoint(roundf(ant.position.x+cos(ant.direction)),roundf(ant.position.y+sin(ant.direction)));
                         if(ant.target.x >= 0 && ant.target.y >= 0 && ant.target.x < GRID_WIDTH && ant.target.y < GRID_HEIGHT) {
                             Tag* t = tags[(int)ant.target.y][(int)ant.target.x];
-                            if((t != 0) && !t.pickedUp) { //Note we use shortcircuiting here.
+                            if((randomFloat(1.f) < READ_RATE) && (t != 0) && !t.pickedUp) { //Note we use shortcircuiting here.
                                 [t setPickedUp:YES];
                                 ant.carrying = t;
                                 ant.status = ANT_STATUS_RETURNING;
@@ -194,11 +194,11 @@
                                 }
                                 
                                 if(([pheromones count] > 0) && (randomFloat(1.) > (ant.neighbors/colony.densityInfluenceThreshold) + colony.densityInfluenceConstant)) {
-                                    ant.target = [self getPheromone:pheromones atTick:tick withDecayRate:colony.decayRate];
+                                    ant.target = [self perturbPosition:[self getPheromone:pheromones atTick:tick withDecayRate:colony.decayRate]];
                                     ant.informed = ANT_INFORMED_PHEROMONE;
                                 }
                                 else if(randomFloat(1.) < (ant.neighbors/colony.densityPatchThreshold) + colony.densityPatchConstant) {
-                                    ant.target = NSMakePoint(ant.carrying.x,ant.carrying.y);
+                                    ant.target = [self perturbPosition:NSMakePoint(ant.carrying.x,ant.carrying.y)];
                                     ant.informed = ANT_INFORMED_MEMORY;
                                 }
                                 else {
@@ -210,7 +210,7 @@
                             }
                             else {
                                 if([pheromones count] > 0){
-                                    ant.target = [self getPheromone:pheromones atTick:tick withDecayRate:colony.decayRate];
+                                    ant.target = [self perturbPosition:[self getPheromone:pheromones atTick:tick withDecayRate:colony.decayRate]];
                                     ant.informed = ANT_INFORMED_PHEROMONE;
                                 }
                                 else{
@@ -233,6 +233,14 @@
             }
         }
     }
+}
+
+
+/*
+ * Introduces error into the given position.
+ */
+-(NSPoint) perturbPosition:(NSPoint)position {
+    return position;
 }
 
 

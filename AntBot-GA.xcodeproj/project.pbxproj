@@ -12,7 +12,7 @@
 		40ED661716DABE50006F8494 /* Ant.m in Sources */ = {isa = PBXBuildFile; fileRef = 40ED660C16DABE50006F8494 /* Ant.m */; };
 		40ED661816DABE50006F8494 /* Colony.h in Headers */ = {isa = PBXBuildFile; fileRef = 40ED660D16DABE50006F8494 /* Colony.h */; };
 		40ED661916DABE50006F8494 /* Colony.m in Sources */ = {isa = PBXBuildFile; fileRef = 40ED660E16DABE50006F8494 /* Colony.m */; };
-		40ED661A16DABE50006F8494 /* Simulation.h in Headers */ = {isa = PBXBuildFile; fileRef = 40ED660F16DABE50006F8494 /* Simulation.h */; };
+		40ED661A16DABE50006F8494 /* Simulation.h in Headers */ = {isa = PBXBuildFile; fileRef = 40ED660F16DABE50006F8494 /* Simulation.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		40ED661B16DABE50006F8494 /* Simulation.m in Sources */ = {isa = PBXBuildFile; fileRef = 40ED661016DABE50006F8494 /* Simulation.m */; };
 		40ED661E16DABE50006F8494 /* Tag.h in Headers */ = {isa = PBXBuildFile; fileRef = 40ED661316DABE50006F8494 /* Tag.h */; };
 		40ED661F16DABE50006F8494 /* Tag.m in Sources */ = {isa = PBXBuildFile; fileRef = 40ED661416DABE50006F8494 /* Tag.m */; };

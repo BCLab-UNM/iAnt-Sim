@@ -132,7 +132,7 @@
                         
                         if(tick - ant.lastTurned >= 3) { //Change direction every 3 iterations.
                             float dTheta;
-                            if(ant.searchTime >= 0){
+                            if(ant.searchTime >= 0) {
                                 dTheta = randomNormal(0, (colony.dirDevCoeff/pow((ant.searchTime+1),colony.dirTimePow))+colony.dirDevConst);
                             }
                             else {
@@ -232,7 +232,6 @@
                             else{ant.searchTime = 0;}
                             
                             ant.status = ANT_STATUS_DEPARTING;
-                            ant.searchTime = -1;
                         }
                     break;
                 }

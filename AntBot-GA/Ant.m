@@ -17,7 +17,7 @@
     target = NSMakePoint(-1,-1);
     
     direction = 0.f;
-    searchTime = 0;
+    searchTime = -1;
     lastMoved = 0;
     lastTurned = 0;
     

@@ -219,7 +219,6 @@
                                 if([pheromones count] > 0){
                                     ant.target = [self perturbPosition:[self getPheromone:pheromones atTick:tick withDecayRate:colony.decayRate]];
                                     ant.informed = ANT_INFORMED_PHEROMONE;
-                                    ant.searchTime = 0;
                                 }
                                 else{
                                     ant.target = edge(GRID_WIDTH,GRID_HEIGHT);

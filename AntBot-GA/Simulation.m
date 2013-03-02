@@ -37,6 +37,8 @@
     for(int generation = 0; generation < generationCount; generation++) {
         NSLog(@"Starting Generation %d", generation);
         
+        for(Colony* colony in colonies){colony.tagsCollected = 0;}
+        
         dispatch_queue_t queue = dispatch_get_global_queue(0, 0);
         dispatch_apply(EVALUATION_COUNT, queue, ^(size_t idx){
             [self runEvaluation];
@@ -298,7 +300,6 @@
     for(int i = 0; i < colonyCount; i++) {
         Colony* colony = [colonies objectAtIndex:i];
         [colony setParameters:[children[i] getParameters]];
-        colony.tagsCollected = 0;
     }
 }
 
@@ -419,7 +420,7 @@
         }
     }
     
-    for(NSString* key in parameterSums) {
+    for(NSString* key in [parameterSums allKeys]) {
         float val = [[parameterSums objectForKey:key] floatValue] / colonyCount;
         [parameterSums setObject:[NSNumber numberWithFloat:val] forKey:key];
     }

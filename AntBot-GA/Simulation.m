@@ -101,7 +101,7 @@
                         if(((ant.informed == ANT_INFORMED_PHEROMONE) && (r < colony.trailDropRate)) || (!ant.informed && (r < colony.walkDropRate))) {
                             ant.status = ANT_STATUS_SEARCHING;
                             ant.informed = ANT_INFORMED_NONE;
-                            ant.searchTime = 0;
+                            ant.searchTime = -1; //Don't do an informed random walk if we drop off a trail.
                             break;
                         }
                         
@@ -111,7 +111,6 @@
                         if(NSEqualPoints(ant.position, ant.target)) {
                             ant.status = ANT_STATUS_SEARCHING;
                             ant.informed = ANT_INFORMED_NONE;
-                            ant.searchTime = 0;
                         }
                     break;
                         
@@ -132,7 +131,13 @@
                         }
                         
                         if(tick - ant.lastTurned >= 3) { //Change direction every 3 iterations.
-                            float dTheta = randomNormal(0,(colony.dirDevCoeff/pow((ant.searchTime+1),colony.dirTimePow))+colony.dirDevConst);
+                            float dTheta;
+                            if(ant.searchTime >= 0){
+                                dTheta = randomNormal(0, (colony.dirDevCoeff/pow((ant.searchTime+1),colony.dirTimePow))+colony.dirDevConst);
+                            }
+                            else {
+                                dTheta = randomNormal(0, colony.dirDevConst);
+                            }
                             ant.direction = pmod(ant.direction+dTheta,M_2PI);
                             ant.lastTurned = tick;
                         }
@@ -169,7 +174,7 @@
                             }
                         }
                 
-                        ant.searchTime += 1;
+                        if(ant.searchTime >= 0){ant.searchTime += 1;}
                         ant.lastMoved = tick;
                     break;
                         
@@ -214,6 +219,7 @@
                                 if([pheromones count] > 0){
                                     ant.target = [self perturbPosition:[self getPheromone:pheromones atTick:tick withDecayRate:colony.decayRate]];
                                     ant.informed = ANT_INFORMED_PHEROMONE;
+                                    ant.searchTime = 0;
                                 }
                                 else{
                                     ant.target = edge(GRID_WIDTH,GRID_HEIGHT);
@@ -221,7 +227,12 @@
                                 }
                             }
                             
+                            //The old GA used a searchTime value of >= 0 to indicated we're doing an INFORMED random walk.
+                            if(ant.informed == ANT_INFORMED_NONE){ant.searchTime = -1;}
+                            else{ant.searchTime = 0;}
+                            
                             ant.status = ANT_STATUS_DEPARTING;
+                            ant.searchTime = -1;
                         }
                     break;
                 }

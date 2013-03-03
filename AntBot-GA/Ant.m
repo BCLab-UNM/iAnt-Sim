@@ -16,7 +16,7 @@
     previousPosition = NSMakePoint(-1,-1);
     target = NSMakePoint(-1,-1);
     
-    direction = 0.f;
+    direction = randomFloat(M_2PI);
     searchTime = -1;
     lastMoved = 0;
     lastTurned = 0;
@@ -59,8 +59,8 @@
     
     //Pick a random neighbor based on a random number weighted on how much of a distance improvement we can get.
     float r = randomFloat(improvementSum);
-    for(int dx = dxMin; dx <=1; dx++) {
-        for(int dy = dyMin; dy<=1; dy++) {
+    for(int dx = dxMin; dx <= dxMax; dx++) {
+        for(int dy = dyMin; dy<= dyMax; dy++) {
             if(r < improvements[dx+1][dy+1]){position = NSMakePoint(x+dx,y+dy); return;}
             r -= improvements[dx+1][dy+1];
         }

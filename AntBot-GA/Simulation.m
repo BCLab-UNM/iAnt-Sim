@@ -136,6 +136,7 @@
                             float dTheta;
                             if(ant.searchTime >= 0) {
                                 dTheta = randomNormal(0, (colony.dirDevCoeff/pow((ant.searchTime),colony.dirTimePow))+colony.dirDevConst);
+                                ant.searchTime += 1;
                             }
                             else {
                                 dTheta = randomNormal(0, colony.dirDevConst);
@@ -175,8 +176,7 @@
                                 }
                             }
                         }
-                
-                        if(ant.searchTime >= 0){ant.searchTime += 1;}
+                        
                         ant.lastMoved = tick;
                     break;
                         

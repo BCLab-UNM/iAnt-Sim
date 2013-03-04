@@ -20,7 +20,7 @@
 @implementation Simulation
 
 @synthesize colonyCount, generationCount, antCount;
-@synthesize distributionRandom, distributionPowerlaw, distributionClustered, numberOfTags;
+@synthesize distributionRandom, distributionPowerlaw, distributionClustered, tagCount;
 @synthesize averageColony;
 @synthesize tickRate;
 @synthesize viewDelegate;
@@ -329,14 +329,14 @@
         }
     }
     
-    int pilesOf[numberOfTags]; //Key is size of pile.  Value is number of piles with this many tags.
-    for(int i = 0; i < numberOfTags; i++){pilesOf[i]=0;}
+    int pilesOf[tagCount]; //Key is size of pile.  Value is number of piles with this many tags.
+    for(int i = 0; i < tagCount; i++){pilesOf[i]=0;}
 
-    //Needs to be adjusted if doing a powerlaw distribution with numberOfTags != 256.
-    pilesOf[1] = roundf(((numberOfTags / 4) * distributionPowerlaw) + (numberOfTags * distributionRandom));
-    pilesOf[(numberOfTags / 64)] = roundf((numberOfTags / 16) * distributionPowerlaw);
-    pilesOf[(numberOfTags / 16)] = roundf((numberOfTags / 64) * distributionPowerlaw);
-    pilesOf[(numberOfTags / 4)] = roundf(distributionPowerlaw + (4 * distributionClustered));
+    //Needs to be adjusted if doing a powerlaw distribution with tagCount != 256.
+    pilesOf[1] = roundf(((tagCount / 4) * distributionPowerlaw) + (tagCount * distributionRandom));
+    pilesOf[(tagCount / 64)] = roundf((tagCount / 16) * distributionPowerlaw);
+    pilesOf[(tagCount / 16)] = roundf((tagCount / 64) * distributionPowerlaw);
+    pilesOf[(tagCount / 4)] = roundf(distributionPowerlaw + (4 * distributionClustered));
     
     int pileCount = 0;
     NSPoint pilePoints[64]; //64 piles as a loose upper bound on number of piles.

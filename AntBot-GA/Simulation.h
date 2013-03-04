@@ -2,7 +2,6 @@
 
 @class Colony;
 @class Tag;
-@class SimulationView;
 
 @interface NSObject(SimulationNotifications)
     -(void) updateAnts:(NSMutableArray*)ants;
@@ -24,11 +23,11 @@
 @property (nonatomic) int colonyCount;
 @property (nonatomic) int generationCount;
 @property (nonatomic) int antCount;
+@property (nonatomic) int tagCount;
 
 @property (nonatomic) float distributionRandom;
 @property (nonatomic) float distributionPowerlaw;
 @property (nonatomic) float distributionClustered;
-@property (nonatomic) int numberOfTags;
 
 @property (nonatomic) float tickRate;
 

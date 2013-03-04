@@ -4,7 +4,7 @@
 @implementation Ant
 
 @synthesize status, informed;
-@synthesize position, previousPosition, target;
+@synthesize position, target;
 @synthesize direction, searchTime, lastMoved, lastTurned;
 @synthesize carrying, neighbors;
 
@@ -13,7 +13,6 @@
     informed = ANT_INFORMED_NONE;
     
     position = NSMakePoint(-1,-1);
-    previousPosition = NSMakePoint(-1,-1);
     target = NSMakePoint(-1,-1);
     
     direction = randomFloat(M_2PI);

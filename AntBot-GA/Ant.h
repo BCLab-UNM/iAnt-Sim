@@ -21,7 +21,6 @@
 
 //In general, positions of (-1,-1) denote an empty/unused/uninitialized position.
 @property (nonatomic) NSPoint position; //Where the ant currently is.
-@property (nonatomic) NSPoint previousPosition; //Where the ant was at the previous tick.
 @property (nonatomic) NSPoint target;
 
 @property (nonatomic) float direction; //Direction ant is moving (used in random walk).

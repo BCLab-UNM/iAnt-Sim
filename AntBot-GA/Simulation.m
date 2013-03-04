@@ -31,7 +31,7 @@
 -(int) start {
 
     srandomdev();
-    colonies = [[NSMutableArray alloc] init];
+    colonies = [[NSMutableArray alloc] initWithCapacity:colonyCount];
     for(int i = 0; i < colonyCount; i++){[colonies addObject:[[Colony alloc] init]];}
 
     for(int generation = 0; generation < generationCount; generation++) {
@@ -61,7 +61,7 @@
         Tag* tags[GRID_HEIGHT][GRID_WIDTH];
         [self initDistributionForArray:tags];
 
-        NSMutableArray* ants = [[NSMutableArray alloc] init];
+        NSMutableArray* ants = [[NSMutableArray alloc] initWithCapacity:antCount];
         NSMutableArray* pheromones = [[NSMutableArray alloc] init];
         for(int i = 0; i < antCount; i++){[ants addObject:[[Ant alloc] init]];}
 

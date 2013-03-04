@@ -132,11 +132,10 @@
                             break;
                         }
                         
-                        if(tick - ant.lastTurned >= 3) { //Change direction every 3 iterations.
+                        if(tick - ant.lastTurned >= 3 * SEARCH_DELAY) { //Change direction every 3 iterations.
                             float dTheta;
                             if(ant.searchTime >= 0) {
-                                dTheta = randomNormal(0, (colony.dirDevCoeff/pow((ant.searchTime),colony.dirTimePow))+colony.dirDevConst);
-                                ant.searchTime += 1;
+                                dTheta = randomNormal(0, (colony.dirDevCoeff/powf((++ant.searchTime),colony.dirTimePow))+colony.dirDevConst);
                             }
                             else {
                                 dTheta = randomNormal(0, colony.dirDevConst);
@@ -349,7 +348,7 @@
                     tagY = randomInt(GRID_HEIGHT);
                 } while(tags[tagY][tagX]);
                 
-                tags[tagY][tagX] = [[Tag alloc] initWithX:tagX andY:tagY];;
+                tags[tagY][tagX] = [[Tag alloc] initWithX:tagX andY:tagY];
             }
         }
         else {
@@ -364,14 +363,14 @@
                     //Make sure the place we picked isn't close to another pile.  Pretty naive.
                     overlapping = 0;
                     for(int j = 0; j < pileCount; j++) {
-                        if(pointDistance(pilePoints[j].x,pilePoints[j].y,pileX,pileY) < PILE_RADIUS){overlapping = 1;}
+                        if(pointDistance(pilePoints[j].x,pilePoints[j].y,pileX,pileY) < PILE_RADIUS){overlapping = 1; break;}
                     }
                 }
                 
                 pilePoints[pileCount++] = NSMakePoint(pileX,pileY);
                 
                 //Place each individual tag in the pile.
-                for(int j = 0; j < i; j++) {
+                for(int j = 0; j < size; j++) {
                     float maxRadius = PILE_RADIUS;
                     int tagX,tagY;
                     do {
@@ -384,7 +383,7 @@
                         maxRadius += 1;
                     } while(tags[tagY][tagX]);
 
-                    tags[tagY][tagX] = [[Tag alloc] initWithX:tagX andY:tagY];;
+                    tags[tagY][tagX] = [[Tag alloc] initWithX:tagX andY:tagY];
                 }
             }
         }

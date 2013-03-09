@@ -36,7 +36,7 @@
     float y = position.y;
     float dis = pointDistance(x,y,target.x,target.y);
     float improvements[3][3];
-    float improvementSum;
+    float improvementSum = 0;
     int dxMin = (x == 0) ? 0 : -1;
     int dyMin = (y == 0) ? 0 : -1;
     int dxMax = (x == (GRID_WIDTH-1)) ? 0 : 1;

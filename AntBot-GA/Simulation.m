@@ -241,8 +241,14 @@
                 
                 if(tickRate != 0.f){[NSThread sleepForTimeInterval:tickRate];}
                 if(viewDelegate != nil) {
-                    if([viewDelegate respondsToSelector:@selector(updateAnts:)]) {
-                        [viewDelegate updateAnts:ants tags:tags pheromones:pheromones];
+                    if([viewDelegate respondsToSelector:@selector(updateAnts:tags:pheromones:)]) {
+                        NSMutableArray* tagsArray = [[NSMutableArray alloc] init];
+                        for(int y = 0; y < GRID_HEIGHT; y++) {
+                            for(int x = 0; x < GRID_WIDTH; x++) {
+                                if(tags[y][x]){[tagsArray addObject:tags[y][x]];}
+                            }
+                        }
+                        [viewDelegate updateAnts:ants tags:tagsArray pheromones:pheromones];
                     }
                 }
             }

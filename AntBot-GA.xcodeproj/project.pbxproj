@@ -155,7 +155,7 @@
 		40ED65AD16DABD31006F8494 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0450;
+				LastUpgradeCheck = 0460;
 				ORGANIZATIONNAME = AntBot;
 			};
 			buildConfigurationList = 40ED65B016DABD31006F8494 /* Build configuration list for PBXProject "AntBot-GA" */;
@@ -246,6 +246,7 @@
 		40ED65C816DABD31006F8494 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "AntBot-GA/AntBot-GA-Prefix.pch";
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -256,6 +257,7 @@
 		40ED65C916DABD31006F8494 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "AntBot-GA/AntBot-GA-Prefix.pch";
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -282,6 +284,7 @@
 				40ED65C916DABD31006F8494 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};

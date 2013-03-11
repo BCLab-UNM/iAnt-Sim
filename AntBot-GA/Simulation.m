@@ -290,14 +290,15 @@
                     float sig = fabs(val) * .05;
                     
                     //Parameters have slightly different mutation criteria.
-                    if((key == @"decayRate") || (key == @"walkDropRate") || (key == @"searchGiveupRate") || (key == @"trailDropRate")){
+                    if([key isEqualToString:@"decayRate"] || [key isEqualToString:@"walkDropRate"] ||
+                       [key isEqualToString:@"searchGiveupRate"] || [key isEqualToString:@"trailDropRate"]){
                         val += randomNormal(0,sig);
                         [parameters setObject:[NSNumber numberWithFloat:clip(val,0,1)] forKey:key];
                     }
                     else {
                         val += randomNormal(0,sig+.001);
                         
-                        if((key == @"dirDevConst") || (key == @"dirDevCoeff") || (key == @"dirTimePow")) {
+                        if([key isEqualToString:@"dirDevConst"] || [key isEqualToString:@"dirDevCoeff"] || [key isEqualToString:@"dirTimePow"]) {
                             [parameters setObject:[NSNumber numberWithFloat:clip(val,0,INT_MAX)] forKey:key];
                         }
                         else {

@@ -4,7 +4,7 @@
 @class Tag;
 
 @interface NSObject(SimulationNotifications)
-    -(void) updateAnts:(NSMutableArray*)ants;
+    -(void) updateAnts:(NSMutableArray*)ants tags:(Tag* __strong[90][90])tags pheromones:(NSMutableArray*)pheromones;
 @end
 
 

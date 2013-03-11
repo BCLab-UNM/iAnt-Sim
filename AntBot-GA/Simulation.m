@@ -33,6 +33,7 @@
     srandomdev();
     colonies = [[NSMutableArray alloc] initWithCapacity:colonyCount];
     for(int i = 0; i < colonyCount; i++){[colonies addObject:[[Colony alloc] init]];}
+    int evaluationCount = (viewDelegate != nil) ? 1 : EVALUATION_COUNT;
 
     for(int generation = 0; generation < generationCount; generation++) {
         NSLog(@"Starting Generation %d", generation);
@@ -40,7 +41,7 @@
         for(Colony* colony in colonies){colony.tagsCollected = 0;}
         
         dispatch_queue_t queue = dispatch_get_global_queue(0, 0);
-        dispatch_apply(EVALUATION_COUNT, queue, ^(size_t idx) {
+        dispatch_apply(evaluationCount, queue, ^(size_t idx) {
             @autoreleasepool {
                 [self runEvaluation];
             }
@@ -241,7 +242,7 @@
                 if(tickRate != 0.f){[NSThread sleepForTimeInterval:tickRate];}
                 if(viewDelegate != nil) {
                     if([viewDelegate respondsToSelector:@selector(updateAnts:)]) {
-                        [viewDelegate updateAnts:ants];
+                        [viewDelegate updateAnts:ants tags:tags pheromones:pheromones];
                     }
                 }
             }

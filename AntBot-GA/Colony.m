@@ -10,13 +10,13 @@
 
 -(id) init {
     if(self = [super init]) {
-        decayRate = .005+randomFloat(.02);
-        walkDropRate = .08+randomFloat(.1);
-        searchGiveupRate = .005+randomFloat(.01);
-        trailDropRate = randomFloat(.02);
+        decayRate = randomFloat(1.);
+        walkDropRate = randomFloat(1.);
+        searchGiveupRate = randomFloat(1.);
+        trailDropRate = randomFloat(1.);
         dirDevConst = randomFloat(3.14);
         dirDevCoeff = randomFloat(3.14);
-        dirTimePow = randomFloat(.2);
+        dirTimePow = randomFloat(5.);
         
         densityThreshold = randomFloat(8.0);
         densityConstant = -1 + randomFloat(2.0);

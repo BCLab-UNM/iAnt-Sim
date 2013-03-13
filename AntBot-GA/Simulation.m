@@ -201,10 +201,11 @@
                                 if(ant.carrying != nil) {
                                     [colony setTagsCollected:colony.tagsCollected+1];
                                     
+                                    NSPoint pheromonePoint = [self perturbPosition:NSMakePoint(ant.carrying.x, ant.carrying.y)];
                                     if(randomFloat(1.) < (ant.neighbors/colony.densityThreshold) + colony.densityConstant) {
                                         Pheromone* p = [[Pheromone alloc] init];
-                                        p.x = ant.carrying.x;
-                                        p.y = ant.carrying.y;
+                                        p.x = pheromonePoint.x;
+                                        p.y = pheromonePoint.y;
                                         p.n = 1.;
                                         p.updated = tick;
                                         [pheromones addObject:p];
@@ -215,7 +216,7 @@
                                         ant.informed = ANT_INFORMED_PHEROMONE;
                                     }
                                     else if(randomFloat(1.) < (ant.neighbors/colony.densityPatchThreshold) + colony.densityPatchConstant) {
-                                        ant.target = [self perturbPosition:NSMakePoint(ant.carrying.x,ant.carrying.y)];
+                                        ant.target = [self perturbPosition:[self perturbPosition:NSMakePoint(ant.carrying.x,ant.carrying.y)]];
                                         ant.informed = ANT_INFORMED_MEMORY;
                                     }
                                     else {

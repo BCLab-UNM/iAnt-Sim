@@ -23,6 +23,7 @@
 -(NSPoint) getPheromone:(NSMutableArray*)pheromones atTick:(int)tick withDecayRate:(float)decayRate;
 
 @property (readonly, nonatomic) Colony* averageColony;
+@property (readonly, nonatomic) Colony* bestColony;
 
 @property (nonatomic) int colonyCount;
 @property (nonatomic) int generationCount;

@@ -3,8 +3,12 @@
 @class Colony;
 @class Tag;
 
-@interface NSObject(SimulationNotifications)
+@interface NSObject(SimulationViewNotifications)
 -(void) updateAnts:(NSMutableArray*)ants tags:(NSMutableArray*)tags pheromones:(NSMutableArray*)pheromones;
+@end
+
+@interface NSObject(SimulationNotifications)
+-(void) finishedGeneration:(int)generation;
 @end
 
 
@@ -31,6 +35,7 @@
 
 @property (nonatomic) float tickRate;
 
+@property (nonatomic) NSObject* delegate;
 @property (nonatomic) NSObject* viewDelegate;
 
 @end

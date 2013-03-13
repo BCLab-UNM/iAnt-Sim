@@ -23,7 +23,7 @@
 @synthesize distributionRandom, distributionPowerlaw, distributionClustered, tagCount;
 @synthesize averageColony;
 @synthesize tickRate;
-@synthesize viewDelegate;
+@synthesize delegate, viewDelegate;
 
 /*
  * Starts the simulation run.
@@ -36,7 +36,6 @@
     int evaluationCount = (viewDelegate != nil) ? 1 : EVALUATION_COUNT;
     
     for(int generation = 0; generation < generationCount; generation++) {
-        NSLog(@"Starting Generation %d", generation);
         
         for(Colony* colony in colonies){colony.tagsCollected = 0;}
         
@@ -48,6 +47,14 @@
         });
         
         [self breedColonies];
+        
+        if(delegate) {
+        
+            //Technically should pass in average and best colonies here.
+            if([delegate respondsToSelector:@selector(finishedGeneration:)]) {
+                [delegate finishedGeneration:generation];
+            }
+        }
     }
     
     return 0;
@@ -457,6 +464,24 @@
     [_averageColony setParameters:parameterSums];
     
     return _averageColony;
+}
+
+
+/*
+ * Custom getter for bestColony (lazy evaluation)
+ */
+-(Colony*) bestColony {
+    Colony* _maxColony = [[Colony alloc] init];
+    int maxTags = 0;
+    
+    for(Colony* colony in colonies) {
+        if(colony.tagsCollected > maxTags) {
+            maxTags = colony.tagsCollected;
+            [_maxColony setParameters:[colony getParameters]];
+        }
+    }
+    
+    return _maxColony;
 }
 
 @end

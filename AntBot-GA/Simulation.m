@@ -410,10 +410,15 @@
  */
 -(NSPoint) getPheromone:(NSMutableArray*)pheromones atTick:(int)tick withDecayRate:(float)decayRate {
     float nSum = 0.f;
-    for(Pheromone* pheromone in pheromones) {
+    
+    for(int i = 0; i < [pheromones count]; i++) {
+        Pheromone* pheromone = [pheromones objectAtIndex:i];
         pheromone.n *= powf(1.f - decayRate, (tick - pheromone.updated));
-        pheromone.updated = tick;
-        nSum += pheromone.n;
+        if(pheromone.n < .001){[pheromones removeObjectAtIndex:i]; i--;}
+        else {
+            pheromone.updated = tick;
+            nSum += pheromone.n;
+        }
     }
     
     float r = randomFloat(nSum);

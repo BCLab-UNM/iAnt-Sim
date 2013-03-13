@@ -481,6 +481,8 @@
         }
     }
     
+    _maxColony.tagsCollected = maxTags / EVALUATION_COUNT;
+    
     return _maxColony;
 }
 

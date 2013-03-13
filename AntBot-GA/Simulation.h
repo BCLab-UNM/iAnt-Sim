@@ -4,17 +4,16 @@
 @class Tag;
 
 @interface NSObject(SimulationNotifications)
-    -(void) updateAnts:(NSMutableArray*)ants tags:(NSMutableArray*)tags pheromones:(NSMutableArray*)pheromones;
+-(void) updateAnts:(NSMutableArray*)ants tags:(NSMutableArray*)tags pheromones:(NSMutableArray*)pheromones;
 @end
 
 
 @interface Simulation : NSObject {
-  NSMutableArray* colonies;
+    NSMutableArray* colonies;
 }
 
 -(int) start;
 -(void) runEvaluation;
--(NSPoint) perturbPosition:(NSPoint)position;
 -(void) breedColonies;
 -(void) initDistributionForArray:(Tag* __strong[90][90])tags;
 -(NSPoint) getPheromone:(NSMutableArray*)pheromones atTick:(int)tick withDecayRate:(float)decayRate;

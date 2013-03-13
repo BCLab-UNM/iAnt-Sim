@@ -29,12 +29,12 @@
  * Starts the simulation run.
  */
 -(int) start {
-
+    
     srandomdev();
     colonies = [[NSMutableArray alloc] initWithCapacity:colonyCount];
     for(int i = 0; i < colonyCount; i++){[colonies addObject:[[Colony alloc] init]];}
     int evaluationCount = (viewDelegate != nil) ? 1 : EVALUATION_COUNT;
-
+    
     for(int generation = 0; generation < generationCount; generation++) {
         NSLog(@"Starting Generation %d", generation);
         
@@ -49,7 +49,7 @@
         
         [self breedColonies];
     }
-  
+    
     return 0;
 }
 
@@ -61,11 +61,11 @@
     @autoreleasepool {
         Tag* tags[GRID_HEIGHT][GRID_WIDTH];
         [self initDistributionForArray:tags];
-
+        
         NSMutableArray* ants = [[NSMutableArray alloc] initWithCapacity:antCount];
         NSMutableArray* pheromones = [[NSMutableArray alloc] init];
         for(int i = 0; i < antCount; i++){[ants addObject:[[Ant alloc] init]];}
-
+        
         for(Colony* colony in colonies) {
             for(int i = 0; i < GRID_HEIGHT; i++) {
                 for(int j = 0; j < GRID_WIDTH; j++) {
@@ -80,26 +80,26 @@
                     
                     switch(ant.status) {
                             
-                        /*
-                         * The ant hasn't been initialized yet.
-                         * Give it some basic starting values and then fall-through to the next state.
-                         */
+                            /*
+                             * The ant hasn't been initialized yet.
+                             * Give it some basic starting values and then fall-through to the next state.
+                             */
                         case ANT_STATUS_INACTIVE:
                             ant.status = ANT_STATUS_DEPARTING;
                             ant.position = NSMakePoint(NEST_X,NEST_Y);
                             ant.target = edge(GRID_WIDTH,GRID_HEIGHT);
-                        //Fallthrough to ANT_STATUS_DEPARTING.
+                            //Fallthrough to ANT_STATUS_DEPARTING.
                             
-                        /*
-                         * The ant is either:
-                         *  -Moving in a random direction away from the nest (not site-fidelity-ing or pheromone-ing).
-                         *  -Moving towards a specific point where a tag was last found (site-fidelity-ing).
-                         *  -Moving towards a specific point due to pheromones.
-                         *
-                         * For each of the cases, we have to ultimately decide on a direction for the ant to travel in,
-                         * then decide which 'cell' best accomplishes traveling in this direction.  We then move the ant,
-                         * and may change the ant/world state based on certain criteria (i.e. it reaches its destination).
-                         */
+                            /*
+                             * The ant is either:
+                             *  -Moving in a random direction away from the nest (not site-fidelity-ing or pheromone-ing).
+                             *  -Moving towards a specific point where a tag was last found (site-fidelity-ing).
+                             *  -Moving towards a specific point due to pheromones.
+                             *
+                             * For each of the cases, we have to ultimately decide on a direction for the ant to travel in,
+                             * then decide which 'cell' best accomplishes traveling in this direction.  We then move the ant,
+                             * and may change the ant/world state based on certain criteria (i.e. it reaches its destination).
+                             */
                         case ANT_STATUS_DEPARTING:;
                             float r = randomFloat(1.);
                             if(((ant.informed == ANT_INFORMED_PHEROMONE) && (r < colony.trailDropRate)) || (!ant.informed && (r < colony.walkDropRate))) {
@@ -116,15 +116,15 @@
                                 ant.status = ANT_STATUS_SEARCHING;
                                 ant.informed = ANT_INFORMED_NONE;
                             }
-                        break;
+                            break;
                             
-                        /*
-                         * The ant is performing a random walk.
-                         * In this state, the ant only exhibits behavior once every SEARCH_DELAY ticks.
-                         * It will randomly change its direction based on how long it has been searching and move in this direction.
-                         * If it finds a tag, its state changes to ANT_STATUS_RETURNING (it brings the tag back to the nest.
-                         * All site fidelity and pheromone work, however, is taken care of once the ant actually arrives at the nest.
-                         */
+                            /*
+                             * The ant is performing a random walk.
+                             * In this state, the ant only exhibits behavior once every SEARCH_DELAY ticks.
+                             * It will randomly change its direction based on how long it has been searching and move in this direction.
+                             * If it finds a tag, its state changes to ANT_STATUS_RETURNING (it brings the tag back to the nest.
+                             * All site fidelity and pheromone work, however, is taken care of once the ant actually arrives at the nest.
+                             */
                         case ANT_STATUS_SEARCHING:
                             if(tick - ant.lastMoved < SEARCH_DELAY){break;}
                             
@@ -179,13 +179,13 @@
                             }
                             
                             ant.lastMoved = tick;
-                        break;
+                            break;
                             
-                        /*
-                         * The ant is on its way back to the nest.
-                         * It is either carrying food, or it gave up on its search and is returning to base for further instruction.
-                         * Stuff like laying/assigning of pheromones is handled here.
-                         */
+                            /*
+                             * The ant is on its way back to the nest.
+                             * It is either carrying food, or it gave up on its search and is returning to base for further instruction.
+                             * Stuff like laying/assigning of pheromones is handled here.
+                             */
                         case ANT_STATUS_RETURNING:
                             [ant move];
                             
@@ -235,7 +235,7 @@
                                 
                                 ant.status = ANT_STATUS_DEPARTING;
                             }
-                        break;
+                            break;
                     }
                 }
                 
@@ -248,6 +248,7 @@
                                 if(tags[y][x]){[tagsArray addObject:tags[y][x]];}
                             }
                         }
+                        [self getPheromone:pheromones atTick:tick withDecayRate:colony.decayRate];
                         [viewDelegate updateAnts:ants tags:tagsArray pheromones:pheromones];
                     }
                 }
@@ -339,7 +340,7 @@
     
     int pilesOf[tagCount]; //Key is size of pile.  Value is number of piles with this many tags.
     for(int i = 0; i < tagCount; i++){pilesOf[i]=0;}
-
+    
     //Needs to be adjusted if doing a powerlaw distribution with tagCount != 256.
     pilesOf[1] = roundf(((tagCount / 4) * distributionPowerlaw) + (tagCount * distributionRandom));
     pilesOf[(tagCount / 64)] = roundf((tagCount / 16) * distributionPowerlaw);
@@ -394,7 +395,7 @@
                         
                         maxRadius += 1;
                     } while(tags[tagY][tagX]);
-
+                    
                     tags[tagY][tagX] = [[Tag alloc] initWithX:tagX andY:tagY];
                 }
             }

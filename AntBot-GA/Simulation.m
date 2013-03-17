@@ -202,22 +202,29 @@
                                 if(ant.carrying != nil) {
                                     [colony setTagsCollected:colony.tagsCollected+1];
                                     
-                                    NSPoint pheromonePoint = [self perturbPosition:NSMakePoint(ant.carrying.x, ant.carrying.y)];
+                                    NSPoint perturbedTagLocation = [self perturbPosition:NSMakePoint(ant.carrying.x, ant.carrying.y)];
                                     if(randomFloat(1.) < (ant.neighbors/colony.densityThreshold) + colony.densityConstant) {
                                         Pheromone* p = [[Pheromone alloc] init];
-                                        p.x = pheromonePoint.x;
-                                        p.y = pheromonePoint.y;
+                                        p.x = perturbedTagLocation.x;
+                                        p.y = perturbedTagLocation.y;
                                         p.n = 1.;
                                         p.updated = tick;
                                         [pheromones addObject:p];
                                     }
                                     
+                                    //Calling getPheromone here to force decay before guard check
+                                    NSPoint pheromone;
+                                    if ([pheromones count] > 0) {
+                                        pheromone = [self getPheromone:pheromones atTick:tick withDecayRate:colony.decayRate];
+                                    }
+                                    
+                                    //pheromones may now be empty as a result of decay, so we check again here
                                     if(([pheromones count] > 0) && (randomFloat(1.) > (ant.neighbors/colony.densityInfluenceThreshold) + colony.densityInfluenceConstant)) {
-                                        ant.target = [self perturbPosition:[self getPheromone:pheromones atTick:tick withDecayRate:colony.decayRate]];
+                                        ant.target = [self perturbPosition:pheromone];
                                         ant.informed = ANT_INFORMED_PHEROMONE;
                                     }
                                     else if(randomFloat(1.) < (ant.neighbors/colony.densityPatchThreshold) + colony.densityPatchConstant) {
-                                        ant.target = [self perturbPosition:[self perturbPosition:NSMakePoint(ant.carrying.x,ant.carrying.y)]];
+                                        ant.target = [self perturbPosition:perturbedTagLocation];
                                         ant.informed = ANT_INFORMED_MEMORY;
                                     }
                                     else {
@@ -228,8 +235,15 @@
                                     ant.carrying = nil;
                                 }
                                 else {
-                                    if([pheromones count] > 0){
-                                        ant.target = [self perturbPosition:[self getPheromone:pheromones atTick:tick withDecayRate:colony.decayRate]];
+                                    //Calling getPheromone here to force decay before guard check
+                                    NSPoint pheromone;
+                                    if ([pheromones count] > 0) {
+                                        pheromone = [self getPheromone:pheromones atTick:tick withDecayRate:colony.decayRate];
+                                    }
+                                    
+                                    //pheromones may now be empty as a result of decay, so we check again here
+                                    if ([pheromones count] > 0) {
+                                        ant.target = [self perturbPosition:pheromone];
                                         ant.informed = ANT_INFORMED_PHEROMONE;
                                     }
                                     else {

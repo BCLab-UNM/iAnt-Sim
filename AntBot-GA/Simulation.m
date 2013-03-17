@@ -23,6 +23,7 @@
 @synthesize distributionRandom, distributionPowerlaw, distributionClustered, tagCount;
 @synthesize averageColony;
 @synthesize tickRate;
+@synthesize perturbStd;
 @synthesize delegate, viewDelegate;
 
 /*
@@ -231,7 +232,7 @@
                                         ant.target = [self perturbPosition:[self getPheromone:pheromones atTick:tick withDecayRate:colony.decayRate]];
                                         ant.informed = ANT_INFORMED_PHEROMONE;
                                     }
-                                    else{
+                                    else {
                                         ant.target = edge(GRID_WIDTH,GRID_HEIGHT);
                                         ant.informed = ANT_INFORMED_NONE;
                                     }
@@ -270,6 +271,8 @@
  * Introduces error into the given position.
  */
 -(NSPoint) perturbPosition:(NSPoint)position {
+    position.x = randomNormal(position.x, perturbStd);
+    position.y = randomNormal(position.y, perturbStd);
     return position;
 }
 
@@ -435,7 +438,7 @@
         r -= pheromone.n;
     }
     
-    return NSMakePoint(-1,-1); //Should never happen.
+    return NSMakePoint(-1,-1);
 }
 
 

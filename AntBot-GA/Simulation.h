@@ -36,6 +36,8 @@
 
 @property (nonatomic) float tickRate;
 
+@property (nonatomic) float perturbStd;
+
 @property (nonatomic) NSObject* delegate;
 @property (nonatomic) NSObject* viewDelegate;
 

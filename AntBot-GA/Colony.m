@@ -16,7 +16,7 @@
         trailDropRate = randomFloat(1.);
         dirDevConst = randomFloat(3.14);
         dirDevCoeff = randomFloat(3.14);
-        dirTimePow = randomFloat(5.);
+        dirTimePow = randomFloat(1.);
         
         densityThreshold = randomFloat(8.0);
         densityConstant = -1 + randomFloat(2.0);

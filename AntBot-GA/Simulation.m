@@ -307,6 +307,7 @@
             for(int j = 0; j < 2; j++) {
                 Colony *p1 = [colonies objectAtIndex:randomInt(colonyCount)],
                 *p2 = [colonies objectAtIndex:randomInt(colonyCount)];
+                while (p1 == p2) {p2 = [colonies objectAtIndex:randomInt(colonyCount)];}
                 parent[j] = (p1.tagsCollected > p2.tagsCollected) ? p1 : p2;
             }
             

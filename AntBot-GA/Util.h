@@ -94,4 +94,18 @@ static inline NSPoint edge(int w, int h) {
     return NSMakePoint(-1,-1); //Should never happen.
 }
 
+/*
+ * Returns exponential cumulative probability at a given x and lambda
+ */
+static inline float exponentialCDF(float x, float lambda) {
+    return (1 - exp(-lambda*x));
+}
+
+/*
+ * Returns decay of quantity at time given rate of change lambda
+ */
+static inline float exponentialDecay(float quantity, float time, float lambda) {
+    return (quantity * exp(-lambda*time));
+}
+
 #endif

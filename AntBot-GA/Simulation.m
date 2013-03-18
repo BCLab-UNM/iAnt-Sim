@@ -110,7 +110,7 @@
                              */
                         case ANT_STATUS_DEPARTING:;
                             float r = randomFloat(1.);
-                            if(((ant.informed == ANT_INFORMED_PHEROMONE) && (r < colony.trailDropRate)) || (!ant.informed && (r < colony.walkDropRate))) {
+                            if(((ant.informed == ANT_INFORMED_PHEROMONE) && (r < colony.pheromoneGiveUpProbability)) || (!ant.informed && (r < colony.travelGiveUpProbability))) {
                                 ant.status = ANT_STATUS_SEARCHING;
                                 ant.informed = ANT_INFORMED_NONE;
                                 ant.searchTime = -1; //Don't do an informed random walk if we drop off a trail.
@@ -136,7 +136,7 @@
                         case ANT_STATUS_SEARCHING:
                             if(tick - ant.lastMoved < SEARCH_DELAY){break;}
                             
-                            if(randomFloat(1.) < colony.searchGiveupRate) {
+                            if(randomFloat(1.) < colony.searchGiveUpProbability) {
                                 ant.target = NSMakePoint(NEST_X,NEST_Y);
                                 ant.status = ANT_STATUS_RETURNING;
                                 break;
@@ -145,10 +145,11 @@
                             if(tick - ant.lastTurned >= 3 * SEARCH_DELAY) { //Change direction every 3 iterations.
                                 float dTheta;
                                 if(ant.searchTime >= 0) {
-                                    dTheta = randomNormal(0, (colony.dirDevCoeff/powf((++ant.searchTime),colony.dirTimePow))+colony.dirDevConst);
+                                    float informedSearchCorrelation = exponentialDecay(2*M_2PI-colony.uninformedSearchCorrelation, ++ant.searchTime, colony.informedSearchCorrelationDecayRate);
+                                    dTheta = clip(randomNormal(0, informedSearchCorrelation+colony.uninformedSearchCorrelation),-M_PI,M_PI);
                                 }
                                 else {
-                                    dTheta = randomNormal(0, colony.dirDevConst);
+                                    dTheta = clip(randomNormal(0, colony.uninformedSearchCorrelation),-M_PI,M_PI);
                                 }
                                 ant.direction = pmod(ant.direction+dTheta,M_2PI);
                                 ant.lastTurned = tick;
@@ -203,7 +204,7 @@
                                     [colony setTagsCollected:colony.tagsCollected+1];
                                     
                                     NSPoint perturbedTagLocation = [self perturbPosition:NSMakePoint(ant.carrying.x, ant.carrying.y)];
-                                    if(randomFloat(1.) < (ant.neighbors/colony.densityThreshold) + colony.densityConstant) {
+                                    if(randomFloat(1.) < exponentialCDF(ant.neighbors, colony.pheromoneLayingRate)) {
                                         Pheromone* p = [[Pheromone alloc] init];
                                         p.x = perturbedTagLocation.x;
                                         p.y = perturbedTagLocation.y;
@@ -215,15 +216,15 @@
                                     //Calling getPheromone here to force decay before guard check
                                     NSPoint pheromone;
                                     if ([pheromones count] > 0) {
-                                        pheromone = [self getPheromone:pheromones atTick:tick withDecayRate:colony.decayRate];
+                                        pheromone = [self getPheromone:pheromones atTick:tick withDecayRate:colony.pheromoneDecayRate];
                                     }
                                     
                                     //pheromones may now be empty as a result of decay, so we check again here
-                                    if(([pheromones count] > 0) && (randomFloat(1.) > (ant.neighbors/colony.densityInfluenceThreshold) + colony.densityInfluenceConstant)) {
+                                    if(([pheromones count] > 0) && (randomFloat(1.) > exponentialCDF(ant.neighbors, colony.pheromoneFollowingRate))) {
                                         ant.target = [self perturbPosition:pheromone];
                                         ant.informed = ANT_INFORMED_PHEROMONE;
                                     }
-                                    else if(randomFloat(1.) < (ant.neighbors/colony.densityPatchThreshold) + colony.densityPatchConstant) {
+                                    else if(randomFloat(1.) < exponentialCDF(ant.neighbors, colony.siteFidelityRate)) {
                                         ant.target = [self perturbPosition:perturbedTagLocation];
                                         ant.informed = ANT_INFORMED_MEMORY;
                                     }
@@ -238,7 +239,7 @@
                                     //Calling getPheromone here to force decay before guard check
                                     NSPoint pheromone;
                                     if ([pheromones count] > 0) {
-                                        pheromone = [self getPheromone:pheromones atTick:tick withDecayRate:colony.decayRate];
+                                        pheromone = [self getPheromone:pheromones atTick:tick withDecayRate:colony.pheromoneDecayRate];
                                     }
                                     
                                     //pheromones may now be empty as a result of decay, so we check again here
@@ -271,7 +272,7 @@
                                 if(tags[y][x]){[tagsArray addObject:tags[y][x]];}
                             }
                         }
-                        [self getPheromone:pheromones atTick:tick withDecayRate:colony.decayRate];
+                        [self getPheromone:pheromones atTick:tick withDecayRate:colony.pheromoneDecayRate];
                         [viewDelegate updateAnts:ants tags:tagsArray pheromones:pheromones];
                     }
                 }
@@ -321,26 +322,12 @@
                 if(randomInt(10)==0){
                     float val = [[parameters objectForKey:key] floatValue];
                     float sig = fabs(val) * .05;
-                    
-                    //Parameters have slightly different mutation criteria.
-                    if([key isEqualToString:@"decayRate"] || [key isEqualToString:@"walkDropRate"] ||
-                       [key isEqualToString:@"searchGiveupRate"] || [key isEqualToString:@"trailDropRate"]){
-                        val += randomNormal(0,sig);
-                        [parameters setObject:[NSNumber numberWithFloat:clip(val,0,1)] forKey:key];
-                    }
-                    else {
-                        val += randomNormal(0,sig+.001);
-                        
-                        if([key isEqualToString:@"dirDevConst"] || [key isEqualToString:@"dirDevCoeff"] || [key isEqualToString:@"dirTimePow"]) {
-                            [parameters setObject:[NSNumber numberWithFloat:clip(val,0,INT_MAX)] forKey:key];
-                        }
-                        else {
-                            [parameters setObject:[NSNumber numberWithFloat:val] forKey:key];
-                        }
-                    }
+                    val += randomNormal(0,sig);
+                
+                    [parameters setObject:[NSNumber numberWithFloat:val] forKey:key];
                 }
             }
-            
+        
             [children[i] setParameters:parameters];
         }
         
@@ -439,7 +426,7 @@
     
     for(int i = 0; i < [pheromones count]; i++) {
         Pheromone* pheromone = [pheromones objectAtIndex:i];
-        pheromone.n *= powf(1.f - decayRate, (tick - pheromone.updated));
+        pheromone.n = exponentialDecay(pheromone.n, tick-pheromone.updated, decayRate);
         if(pheromone.n < .001){[pheromones removeObjectAtIndex:i]; i--;}
         else {
             pheromone.updated = tick;

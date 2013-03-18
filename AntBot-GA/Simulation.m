@@ -285,8 +285,8 @@
  * Introduces error into the given position.
  */
 -(NSPoint) perturbPosition:(NSPoint)position {
-    position.x = randomNormal(position.x, perturbStd);
-    position.y = randomNormal(position.y, perturbStd);
+    position.x = roundf(clip(randomNormal(position.x, perturbStd),0,GRID_WIDTH));
+    position.y = roundf(clip(randomNormal(position.y, perturbStd),0,GRID_HEIGHT));
     return position;
 }
 

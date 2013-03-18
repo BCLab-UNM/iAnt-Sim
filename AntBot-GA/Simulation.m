@@ -204,7 +204,7 @@
                                     [colony setTagsCollected:colony.tagsCollected+1];
                                     
                                     NSPoint perturbedTagLocation = [self perturbPosition:NSMakePoint(ant.carrying.x, ant.carrying.y)];
-                                    if(randomFloat(1.) < exponentialCDF(ant.neighbors, colony.pheromoneLayingRate)) {
+                                    if(randomFloat(1.) < exponentialCDF(ant.neighbors+1, colony.pheromoneLayingRate)) {
                                         Pheromone* p = [[Pheromone alloc] init];
                                         p.x = perturbedTagLocation.x;
                                         p.y = perturbedTagLocation.y;
@@ -220,11 +220,11 @@
                                     }
                                     
                                     //pheromones may now be empty as a result of decay, so we check again here
-                                    if(([pheromones count] > 0) && (randomFloat(1.) > exponentialCDF(ant.neighbors, colony.pheromoneFollowingRate))) {
+                                    if(([pheromones count] > 0) && (randomFloat(1.) > exponentialCDF(ant.neighbors+1, colony.pheromoneFollowingRate))) {
                                         ant.target = [self perturbPosition:pheromone];
                                         ant.informed = ANT_INFORMED_PHEROMONE;
                                     }
-                                    else if(randomFloat(1.) < exponentialCDF(ant.neighbors, colony.siteFidelityRate)) {
+                                    else if(randomFloat(1.) < exponentialCDF(ant.neighbors+1, colony.siteFidelityRate)) {
                                         ant.target = [self perturbPosition:perturbedTagLocation];
                                         ant.informed = ANT_INFORMED_MEMORY;
                                     }

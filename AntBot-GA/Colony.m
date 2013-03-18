@@ -3,29 +3,25 @@
 
 @implementation Colony
 
-@synthesize trailDropRate, walkDropRate, searchGiveupRate;
-@synthesize dirDevConst, dirDevCoeff, dirTimePow;
-@synthesize decayRate, densityThreshold, densityConstant, densityPatchThreshold, densityPatchConstant, densityInfluenceThreshold, densityInfluenceConstant;
+@synthesize pheromoneGiveUpProbability, travelGiveUpProbability, searchGiveUpProbability;
+@synthesize uninformedSearchCorrelation, informedSearchCorrelationDecayRate;
+@synthesize pheromoneDecayRate, pheromoneLayingRate, siteFidelityRate, pheromoneFollowingRate;
 @synthesize tagsCollected;
 
 -(id) init {
     if(self = [super init]) {
-        decayRate = randomFloat(1.);
-        walkDropRate = randomFloat(1.);
-        searchGiveupRate = randomFloat(1.);
-        trailDropRate = randomFloat(1.);
-        dirDevConst = randomFloat(3.14);
-        dirDevCoeff = randomFloat(3.14);
-        dirTimePow = randomFloat(1.);
+        pheromoneDecayRate = randomFloat(7.);
         
-        densityThreshold = randomFloat(8.0);
-        densityConstant = -1 + randomFloat(2.0);
+        travelGiveUpProbability = randomFloat(1.);
+        searchGiveUpProbability = randomFloat(1.);
+        pheromoneGiveUpProbability = randomFloat(1.);
         
-        densityPatchThreshold = randomFloat(8.0);
-        densityPatchConstant = -1 + randomFloat(2.0);
+        uninformedSearchCorrelation = randomFloat(2*M_2PI);
+        informedSearchCorrelationDecayRate = randomFloat(7.);
         
-        densityInfluenceThreshold = randomFloat(8.0);
-        densityInfluenceConstant = -1 + randomFloat(2.0);
+        pheromoneLayingRate = randomFloat(10.0);
+        siteFidelityRate = randomFloat(10.0);
+        pheromoneFollowingRate = randomFloat(10.0);
     }
     return self;
 }
@@ -33,53 +29,40 @@
 -(NSMutableDictionary*) getParameters {
     return [[NSMutableDictionary alloc] initWithObjects:
             [NSArray arrayWithObjects:
-             [NSNumber numberWithFloat:decayRate],
-             [NSNumber numberWithFloat:walkDropRate],
-             [NSNumber numberWithFloat:searchGiveupRate],
-             [NSNumber numberWithFloat:trailDropRate],
-             [NSNumber numberWithFloat:dirDevConst],
-             [NSNumber numberWithFloat:dirDevCoeff],
-             [NSNumber numberWithFloat:dirTimePow],
-             [NSNumber numberWithFloat:densityThreshold],
-             [NSNumber numberWithFloat:densityConstant],
-             [NSNumber numberWithFloat:densityPatchThreshold],
-             [NSNumber numberWithFloat:densityPatchConstant],
-             [NSNumber numberWithFloat:densityInfluenceThreshold],
-             [NSNumber numberWithFloat:densityInfluenceConstant], nil] forKeys:
+             [NSNumber numberWithFloat:pheromoneDecayRate],
+             [NSNumber numberWithFloat:travelGiveUpProbability],
+             [NSNumber numberWithFloat:searchGiveUpProbability],
+             [NSNumber numberWithFloat:pheromoneGiveUpProbability],
+             [NSNumber numberWithFloat:uninformedSearchCorrelation],
+             [NSNumber numberWithFloat:informedSearchCorrelationDecayRate],
+             [NSNumber numberWithFloat:pheromoneLayingRate],
+             [NSNumber numberWithFloat:siteFidelityRate],
+             [NSNumber numberWithFloat:pheromoneFollowingRate],nil] forKeys:
             [NSArray arrayWithObjects:
-             @"decayRate",
-             @"walkDropRate",
-             @"searchGiveupRate",
-             @"trailDropRate",
-             @"dirDevConst",
-             @"dirDevCoeff",
-             @"dirTimePow",
-             @"densityThreshold",
-             @"densityConstant",
-             @"densityPatchThreshold",
-             @"densityPatchConstant",
-             @"densityInfluenceThreshold",
-             @"densityInfluenceConstant", nil]];
+             @"pheromoneDecayRate",
+             @"travelGiveUpProbability",
+             @"searchGiveUpProbability",
+             @"pheromoneGiveUpProbability",
+             @"uninformedSearchCorrelation",
+             @"informedSearchCorrelationDecayRate",
+             @"pheromoneLayingRate",
+             @"siteFidelityRate",
+             @"pheromoneFollowingRate",nil]];
 }
 
 -(void) setParameters:(NSMutableDictionary *)parameters {
-    decayRate = [[parameters objectForKey:@"decayRate"] floatValue];
-    walkDropRate = [[parameters objectForKey:@"walkDropRate"] floatValue];
-    searchGiveupRate = [[parameters objectForKey:@"searchGiveupRate"] floatValue];
-    trailDropRate = [[parameters objectForKey:@"trailDropRate"] floatValue];
+    pheromoneDecayRate = [[parameters objectForKey:@"pheromoneDecayRate"] floatValue];
     
-    dirDevConst = [[parameters objectForKey:@"dirDevConst"] floatValue];
-    dirDevCoeff = [[parameters objectForKey:@"dirDevCoeff"] floatValue];
-    dirTimePow = [[parameters objectForKey:@"dirTimePow"] floatValue];
+    travelGiveUpProbability = [[parameters objectForKey:@"travelGiveUpProbability"] floatValue];
+    searchGiveUpProbability = [[parameters objectForKey:@"searchGiveUpProbability"] floatValue];
+    pheromoneGiveUpProbability = [[parameters objectForKey:@"pheromoneGiveUpProbability"] floatValue];
     
-    densityThreshold = [[parameters objectForKey:@"densityThreshold"] floatValue];
-    densityConstant = [[parameters objectForKey:@"densityConstant"] floatValue];
+    uninformedSearchCorrelation = [[parameters objectForKey:@"uninformedSearchCorrelation"] floatValue];
+    informedSearchCorrelationDecayRate = [[parameters objectForKey:@"informedSearchCorrelationDecayRate"] floatValue];
     
-    densityPatchThreshold = [[parameters objectForKey:@"densityPatchThreshold"] floatValue];
-    densityPatchConstant = [[parameters objectForKey:@"densityPatchConstant"] floatValue];
-    
-    densityInfluenceThreshold = [[parameters objectForKey:@"densityInfluenceThreshold"] floatValue];
-    densityInfluenceConstant = [[parameters objectForKey:@"densityInfluenceConstant"] floatValue];
+    pheromoneLayingRate = [[parameters objectForKey:@"pheromoneLayingRate"] floatValue];
+    siteFidelityRate = [[parameters objectForKey:@"siteFidelityRate"] floatValue];
+    pheromoneFollowingRate = [[parameters objectForKey:@"pheromoneFollowingRate"] floatValue];
 }
 
 @end

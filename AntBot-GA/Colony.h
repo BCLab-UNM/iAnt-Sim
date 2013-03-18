@@ -6,23 +6,19 @@
 -(void) setParameters:(NSMutableDictionary*)parameters;
 
 //Behavior parameters:
-@property (nonatomic) float trailDropRate;
-@property (nonatomic) float walkDropRate;
-@property (nonatomic) float searchGiveupRate;
+@property (nonatomic) float pheromoneGiveUpProbability;
+@property (nonatomic) float travelGiveUpProbability;
+@property (nonatomic) float searchGiveUpProbability;
 
 //Random walk parameters:
-@property (nonatomic) float dirDevConst;
-@property (nonatomic) float dirDevCoeff;
-@property (nonatomic) float dirTimePow;
+@property (nonatomic) float uninformedSearchCorrelation;
+@property (nonatomic) float informedSearchCorrelationDecayRate;
 
 //Pheromone parameters:
-@property (nonatomic) float decayRate;
-@property (nonatomic) float densityThreshold;
-@property (nonatomic) float densityConstant;
-@property (nonatomic) float densityPatchThreshold;
-@property (nonatomic) float densityPatchConstant;
-@property (nonatomic) float densityInfluenceThreshold;
-@property (nonatomic) float densityInfluenceConstant;
+@property (nonatomic) float pheromoneDecayRate;
+@property (nonatomic) float pheromoneLayingRate;
+@property (nonatomic) float siteFidelityRate;
+@property (nonatomic) float pheromoneFollowingRate;
 
 //Non-evolved variables:
 @property (nonatomic) float tagsCollected;

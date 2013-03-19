@@ -110,7 +110,8 @@
                              */
                         case ANT_STATUS_DEPARTING:;
                             float r = randomFloat(1.);
-                            if(((ant.informed == ANT_INFORMED_PHEROMONE) && (r < colony.pheromoneGiveUpProbability)) || (!ant.informed && (r < colony.travelGiveUpProbability))) {
+                            if(((ant.informed == ANT_INFORMED_PHEROMONE) && (r < colony.pheromoneGiveUpProbability)) ||
+                               (!ant.informed && (r < colony.travelGiveUpProbability))) {
                                 ant.status = ANT_STATUS_SEARCHING;
                                 ant.informed = ANT_INFORMED_NONE;
                                 ant.searchTime = -1; //Don't do an informed random walk if we drop off a trail.
@@ -286,8 +287,8 @@
  * Introduces error into the given position.
  */
 -(NSPoint) perturbPosition:(NSPoint)position {
-    position.x = roundf(clip(randomNormal(position.x, perturbStd),0,GRID_WIDTH));
-    position.y = roundf(clip(randomNormal(position.y, perturbStd),0,GRID_HEIGHT));
+    position.x = roundf(clip(randomNormal(position.x, perturbStd),0,GRID_WIDTH-1));
+    position.y = roundf(clip(randomNormal(position.y, perturbStd),0,GRID_HEIGHT-1));
     return position;
 }
 

@@ -62,6 +62,13 @@ static inline float randomNormal(float m, float s) {
 }
 
 /*
+ * Returns a sample from an exponential distribution with rate parameter lambda
+ */
+static inline float randomExponential(float lambda) {
+    return -logf(randomFloat(1.))/lambda;
+}
+
+/*
  * Returns proper modulus of dividend and divisor
  */
 static inline float pmod(float dividend, float divisor)

@@ -146,7 +146,7 @@
                             if(tick - ant.lastTurned >= 3 * SEARCH_DELAY) { //Change direction every 3 iterations.
                                 float dTheta;
                                 if(ant.searchTime >= 0) {
-                                    float informedSearchCorrelation = exponentialDecay(2*M_2PI-colony.uninformedSearchCorrelation, ++ant.searchTime, colony.informedSearchCorrelationDecayRate);
+                                    float informedSearchCorrelation = exponentialDecay(2*M_2PI-colony.uninformedSearchCorrelation, ant.searchTime++, colony.informedSearchCorrelationDecayRate);
                                     dTheta = clip(randomNormal(0, informedSearchCorrelation+colony.uninformedSearchCorrelation),-M_PI,M_PI);
                                 }
                                 else {

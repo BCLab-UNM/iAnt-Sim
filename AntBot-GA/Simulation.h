@@ -36,7 +36,8 @@
 
 @property (nonatomic) float tickRate;
 
-@property (nonatomic) float perturbStd;
+@property (nonatomic) float localizationError;
+@property (nonatomic) float tagReadError;
 
 @property (nonatomic) NSObject* delegate;
 @property (nonatomic) NSObject* viewDelegate;

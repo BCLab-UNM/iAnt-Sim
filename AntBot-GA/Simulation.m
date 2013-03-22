@@ -170,7 +170,7 @@
                             ant.target = NSMakePoint(roundf(ant.position.x+cos(ant.direction)),roundf(ant.position.y+sin(ant.direction)));
                             if(ant.target.x >= 0 && ant.target.y >= 0 && ant.target.x < GRID_WIDTH && ant.target.y < GRID_HEIGHT) {
                                 Tag* t = tags[(int)ant.target.y][(int)ant.target.x];
-                                if((randomFloat(1.f) > tagReadError) && (t != 0) && !t.pickedUp) { //Note we use shortcircuiting here.
+                                if((randomFloat(1.f) >= tagReadError) && (t != 0) && !t.pickedUp) { //Note we use shortcircuiting here.
                                     [t setPickedUp:YES];
                                     ant.carrying = t;
                                     ant.status = ANT_STATUS_RETURNING;
@@ -181,7 +181,7 @@
                                     for(int dx = -1; dx <= 1; dx++) {
                                         for(int dy = -1; dy <= 1; dy++) {
                                             if((ant.carrying.x+dx>=0 && ant.carrying.x+dx<GRID_WIDTH) && (ant.carrying.y+dy>=0 && ant.carrying.y+dy<GRID_HEIGHT)) {
-                                                ant.neighbors += (randomFloat(1.f) > tagReadError) && (tags[ant.carrying.y+dy][ant.carrying.x+dx] != 0) && !(tags[ant.carrying.y+dy][ant.carrying.x+dx].pickedUp);
+                                                ant.neighbors += (randomFloat(1.f) >= tagReadError) && (tags[ant.carrying.y+dy][ant.carrying.x+dx] != 0) && !(tags[ant.carrying.y+dy][ant.carrying.x+dx].pickedUp);
                                             }
                                         }
                                     }

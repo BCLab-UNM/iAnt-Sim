@@ -2,7 +2,6 @@
     #import <Cocoa/Cocoa.h>
 
     #define PILE_RADIUS 2
-    #define EVALUATION_COUNT 8
     #define SEARCH_DELAY 4
     #define RETURN_DELAY 0
     #define CROSSOVER_RATE 10

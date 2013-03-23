@@ -29,6 +29,7 @@
 @property (nonatomic) int generationCount;
 @property (nonatomic) int antCount;
 @property (nonatomic) int tagCount;
+@property (nonatomic) int evaluationCount;
 
 @property (nonatomic) float distributionRandom;
 @property (nonatomic) float distributionPowerlaw;

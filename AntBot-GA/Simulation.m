@@ -20,7 +20,7 @@
 @implementation Simulation
 
 @synthesize colonyCount, generationCount, antCount;
-@synthesize distributionRandom, distributionPowerlaw, distributionClustered, tagCount;
+@synthesize distributionRandom, distributionPowerlaw, distributionClustered, tagCount, evaluationCount;
 @synthesize averageColony;
 @synthesize tickRate;
 @synthesize localizationError, tagReadError;
@@ -34,7 +34,7 @@
     srandomdev();
     colonies = [[NSMutableArray alloc] initWithCapacity:colonyCount];
     for(int i = 0; i < colonyCount; i++){[colonies addObject:[[Colony alloc] init]];}
-    int evaluationCount = (viewDelegate != nil) ? 1 : EVALUATION_COUNT;
+    evaluationCount = (viewDelegate != nil) ? 1 : evaluationCount;
     
     for(int generation = 0; generation < generationCount; generation++) {
         
@@ -467,7 +467,7 @@
         [parameterSums setObject:[NSNumber numberWithFloat:val] forKey:key];
     }
     
-    _averageColony.tagsCollected = (tagSum / colonyCount) / EVALUATION_COUNT;
+    _averageColony.tagsCollected = (tagSum / colonyCount) / evaluationCount;
     [_averageColony setParameters:parameterSums];
     
     return _averageColony;
@@ -488,7 +488,7 @@
         }
     }
     
-    _maxColony.tagsCollected = maxTags / EVALUATION_COUNT;
+    _maxColony.tagsCollected = maxTags / evaluationCount;
     
     return _maxColony;
 }

@@ -37,8 +37,12 @@
 
 @property (nonatomic) float tickRate;
 
-@property (nonatomic) float localizationError;
-@property (nonatomic) float tagReadError;
+@property (nonatomic) float positionalError;
+@property (nonatomic) float detectionError;
+
+@property (nonatomic) BOOL randomizeParameters;
+
+@property (nonatomic) NSString* parameterFile;
 
 @property (nonatomic) NSObject* delegate;
 @property (nonatomic) NSObject* viewDelegate;

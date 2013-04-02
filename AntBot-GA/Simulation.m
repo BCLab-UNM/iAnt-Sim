@@ -19,9 +19,9 @@
 
 @implementation Simulation
 
-@synthesize colonyCount, generationCount, antCount;
+@synthesize teamCount, generationCount, antCount;
 @synthesize distributionRandom, distributionPowerlaw, distributionClustered, tagCount, evaluationCount;
-@synthesize averageColony, bestColony;
+@synthesize averageTeam, bestTeam;
 @synthesize tickRate;
 @synthesize randomizeParameters;
 @synthesize parameterFile;
@@ -34,8 +34,8 @@
 -(int) start {
     
     srandomdev();
-    colonies = [[NSMutableArray alloc] initWithCapacity:colonyCount];
-    for(int i = 0; i < colonyCount; i++) {
+    colonies = [[NSMutableArray alloc] initWithCapacity:teamCount];
+    for(int i = 0; i < teamCount; i++) {
         if (randomizeParameters) {
             [colonies addObject:[[Team alloc] initRandom]];
         }
@@ -47,7 +47,7 @@
     
     for(int generation = 0; generation < generationCount; generation++) {
         
-        for(Team* colony in colonies){colony.tagsCollected = 0;}
+        for(Team* team in colonies){team.tagsCollected = 0;}
         
         dispatch_queue_t queue = dispatch_get_global_queue(0, 0);
         dispatch_apply(evaluationCount, queue, ^(size_t idx) {
@@ -83,7 +83,7 @@
         NSMutableArray* pheromones = [[NSMutableArray alloc] init];
         for(int i = 0; i < antCount; i++){[ants addObject:[[Robot alloc] init]];}
         
-        for(Team* colony in colonies) {
+        for(Team* team in colonies) {
             for(int i = 0; i < GRID_HEIGHT; i++) {
                 for(int j = 0; j < GRID_WIDTH; j++) {
                     if(tags[i][j]){[tags[i][j] setPickedUp:NO];}
@@ -119,8 +119,8 @@
                              */
                         case ANT_STATUS_DEPARTING:;
                             float r = randomFloat(1.);
-                            if(((ant.informed == ANT_INFORMED_PHEROMONE) && (r < colony.pheromoneGiveUpProbability)) ||
-                               (!ant.informed && (r < colony.travelGiveUpProbability))) {
+                            if(((ant.informed == ANT_INFORMED_PHEROMONE) && (r < team.pheromoneGiveUpProbability)) ||
+                               (!ant.informed && (r < team.travelGiveUpProbability))) {
                                 ant.status = ANT_STATUS_SEARCHING;
                                 ant.informed = ANT_INFORMED_NONE;
                                 ant.searchTime = -1; //Don't do an informed random walk if we drop off a trail.
@@ -146,7 +146,7 @@
                         case ANT_STATUS_SEARCHING:
                             if(tick - ant.lastMoved < SEARCH_DELAY){break;}
                             
-                            if(randomFloat(1.) < colony.searchGiveUpProbability) {
+                            if(randomFloat(1.) < team.searchGiveUpProbability) {
                                 ant.target = NSMakePoint(NEST_X,NEST_Y);
                                 ant.status = ANT_STATUS_RETURNING;
                                 break;
@@ -155,11 +155,11 @@
                             if(tick - ant.lastTurned >= 3 * SEARCH_DELAY) { //Change direction every 3 iterations.
                                 float dTheta;
                                 if(ant.searchTime >= 0) {
-                                    float informedSearchCorrelation = exponentialDecay(2*M_2PI-colony.uninformedSearchCorrelation, ant.searchTime++, colony.informedSearchCorrelationDecayRate);
-                                    dTheta = clip(randomNormal(0, informedSearchCorrelation+colony.uninformedSearchCorrelation),-M_PI,M_PI);
+                                    float informedSearchCorrelation = exponentialDecay(2*M_2PI-team.uninformedSearchCorrelation, ant.searchTime++, team.informedSearchCorrelationDecayRate);
+                                    dTheta = clip(randomNormal(0, informedSearchCorrelation+team.uninformedSearchCorrelation),-M_PI,M_PI);
                                 }
                                 else {
-                                    dTheta = clip(randomNormal(0, colony.uninformedSearchCorrelation),-M_PI,M_PI);
+                                    dTheta = clip(randomNormal(0, team.uninformedSearchCorrelation),-M_PI,M_PI);
                                 }
                                 ant.direction = pmod(ant.direction+dTheta,M_2PI);
                                 ant.lastTurned = tick;
@@ -211,10 +211,10 @@
                             //Lots of repeated code in here.
                             if(NSEqualPoints(ant.position,ant.target)) {
                                 if(ant.carrying != nil) {
-                                    [colony setTagsCollected:colony.tagsCollected+1];
+                                    [team setTagsCollected:team.tagsCollected+1];
                                     
                                     NSPoint perturbedTagLocation = [self perturbPosition:NSMakePoint(ant.carrying.x, ant.carrying.y)];
-                                    if(randomFloat(1.) < exponentialCDF(ant.neighbors+1, colony.pheromoneLayingRate)) {
+                                    if(randomFloat(1.) < exponentialCDF(ant.neighbors+1, team.pheromoneLayingRate)) {
                                         Pheromone* p = [[Pheromone alloc] init];
                                         p.x = perturbedTagLocation.x;
                                         p.y = perturbedTagLocation.y;
@@ -226,15 +226,15 @@
                                     //Calling getPheromone here to force decay before guard check
                                     NSPoint pheromone;
                                     if ([pheromones count] > 0) {
-                                        pheromone = [self getPheromone:pheromones atTick:tick withDecayRate:colony.pheromoneDecayRate];
+                                        pheromone = [self getPheromone:pheromones atTick:tick withDecayRate:team.pheromoneDecayRate];
                                     }
                                     
                                     //pheromones may now be empty as a result of decay, so we check again here
-                                    if(([pheromones count] > 0) && (randomFloat(1.) > exponentialCDF(ant.neighbors+1, colony.pheromoneFollowingRate))) {
+                                    if(([pheromones count] > 0) && (randomFloat(1.) > exponentialCDF(ant.neighbors+1, team.pheromoneFollowingRate))) {
                                         ant.target = [self perturbPosition:pheromone];
                                         ant.informed = ANT_INFORMED_PHEROMONE;
                                     }
-                                    else if(randomFloat(1.) < exponentialCDF(ant.neighbors+1, colony.siteFidelityRate)) {
+                                    else if(randomFloat(1.) < exponentialCDF(ant.neighbors+1, team.siteFidelityRate)) {
                                         ant.target = [self perturbPosition:perturbedTagLocation];
                                         ant.informed = ANT_INFORMED_MEMORY;
                                     }
@@ -249,7 +249,7 @@
                                     //Calling getPheromone here to force decay before guard check
                                     NSPoint pheromone;
                                     if ([pheromones count] > 0) {
-                                        pheromone = [self getPheromone:pheromones atTick:tick withDecayRate:colony.pheromoneDecayRate];
+                                        pheromone = [self getPheromone:pheromones atTick:tick withDecayRate:team.pheromoneDecayRate];
                                     }
                                     
                                     //pheromones may now be empty as a result of decay, so we check again here
@@ -282,7 +282,7 @@
                                 if(tags[y][x]){[tagsArray addObject:tags[y][x]];}
                             }
                         }
-                        [self getPheromone:pheromones atTick:tick withDecayRate:colony.pheromoneDecayRate];
+                        [self getPheromone:pheromones atTick:tick withDecayRate:team.pheromoneDecayRate];
                         [viewDelegate updateAnts:ants tags:tagsArray pheromones:pheromones];
                     }
                 }
@@ -309,16 +309,16 @@
  */
 -(void) breedColonies {
     @autoreleasepool {
-        Team* children[colonyCount];
-        for(int i = 0; i < colonyCount; i++) {
+        Team* children[teamCount];
+        for(int i = 0; i < teamCount; i++) {
             children[i] = [[Team alloc] init];
             Team* child = children[i];
             
             Team* parent[2];
             for(int j = 0; j < 2; j++) {
-                Team *p1 = [colonies objectAtIndex:randomInt(colonyCount)],
-                *p2 = [colonies objectAtIndex:randomInt(colonyCount)];
-                while (p1 == p2) {p2 = [colonies objectAtIndex:randomInt(colonyCount)];}
+                Team *p1 = [colonies objectAtIndex:randomInt(teamCount)],
+                *p2 = [colonies objectAtIndex:randomInt(teamCount)];
+                while (p1 == p2) {p2 = [colonies objectAtIndex:randomInt(teamCount)];}
                 parent[j] = (p1.tagsCollected > p2.tagsCollected) ? p1 : p2;
             }
             
@@ -342,9 +342,9 @@
         }
         
         //Set the children to be the new set of colonies for the next generation.
-        for(int i = 0; i < colonyCount; i++) {
-            Team* colony = [colonies objectAtIndex:i];
-            [colony setParameters:[children[i] getParameters]];
+        for(int i = 0; i < teamCount; i++) {
+            Team* team = [colonies objectAtIndex:i];
+            [team setParameters:[children[i] getParameters]];
         }
     }
 }
@@ -429,7 +429,7 @@
 
 /*
  * Picks a pheromone out of the passed list based on a random number weighted on the pheromone strengths.
- * This might work better in Colony.m, as we're passing a lot of Colony related stuff.
+ * This might work better in Team.m, as we're passing a lot of Team related stuff.
  */
 -(NSPoint) getPheromone:(NSMutableArray*)pheromones atTick:(int)tick withDecayRate:(float)decayRate {
     float nSum = 0.f;
@@ -455,16 +455,16 @@
 
 
 /*
- * Custom getter for bestColony (lazy evaluation)
+ * Custom getter for bestTeam (lazy evaluation)
  */
--(Team*) averageColony {
-    Team* _averageColony = [[Team alloc] init];
+-(Team*) averageTeam {
+    Team* _averageTeam = [[Team alloc] init];
     NSMutableDictionary* parameterSums = [[NSMutableDictionary alloc] initWithCapacity:13];
     float tagSum = 0.f;
     
-    for(Team* colony in colonies) {
-        NSMutableDictionary* parameters = [colony getParameters];
-        tagSum += colony.tagsCollected;
+    for(Team* team in colonies) {
+        NSMutableDictionary* parameters = [team getParameters];
+        tagSum += team.tagsCollected;
         for(NSString* key in parameters) {
             float val = [[parameterSums objectForKey:key] floatValue] + [[parameters objectForKey:key] floatValue];
             [parameterSums setObject:[NSNumber numberWithFloat:val] forKey:key];
@@ -472,34 +472,34 @@
     }
     
     for(NSString* key in [parameterSums allKeys]) {
-        float val = [[parameterSums objectForKey:key] floatValue] / colonyCount;
+        float val = [[parameterSums objectForKey:key] floatValue] / teamCount;
         [parameterSums setObject:[NSNumber numberWithFloat:val] forKey:key];
     }
     
-    _averageColony.tagsCollected = (tagSum / colonyCount) / evaluationCount;
-    [_averageColony setParameters:parameterSums];
+    _averageTeam.tagsCollected = (tagSum / teamCount) / evaluationCount;
+    [_averageTeam setParameters:parameterSums];
     
-    return _averageColony;
+    return _averageTeam;
 }
 
 
 /*
- * Custom getter for bestColony (lazy evaluation)
+ * Custom getter for bestTeam (lazy evaluation)
  */
--(Team*) bestColony {
-    Team* _maxColony = [[Team alloc] init];
+-(Team*) bestTeam {
+    Team* _maxTeam = [[Team alloc] init];
     int maxTags = 0;
     
-    for(Team* colony in colonies) {
-        if(colony.tagsCollected > maxTags) {
-            maxTags = colony.tagsCollected;
-            [_maxColony setParameters:[colony getParameters]];
+    for(Team* team in colonies) {
+        if(team.tagsCollected > maxTags) {
+            maxTags = team.tagsCollected;
+            [_maxTeam setParameters:[team getParameters]];
         }
     }
     
-    _maxColony.tagsCollected = maxTags / evaluationCount;
+    _maxTeam.tagsCollected = maxTags / evaluationCount;
     
-    return _maxColony;
+    return _maxTeam;
 }
 
 @end

@@ -22,10 +22,10 @@
 -(void) initDistributionForArray:(Tag* __strong[90][90])tags;
 -(NSPoint) getPheromone:(NSMutableArray*)pheromones atTick:(int)tick withDecayRate:(float)decayRate;
 
-@property (readonly, nonatomic) Team* averageColony;
-@property (readonly, nonatomic) Team* bestColony;
+@property (readonly, nonatomic) Team* averageTeam;
+@property (readonly, nonatomic) Team* bestTeam;
 
-@property (nonatomic) int colonyCount;
+@property (nonatomic) int teamCount;
 @property (nonatomic) int generationCount;
 @property (nonatomic) int antCount;
 @property (nonatomic) int tagCount;

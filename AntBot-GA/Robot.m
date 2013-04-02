@@ -9,8 +9,8 @@
 @synthesize carrying, neighbors;
 
 -(void) reset {
-    status = ANT_STATUS_INACTIVE;
-    informed = ANT_INFORMED_NONE;
+    status = ROBOT_STATUS_INACTIVE;
+    informed = ROBOT_INFORMED_NONE;
     
     position = NSMakePoint(-1,-1);
     target = NSMakePoint(-1,-1);
@@ -25,7 +25,7 @@
 
 
 /*
- * Moves the ant towards its target.
+ * Moves the robot towards its target.
  * Uses the Kenneth motion planning algorithm.
  */
 -(void) move {

@@ -19,7 +19,7 @@
 
 @implementation Simulation
 
-@synthesize teamCount, generationCount, antCount;
+@synthesize teamCount, generationCount, robotCount;
 @synthesize distributionRandom, distributionPowerlaw, distributionClustered, tagCount, evaluationCount;
 @synthesize averageTeam, bestTeam;
 @synthesize tickRate;
@@ -79,9 +79,9 @@
         Tag* tags[GRID_HEIGHT][GRID_WIDTH];
         [self initDistributionForArray:tags];
         
-        NSMutableArray* ants = [[NSMutableArray alloc] initWithCapacity:antCount];
+        NSMutableArray* robots = [[NSMutableArray alloc] initWithCapacity:robotCount];
         NSMutableArray* pheromones = [[NSMutableArray alloc] init];
-        for(int i = 0; i < antCount; i++){[ants addObject:[[Robot alloc] init]];}
+        for(int i = 0; i < robotCount; i++){[robots addObject:[[Robot alloc] init]];}
         
         for(Team* team in colonies) {
             for(int i = 0; i < GRID_HEIGHT; i++) {
@@ -89,132 +89,132 @@
                     if(tags[i][j]){[tags[i][j] setPickedUp:NO];}
                 }
             }
-            for(int i = 0; i < antCount; i++){[[ants objectAtIndex:i] reset];}
+            for(int i = 0; i < robotCount; i++){[[robots objectAtIndex:i] reset];}
             [pheromones removeAllObjects];
             
             for(int tick = 0; tick < STEP_COUNT; tick++){
-                for(Robot* ant in ants) {
+                for(Robot* robot in robots) {
                     
-                    switch(ant.status) {
+                    switch(robot.status) {
                             
                             /*
-                             * The ant hasn't been initialized yet.
+                             * The robot hasn't been initialized yet.
                              * Give it some basic starting values and then fall-through to the next state.
                              */
-                        case ANT_STATUS_INACTIVE:
-                            ant.status = ANT_STATUS_DEPARTING;
-                            ant.position = NSMakePoint(NEST_X,NEST_Y);
-                            ant.target = edge(GRID_WIDTH,GRID_HEIGHT);
-                            //Fallthrough to ANT_STATUS_DEPARTING.
+                        case ROBOT_STATUS_INACTIVE:
+                            robot.status = ROBOT_STATUS_DEPARTING;
+                            robot.position = NSMakePoint(NEST_X,NEST_Y);
+                            robot.target = edge(GRID_WIDTH,GRID_HEIGHT);
+                            //Fallthrough to ROBOT_STATUS_DEPARTING.
                             
                             /*
-                             * The ant is either:
+                             * The robot is either:
                              *  -Moving in a random direction away from the nest (not site-fidelity-ing or pheromone-ing).
                              *  -Moving towards a specific point where a tag was last found (site-fidelity-ing).
                              *  -Moving towards a specific point due to pheromones.
                              *
-                             * For each of the cases, we have to ultimately decide on a direction for the ant to travel in,
-                             * then decide which 'cell' best accomplishes traveling in this direction.  We then move the ant,
-                             * and may change the ant/world state based on certain criteria (i.e. it reaches its destination).
+                             * For each of the cases, we have to ultimately decide on a direction for the robot to travel in,
+                             * then decide which 'cell' best accomplishes traveling in this direction.  We then move the robot,
+                             * and may change the robot/world state based on certain criteria (i.e. it reaches its destination).
                              */
-                        case ANT_STATUS_DEPARTING:;
+                        case ROBOT_STATUS_DEPARTING:;
                             float r = randomFloat(1.);
-                            if(((ant.informed == ANT_INFORMED_PHEROMONE) && (r < team.pheromoneGiveUpProbability)) ||
-                               (!ant.informed && (r < team.travelGiveUpProbability))) {
-                                ant.status = ANT_STATUS_SEARCHING;
-                                ant.informed = ANT_INFORMED_NONE;
-                                ant.searchTime = -1; //Don't do an informed random walk if we drop off a trail.
+                            if(((robot.informed == ROBOT_INFORMED_PHEROMONE) && (r < team.pheromoneGiveUpProbability)) ||
+                               (!robot.informed && (r < team.travelGiveUpProbability))) {
+                                robot.status = ROBOT_STATUS_SEARCHING;
+                                robot.informed = ROBOT_INFORMED_NONE;
+                                robot.searchTime = -1; //Don't do an informed random walk if we drop off a trail.
                                 break;
                             }
                             
-                            [ant move];
+                            [robot move];
                             
                             //Change state if we've reached our destination.
-                            if(NSEqualPoints(ant.position, ant.target)) {
-                                ant.status = ANT_STATUS_SEARCHING;
-                                ant.informed = ANT_INFORMED_NONE;
+                            if(NSEqualPoints(robot.position, robot.target)) {
+                                robot.status = ROBOT_STATUS_SEARCHING;
+                                robot.informed = ROBOT_INFORMED_NONE;
                             }
                             break;
                             
                             /*
-                             * The ant is performing a random walk.
-                             * In this state, the ant only exhibits behavior once every SEARCH_DELAY ticks.
+                             * The robot is performing a random walk.
+                             * In this state, the robot only exhibits behavior once every SEARCH_DELAY ticks.
                              * It will randomly change its direction based on how long it has been searching and move in this direction.
-                             * If it finds a tag, its state changes to ANT_STATUS_RETURNING (it brings the tag back to the nest.
-                             * All site fidelity and pheromone work, however, is taken care of once the ant actually arrives at the nest.
+                             * If it finds a tag, its state changes to ROBOT_STATUS_RETURNING (it brings the tag back to the nest.
+                             * All site fidelity and pheromone work, however, is taken care of once the robot actually arrives at the nest.
                              */
-                        case ANT_STATUS_SEARCHING:
-                            if(tick - ant.lastMoved < SEARCH_DELAY){break;}
+                        case ROBOT_STATUS_SEARCHING:
+                            if(tick - robot.lastMoved < SEARCH_DELAY){break;}
                             
                             if(randomFloat(1.) < team.searchGiveUpProbability) {
-                                ant.target = NSMakePoint(NEST_X,NEST_Y);
-                                ant.status = ANT_STATUS_RETURNING;
+                                robot.target = NSMakePoint(NEST_X,NEST_Y);
+                                robot.status = ROBOT_STATUS_RETURNING;
                                 break;
                             }
                             
-                            if(tick - ant.lastTurned >= 3 * SEARCH_DELAY) { //Change direction every 3 iterations.
+                            if(tick - robot.lastTurned >= 3 * SEARCH_DELAY) { //Change direction every 3 iterations.
                                 float dTheta;
-                                if(ant.searchTime >= 0) {
-                                    float informedSearchCorrelation = exponentialDecay(2*M_2PI-team.uninformedSearchCorrelation, ant.searchTime++, team.informedSearchCorrelationDecayRate);
+                                if(robot.searchTime >= 0) {
+                                    float informedSearchCorrelation = exponentialDecay(2*M_2PI-team.uninformedSearchCorrelation, robot.searchTime++, team.informedSearchCorrelationDecayRate);
                                     dTheta = clip(randomNormal(0, informedSearchCorrelation+team.uninformedSearchCorrelation),-M_PI,M_PI);
                                 }
                                 else {
                                     dTheta = clip(randomNormal(0, team.uninformedSearchCorrelation),-M_PI,M_PI);
                                 }
-                                ant.direction = pmod(ant.direction+dTheta,M_2PI);
-                                ant.lastTurned = tick;
+                                robot.direction = pmod(robot.direction+dTheta,M_2PI);
+                                robot.lastTurned = tick;
                             }
                             
                             //If our current direction takes us outside the world, frantically spin around until this isn't the case.
-                            ant.target = NSMakePoint(roundf(ant.position.x+cos(ant.direction)),roundf(ant.position.y+sin(ant.direction)));
-                            while(ant.target.x < 0 || ant.target.y < 0 || ant.target.x >= GRID_WIDTH || ant.target.y >= GRID_HEIGHT) {
-                                ant.direction = randomFloat(M_2PI);
-                                ant.target = NSMakePoint(roundf(ant.position.x+cos(ant.direction)),roundf(ant.position.y+sin(ant.direction)));
+                            robot.target = NSMakePoint(roundf(robot.position.x+cos(robot.direction)),roundf(robot.position.y+sin(robot.direction)));
+                            while(robot.target.x < 0 || robot.target.y < 0 || robot.target.x >= GRID_WIDTH || robot.target.y >= GRID_HEIGHT) {
+                                robot.direction = randomFloat(M_2PI);
+                                robot.target = NSMakePoint(roundf(robot.position.x+cos(robot.direction)),roundf(robot.position.y+sin(robot.direction)));
                             }
                             
-                            [ant move];
+                            [robot move];
                             
                             //After we've moved 1 square ahead, check one square ahead for a tag.
-                            //Reusing ant.target here (without consequence, it just gets overwritten when moving).
-                            ant.target = NSMakePoint(roundf(ant.position.x+cos(ant.direction)),roundf(ant.position.y+sin(ant.direction)));
-                            if(ant.target.x >= 0 && ant.target.y >= 0 && ant.target.x < GRID_WIDTH && ant.target.y < GRID_HEIGHT) {
-                                Tag* t = tags[(int)ant.target.y][(int)ant.target.x];
+                            //Reusing robot.target here (without consequence, it just gets overwritten when moving).
+                            robot.target = NSMakePoint(roundf(robot.position.x+cos(robot.direction)),roundf(robot.position.y+sin(robot.direction)));
+                            if(robot.target.x >= 0 && robot.target.y >= 0 && robot.target.x < GRID_WIDTH && robot.target.y < GRID_HEIGHT) {
+                                Tag* t = tags[(int)robot.target.y][(int)robot.target.x];
                                 if((randomFloat(1.f) >= detectionError) && (t != 0) && !t.pickedUp) { //Note we use shortcircuiting here.
                                     [t setPickedUp:YES];
-                                    ant.carrying = t;
-                                    ant.status = ANT_STATUS_RETURNING;
-                                    ant.target = NSMakePoint(NEST_X,NEST_Y);
-                                    ant.neighbors = 0;
+                                    robot.carrying = t;
+                                    robot.status = ROBOT_STATUS_RETURNING;
+                                    robot.target = NSMakePoint(NEST_X,NEST_Y);
+                                    robot.neighbors = 0;
                                     
                                     //Sum up all non-picked-up seeds in the moore neighbor.
                                     for(int dx = -1; dx <= 1; dx++) {
                                         for(int dy = -1; dy <= 1; dy++) {
-                                            if((ant.carrying.x+dx>=0 && ant.carrying.x+dx<GRID_WIDTH) && (ant.carrying.y+dy>=0 && ant.carrying.y+dy<GRID_HEIGHT)) {
-                                                ant.neighbors += (randomFloat(1.f) >= detectionError) && (tags[ant.carrying.y+dy][ant.carrying.x+dx] != 0) && !(tags[ant.carrying.y+dy][ant.carrying.x+dx].pickedUp);
+                                            if((robot.carrying.x+dx>=0 && robot.carrying.x+dx<GRID_WIDTH) && (robot.carrying.y+dy>=0 && robot.carrying.y+dy<GRID_HEIGHT)) {
+                                                robot.neighbors += (randomFloat(1.f) >= detectionError) && (tags[robot.carrying.y+dy][robot.carrying.x+dx] != 0) && !(tags[robot.carrying.y+dy][robot.carrying.x+dx].pickedUp);
                                             }
                                         }
                                     }
                                 }
                             }
                             
-                            ant.lastMoved = tick;
+                            robot.lastMoved = tick;
                             break;
                             
                             /*
-                             * The ant is on its way back to the nest.
+                             * The robot is on its way back to the nest.
                              * It is either carrying food, or it gave up on its search and is returning to base for further instruction.
                              * Stuff like laying/assigning of pheromones is handled here.
                              */
-                        case ANT_STATUS_RETURNING:
-                            [ant move];
+                        case ROBOT_STATUS_RETURNING:
+                            [robot move];
                             
                             //Lots of repeated code in here.
-                            if(NSEqualPoints(ant.position,ant.target)) {
-                                if(ant.carrying != nil) {
+                            if(NSEqualPoints(robot.position,robot.target)) {
+                                if(robot.carrying != nil) {
                                     [team setTagsCollected:team.tagsCollected+1];
                                     
-                                    NSPoint perturbedTagLocation = [self perturbPosition:NSMakePoint(ant.carrying.x, ant.carrying.y)];
-                                    if(randomFloat(1.) < exponentialCDF(ant.neighbors+1, team.pheromoneLayingRate)) {
+                                    NSPoint perturbedTagLocation = [self perturbPosition:NSMakePoint(robot.carrying.x, robot.carrying.y)];
+                                    if(randomFloat(1.) < exponentialCDF(robot.neighbors+1, team.pheromoneLayingRate)) {
                                         Pheromone* p = [[Pheromone alloc] init];
                                         p.x = perturbedTagLocation.x;
                                         p.y = perturbedTagLocation.y;
@@ -230,20 +230,20 @@
                                     }
                                     
                                     //pheromones may now be empty as a result of decay, so we check again here
-                                    if(([pheromones count] > 0) && (randomFloat(1.) > exponentialCDF(ant.neighbors+1, team.pheromoneFollowingRate))) {
-                                        ant.target = [self perturbPosition:pheromone];
-                                        ant.informed = ANT_INFORMED_PHEROMONE;
+                                    if(([pheromones count] > 0) && (randomFloat(1.) > exponentialCDF(robot.neighbors+1, team.pheromoneFollowingRate))) {
+                                        robot.target = [self perturbPosition:pheromone];
+                                        robot.informed = ROBOT_INFORMED_PHEROMONE;
                                     }
-                                    else if(randomFloat(1.) < exponentialCDF(ant.neighbors+1, team.siteFidelityRate)) {
-                                        ant.target = [self perturbPosition:perturbedTagLocation];
-                                        ant.informed = ANT_INFORMED_MEMORY;
+                                    else if(randomFloat(1.) < exponentialCDF(robot.neighbors+1, team.siteFidelityRate)) {
+                                        robot.target = [self perturbPosition:perturbedTagLocation];
+                                        robot.informed = ROBOT_INFORMED_MEMORY;
                                     }
                                     else {
-                                        ant.target = edge(GRID_WIDTH,GRID_HEIGHT);
-                                        ant.informed = ANT_INFORMED_NONE;
+                                        robot.target = edge(GRID_WIDTH,GRID_HEIGHT);
+                                        robot.informed = ROBOT_INFORMED_NONE;
                                     }
                                     
-                                    ant.carrying = nil;
+                                    robot.carrying = nil;
                                 }
                                 else {
                                     //Calling getPheromone here to force decay before guard check
@@ -254,20 +254,20 @@
                                     
                                     //pheromones may now be empty as a result of decay, so we check again here
                                     if ([pheromones count] > 0) {
-                                        ant.target = [self perturbPosition:pheromone];
-                                        ant.informed = ANT_INFORMED_PHEROMONE;
+                                        robot.target = [self perturbPosition:pheromone];
+                                        robot.informed = ROBOT_INFORMED_PHEROMONE;
                                     }
                                     else {
-                                        ant.target = edge(GRID_WIDTH,GRID_HEIGHT);
-                                        ant.informed = ANT_INFORMED_NONE;
+                                        robot.target = edge(GRID_WIDTH,GRID_HEIGHT);
+                                        robot.informed = ROBOT_INFORMED_NONE;
                                     }
                                 }
                                 
                                 //The old GA used a searchTime value of >= 0 to indicated we're doing an INFORMED random walk.
-                                if(ant.informed == ANT_INFORMED_NONE){ant.searchTime = -1;}
-                                else{ant.searchTime = 0;}
+                                if(robot.informed == ROBOT_INFORMED_NONE){robot.searchTime = -1;}
+                                else{robot.searchTime = 0;}
                                 
-                                ant.status = ANT_STATUS_DEPARTING;
+                                robot.status = ROBOT_STATUS_DEPARTING;
                             }
                             break;
                     }
@@ -275,7 +275,7 @@
                 
                 if(tickRate != 0.f){[NSThread sleepForTimeInterval:tickRate];}
                 if(viewDelegate != nil) {
-                    if([viewDelegate respondsToSelector:@selector(updateAnts:tags:pheromones:)]) {
+                    if([viewDelegate respondsToSelector:@selector(updateRobots:tags:pheromones:)]) {
                         NSMutableArray* tagsArray = [[NSMutableArray alloc] init];
                         for(int y = 0; y < GRID_HEIGHT; y++) {
                             for(int x = 0; x < GRID_WIDTH; x++) {
@@ -283,7 +283,7 @@
                             }
                         }
                         [self getPheromone:pheromones atTick:tick withDecayRate:team.pheromoneDecayRate];
-                        [viewDelegate updateAnts:ants tags:tagsArray pheromones:pheromones];
+                        [viewDelegate updateRobots:robots tags:tagsArray pheromones:pheromones];
                     }
                 }
             }

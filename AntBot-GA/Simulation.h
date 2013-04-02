@@ -4,7 +4,7 @@
 @class Tag;
 
 @interface NSObject(SimulationViewNotifications)
--(void) updateAnts:(NSMutableArray*)ants tags:(NSMutableArray*)tags pheromones:(NSMutableArray*)pheromones;
+-(void) updateRobots:(NSMutableArray*)robots tags:(NSMutableArray*)tags pheromones:(NSMutableArray*)pheromones;
 @end
 
 @interface NSObject(SimulationNotifications)
@@ -27,7 +27,7 @@
 
 @property (nonatomic) int teamCount;
 @property (nonatomic) int generationCount;
-@property (nonatomic) int antCount;
+@property (nonatomic) int robotCount;
 @property (nonatomic) int tagCount;
 @property (nonatomic) int evaluationCount;
 

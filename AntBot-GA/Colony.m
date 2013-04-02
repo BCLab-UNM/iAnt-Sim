@@ -8,7 +8,7 @@
 @synthesize pheromoneDecayRate, pheromoneLayingRate, siteFidelityRate, pheromoneFollowingRate;
 @synthesize tagsCollected;
 
--(id) init {
+-(id) initRandom {
     if(self = [super init]) {
         pheromoneDecayRate = randomExponential(10.0);
         
@@ -22,6 +22,35 @@
         pheromoneLayingRate = randomExponential(1.0);
         siteFidelityRate = randomExponential(1.0);
         pheromoneFollowingRate = randomExponential(1.0);
+    }
+    return self;
+}
+
+-(id) initWithSpecificFile:(NSString *)filePath {
+    if (self = [super init]) {
+        NSError* error;
+        NSString *paramterString = [NSString stringWithContentsOfFile:filePath encoding:NSUTF8StringEncoding error:&error];
+        if (!paramterString) {
+            NSLog(@"Error reading file.");
+        }
+        else {
+            NSArray *parameters = [paramterString componentsSeparatedByString:@","];
+            if ([parameters count] == 9) {
+                NSEnumerator *parametersEnumerator = [parameters objectEnumerator];
+                pheromoneDecayRate = [[parametersEnumerator nextObject] floatValue];
+                
+                travelGiveUpProbability = [[parametersEnumerator nextObject] floatValue];
+                searchGiveUpProbability = [[parametersEnumerator nextObject] floatValue];
+                pheromoneGiveUpProbability = [[parametersEnumerator nextObject] floatValue];
+                
+                uninformedSearchCorrelation = [[parametersEnumerator nextObject] floatValue];
+                informedSearchCorrelationDecayRate = [[parametersEnumerator nextObject] floatValue];
+                
+                pheromoneLayingRate = [[parametersEnumerator nextObject] floatValue];
+                siteFidelityRate = [[parametersEnumerator nextObject] floatValue];
+                pheromoneFollowingRate = [[parametersEnumerator nextObject] floatValue];
+            }
+        }
     }
     return self;
 }

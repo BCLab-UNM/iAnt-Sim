@@ -2,6 +2,9 @@
 
 @interface Colony : NSObject {}
 
+-(id) initRandom;
+-(id) initWithSpecificFile:(NSString*)filePath;
+
 -(NSMutableDictionary*) getParameters;
 -(void) setParameters:(NSMutableDictionary*)parameters;
 

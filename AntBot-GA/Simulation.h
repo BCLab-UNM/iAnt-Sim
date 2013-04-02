@@ -1,6 +1,6 @@
 #import <Foundation/Foundation.h>
 
-@class Colony;
+@class Team;
 @class Tag;
 
 @interface NSObject(SimulationViewNotifications)
@@ -22,8 +22,8 @@
 -(void) initDistributionForArray:(Tag* __strong[90][90])tags;
 -(NSPoint) getPheromone:(NSMutableArray*)pheromones atTick:(int)tick withDecayRate:(float)decayRate;
 
-@property (readonly, nonatomic) Colony* averageColony;
-@property (readonly, nonatomic) Colony* bestColony;
+@property (readonly, nonatomic) Team* averageColony;
+@property (readonly, nonatomic) Team* bestColony;
 
 @property (nonatomic) int colonyCount;
 @property (nonatomic) int generationCount;

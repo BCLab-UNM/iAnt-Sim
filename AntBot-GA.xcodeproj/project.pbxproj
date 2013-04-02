@@ -8,10 +8,10 @@
 
 /* Begin PBXBuildFile section */
 		40ED65BA16DABD31006F8494 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 40ED65B916DABD31006F8494 /* Cocoa.framework */; };
-		40ED661616DABE50006F8494 /* Ant.h in Headers */ = {isa = PBXBuildFile; fileRef = 40ED660B16DABE50006F8494 /* Ant.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		40ED661716DABE50006F8494 /* Ant.m in Sources */ = {isa = PBXBuildFile; fileRef = 40ED660C16DABE50006F8494 /* Ant.m */; };
-		40ED661816DABE50006F8494 /* Colony.h in Headers */ = {isa = PBXBuildFile; fileRef = 40ED660D16DABE50006F8494 /* Colony.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		40ED661916DABE50006F8494 /* Colony.m in Sources */ = {isa = PBXBuildFile; fileRef = 40ED660E16DABE50006F8494 /* Colony.m */; };
+		40ED661616DABE50006F8494 /* Robot.h in Headers */ = {isa = PBXBuildFile; fileRef = 40ED660B16DABE50006F8494 /* Robot.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		40ED661716DABE50006F8494 /* Robot.m in Sources */ = {isa = PBXBuildFile; fileRef = 40ED660C16DABE50006F8494 /* Robot.m */; };
+		40ED661816DABE50006F8494 /* Team.h in Headers */ = {isa = PBXBuildFile; fileRef = 40ED660D16DABE50006F8494 /* Team.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		40ED661916DABE50006F8494 /* Team.m in Sources */ = {isa = PBXBuildFile; fileRef = 40ED660E16DABE50006F8494 /* Team.m */; };
 		40ED661A16DABE50006F8494 /* Simulation.h in Headers */ = {isa = PBXBuildFile; fileRef = 40ED660F16DABE50006F8494 /* Simulation.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		40ED661B16DABE50006F8494 /* Simulation.m in Sources */ = {isa = PBXBuildFile; fileRef = 40ED661016DABE50006F8494 /* Simulation.m */; };
 		40ED661E16DABE50006F8494 /* Tag.h in Headers */ = {isa = PBXBuildFile; fileRef = 40ED661316DABE50006F8494 /* Tag.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -28,10 +28,10 @@
 		40ED65BE16DABD31006F8494 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		40ED65C116DABD31006F8494 /* AntBot-GA-Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "AntBot-GA-Prefix.pch"; sourceTree = "<group>"; };
 		40ED65C216DABD31006F8494 /* GA.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = GA.h; sourceTree = "<group>"; };
-		40ED660B16DABE50006F8494 /* Ant.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Ant.h; sourceTree = "<group>"; };
-		40ED660C16DABE50006F8494 /* Ant.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Ant.m; sourceTree = "<group>"; };
-		40ED660D16DABE50006F8494 /* Colony.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Colony.h; sourceTree = "<group>"; };
-		40ED660E16DABE50006F8494 /* Colony.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Colony.m; sourceTree = "<group>"; };
+		40ED660B16DABE50006F8494 /* Robot.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Robot.h; sourceTree = "<group>"; };
+		40ED660C16DABE50006F8494 /* Robot.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Robot.m; sourceTree = "<group>"; };
+		40ED660D16DABE50006F8494 /* Team.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Team.h; sourceTree = "<group>"; };
+		40ED660E16DABE50006F8494 /* Team.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Team.m; sourceTree = "<group>"; };
 		40ED660F16DABE50006F8494 /* Simulation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Simulation.h; sourceTree = "<group>"; };
 		40ED661016DABE50006F8494 /* Simulation.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Simulation.m; sourceTree = "<group>"; };
 		40ED661316DABE50006F8494 /* Tag.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Tag.h; sourceTree = "<group>"; };
@@ -90,10 +90,10 @@
 		40ED65BF16DABD31006F8494 /* AntBot-GA */ = {
 			isa = PBXGroup;
 			children = (
-				40ED660B16DABE50006F8494 /* Ant.h */,
-				40ED660C16DABE50006F8494 /* Ant.m */,
-				40ED660D16DABE50006F8494 /* Colony.h */,
-				40ED660E16DABE50006F8494 /* Colony.m */,
+				40ED660B16DABE50006F8494 /* Robot.h */,
+				40ED660C16DABE50006F8494 /* Robot.m */,
+				40ED660D16DABE50006F8494 /* Team.h */,
+				40ED660E16DABE50006F8494 /* Team.m */,
 				40ED660F16DABE50006F8494 /* Simulation.h */,
 				40ED661016DABE50006F8494 /* Simulation.m */,
 				40ED661316DABE50006F8494 /* Tag.h */,
@@ -120,8 +120,8 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				40ED661616DABE50006F8494 /* Ant.h in Headers */,
-				40ED661816DABE50006F8494 /* Colony.h in Headers */,
+				40ED661616DABE50006F8494 /* Robot.h in Headers */,
+				40ED661816DABE50006F8494 /* Team.h in Headers */,
 				40ED661A16DABE50006F8494 /* Simulation.h in Headers */,
 				40ED661E16DABE50006F8494 /* Tag.h in Headers */,
 				40ED662016DABE50006F8494 /* Util.h in Headers */,
@@ -180,8 +180,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				40ED661716DABE50006F8494 /* Ant.m in Sources */,
-				40ED661916DABE50006F8494 /* Colony.m in Sources */,
+				40ED661716DABE50006F8494 /* Robot.m in Sources */,
+				40ED661916DABE50006F8494 /* Team.m in Sources */,
 				40ED661B16DABE50006F8494 /* Simulation.m in Sources */,
 				40ED661F16DABE50006F8494 /* Tag.m in Sources */,
 			);

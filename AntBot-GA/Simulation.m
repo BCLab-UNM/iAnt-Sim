@@ -1,8 +1,8 @@
 #import <Cocoa/Cocoa.h>
 #import <dispatch/dispatch.h>
 #import "Simulation.h"
-#import "Colony.h"
-#import "Ant.h"
+#import "Team.h"
+#import "Robot.h"
 #import "Tag.h"
 #include "Util.h"
 
@@ -37,17 +37,17 @@
     colonies = [[NSMutableArray alloc] initWithCapacity:colonyCount];
     for(int i = 0; i < colonyCount; i++) {
         if (randomizeParameters) {
-            [colonies addObject:[[Colony alloc] initRandom]];
+            [colonies addObject:[[Team alloc] initRandom]];
         }
         else {
-            [colonies addObject:[[Colony alloc] initWithSpecificFile:parameterFile]];
+            [colonies addObject:[[Team alloc] initWithSpecificFile:parameterFile]];
         }
     }
     evaluationCount = (viewDelegate != nil) ? 1 : evaluationCount;
     
     for(int generation = 0; generation < generationCount; generation++) {
         
-        for(Colony* colony in colonies){colony.tagsCollected = 0;}
+        for(Team* colony in colonies){colony.tagsCollected = 0;}
         
         dispatch_queue_t queue = dispatch_get_global_queue(0, 0);
         dispatch_apply(evaluationCount, queue, ^(size_t idx) {
@@ -81,9 +81,9 @@
         
         NSMutableArray* ants = [[NSMutableArray alloc] initWithCapacity:antCount];
         NSMutableArray* pheromones = [[NSMutableArray alloc] init];
-        for(int i = 0; i < antCount; i++){[ants addObject:[[Ant alloc] init]];}
+        for(int i = 0; i < antCount; i++){[ants addObject:[[Robot alloc] init]];}
         
-        for(Colony* colony in colonies) {
+        for(Team* colony in colonies) {
             for(int i = 0; i < GRID_HEIGHT; i++) {
                 for(int j = 0; j < GRID_WIDTH; j++) {
                     if(tags[i][j]){[tags[i][j] setPickedUp:NO];}
@@ -93,7 +93,7 @@
             [pheromones removeAllObjects];
             
             for(int tick = 0; tick < STEP_COUNT; tick++){
-                for(Ant* ant in ants) {
+                for(Robot* ant in ants) {
                     
                     switch(ant.status) {
                             
@@ -309,14 +309,14 @@
  */
 -(void) breedColonies {
     @autoreleasepool {
-        Colony* children[colonyCount];
+        Team* children[colonyCount];
         for(int i = 0; i < colonyCount; i++) {
-            children[i] = [[Colony alloc] init];
-            Colony* child = children[i];
+            children[i] = [[Team alloc] init];
+            Team* child = children[i];
             
-            Colony* parent[2];
+            Team* parent[2];
             for(int j = 0; j < 2; j++) {
-                Colony *p1 = [colonies objectAtIndex:randomInt(colonyCount)],
+                Team *p1 = [colonies objectAtIndex:randomInt(colonyCount)],
                 *p2 = [colonies objectAtIndex:randomInt(colonyCount)];
                 while (p1 == p2) {p2 = [colonies objectAtIndex:randomInt(colonyCount)];}
                 parent[j] = (p1.tagsCollected > p2.tagsCollected) ? p1 : p2;
@@ -343,7 +343,7 @@
         
         //Set the children to be the new set of colonies for the next generation.
         for(int i = 0; i < colonyCount; i++) {
-            Colony* colony = [colonies objectAtIndex:i];
+            Team* colony = [colonies objectAtIndex:i];
             [colony setParameters:[children[i] getParameters]];
         }
     }
@@ -457,12 +457,12 @@
 /*
  * Custom getter for bestColony (lazy evaluation)
  */
--(Colony*) averageColony {
-    Colony* _averageColony = [[Colony alloc] init];
+-(Team*) averageColony {
+    Team* _averageColony = [[Team alloc] init];
     NSMutableDictionary* parameterSums = [[NSMutableDictionary alloc] initWithCapacity:13];
     float tagSum = 0.f;
     
-    for(Colony* colony in colonies) {
+    for(Team* colony in colonies) {
         NSMutableDictionary* parameters = [colony getParameters];
         tagSum += colony.tagsCollected;
         for(NSString* key in parameters) {
@@ -486,11 +486,11 @@
 /*
  * Custom getter for bestColony (lazy evaluation)
  */
--(Colony*) bestColony {
-    Colony* _maxColony = [[Colony alloc] init];
+-(Team*) bestColony {
+    Team* _maxColony = [[Team alloc] init];
     int maxTags = 0;
     
-    for(Colony* colony in colonies) {
+    for(Team* colony in colonies) {
         if(colony.tagsCollected > maxTags) {
             maxTags = colony.tagsCollected;
             [_maxColony setParameters:[colony getParameters]];

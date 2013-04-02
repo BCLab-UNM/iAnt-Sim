@@ -1,7 +1,7 @@
-#import "Ant.h"
+#import "Robot.h"
 #include "Util.h"
 
-@implementation Ant
+@implementation Robot
 
 @synthesize status, informed;
 @synthesize position, target;

@@ -11,7 +11,7 @@
 
 @class Tag;
 
-@interface Ant : NSObject {}
+@interface Robot : NSObject {}
 
 -(void) reset;
 -(void) move;

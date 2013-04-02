@@ -1,6 +1,6 @@
 #import <Foundation/Foundation.h>
 
-@interface Colony : NSObject {}
+@interface Team : NSObject {}
 
 -(id) initRandom;
 -(id) initWithSpecificFile:(NSString*)filePath;

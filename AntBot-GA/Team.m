@@ -1,7 +1,7 @@
-#import "Colony.h"
+#import "Team.h"
 #include "Util.h"
 
-@implementation Colony
+@implementation Team
 
 @synthesize pheromoneGiveUpProbability, travelGiveUpProbability, searchGiveUpProbability;
 @synthesize uninformedSearchCorrelation, informedSearchCorrelationDecayRate;

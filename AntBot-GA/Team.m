@@ -3,7 +3,7 @@
 
 @implementation Team
 
-@synthesize pheromoneGiveUpProbability, travelGiveUpProbability, searchGiveUpProbability;
+@synthesize travelGiveUpProbability, searchGiveUpProbability;
 @synthesize uninformedSearchCorrelation, informedSearchCorrelationDecayRate;
 @synthesize pheromoneDecayRate, pheromoneLayingRate, siteFidelityRate, pheromoneFollowingRate;
 @synthesize tagsCollected;
@@ -14,7 +14,6 @@
         
         travelGiveUpProbability = randomFloat(1.0);
         searchGiveUpProbability = randomFloat(1.0);
-        pheromoneGiveUpProbability = randomFloat(1.0);
         
         uninformedSearchCorrelation = randomFloat(2*M_2PI);
         informedSearchCorrelationDecayRate = randomExponential(5.0);
@@ -41,7 +40,6 @@
                 
                 travelGiveUpProbability = [[parametersEnumerator nextObject] floatValue];
                 searchGiveUpProbability = [[parametersEnumerator nextObject] floatValue];
-                pheromoneGiveUpProbability = [[parametersEnumerator nextObject] floatValue];
                 
                 uninformedSearchCorrelation = [[parametersEnumerator nextObject] floatValue];
                 informedSearchCorrelationDecayRate = [[parametersEnumerator nextObject] floatValue];
@@ -61,7 +59,6 @@
              [NSNumber numberWithFloat:pheromoneDecayRate],
              [NSNumber numberWithFloat:travelGiveUpProbability],
              [NSNumber numberWithFloat:searchGiveUpProbability],
-             [NSNumber numberWithFloat:pheromoneGiveUpProbability],
              [NSNumber numberWithFloat:uninformedSearchCorrelation],
              [NSNumber numberWithFloat:informedSearchCorrelationDecayRate],
              [NSNumber numberWithFloat:pheromoneLayingRate],
@@ -71,7 +68,6 @@
              @"pheromoneDecayRate",
              @"travelGiveUpProbability",
              @"searchGiveUpProbability",
-             @"pheromoneGiveUpProbability",
              @"uninformedSearchCorrelation",
              @"informedSearchCorrelationDecayRate",
              @"pheromoneLayingRate",
@@ -84,7 +80,6 @@
     
     travelGiveUpProbability = [[parameters objectForKey:@"travelGiveUpProbability"] floatValue];
     searchGiveUpProbability = [[parameters objectForKey:@"searchGiveUpProbability"] floatValue];
-    pheromoneGiveUpProbability = [[parameters objectForKey:@"pheromoneGiveUpProbability"] floatValue];
     
     uninformedSearchCorrelation = [[parameters objectForKey:@"uninformedSearchCorrelation"] floatValue];
     informedSearchCorrelationDecayRate = [[parameters objectForKey:@"informedSearchCorrelationDecayRate"] floatValue];

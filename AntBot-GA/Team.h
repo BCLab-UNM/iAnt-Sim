@@ -9,7 +9,6 @@
 -(void) setParameters:(NSMutableDictionary*)parameters;
 
 //Behavior parameters:
-@property (nonatomic) float pheromoneGiveUpProbability;
 @property (nonatomic) float travelGiveUpProbability;
 @property (nonatomic) float searchGiveUpProbability;
 

@@ -119,8 +119,7 @@
                              */
                         case ROBOT_STATUS_DEPARTING:;
                             float r = randomFloat(1.);
-                            if(((robot.informed == ROBOT_INFORMED_PHEROMONE) && (r < team.pheromoneGiveUpProbability)) ||
-                               (!robot.informed && (r < team.travelGiveUpProbability))) {
+                            if(!robot.informed && (r < team.travelGiveUpProbability)) {
                                 robot.status = ROBOT_STATUS_SEARCHING;
                                 robot.informed = ROBOT_INFORMED_NONE;
                                 robot.searchTime = -1; //Don't do an informed random walk if we drop off a trail.

@@ -118,8 +118,7 @@
                              * and may change the robot/world state based on certain criteria (i.e. it reaches its destination).
                              */
                         case ROBOT_STATUS_DEPARTING:;
-                            float r = randomFloat(1.);
-                            if(!robot.informed && (r < team.travelGiveUpProbability)) {
+                            if(!robot.informed && (randomFloat(1.) < team.travelGiveUpProbability)) {
                                 robot.status = ROBOT_STATUS_SEARCHING;
                                 robot.informed = ROBOT_INFORMED_NONE;
                                 robot.searchTime = -1; //Don't do an informed random walk if we drop off a trail.
@@ -229,11 +228,15 @@
                                     }
                                     
                                     //pheromones may now be empty as a result of decay, so we check again here
-                                    if(([pheromones count] > 0) && (randomFloat(1.) < exponentialCDF(9 - robot.neighbors, team.pheromoneFollowingRate))) {
+                                    if (([pheromones count] > 0) &&
+                                       (randomFloat(1.) < exponentialCDF(9 - robot.neighbors, team.pheromoneFollowingRate)) &&
+                                       (randomFloat(1.) > exponentialCDF(robot.neighbors, team.siteFidelityRate))) {
                                         robot.target = [self perturbPosition:pheromone];
                                         robot.informed = ROBOT_INFORMED_PHEROMONE;
                                     }
-                                    else if(randomFloat(1.) < exponentialCDF(robot.neighbors+1, team.siteFidelityRate)) {
+                                    else if ((randomFloat(1.) < exponentialCDF(robot.neighbors+1, team.siteFidelityRate)) &&
+                                             (([pheromones count] == 0) ||
+                                              (randomFloat(1.) > exponentialCDF(robot.neighbors - 9, team.pheromoneFollowingRate)))) {
                                         robot.target = [self perturbPosition:perturbedTagLocation];
                                         robot.informed = ROBOT_INFORMED_MEMORY;
                                     }

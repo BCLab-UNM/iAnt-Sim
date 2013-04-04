@@ -118,21 +118,13 @@
                              * and may change the robot/world state based on certain criteria (i.e. it reaches its destination).
                              */
                         case ROBOT_STATUS_DEPARTING:;
-                            if(!robot.informed && (randomFloat(1.) < team.travelGiveUpProbability)) {
+                            if((!robot.informed && (randomFloat(1.) < team.travelGiveUpProbability)) ||
+                                (NSEqualPoints(robot.position, robot.target))){
                                 robot.status = ROBOT_STATUS_SEARCHING;
-                                robot.informed = ROBOT_INFORMED_NONE;
-                                robot.searchTime = -1; //Don't do an informed random walk if we drop off a trail.
                                 break;
                             }
                             
                             [robot move];
-                            
-                            //Change state if we've reached our destination.
-                            if(NSEqualPoints(robot.position, robot.target)) {
-                                robot.status = ROBOT_STATUS_SEARCHING;
-                                robot.informed = ROBOT_INFORMED_NONE;
-                            }
-                            break;
                             
                             /*
                              * The robot is performing a random walk.

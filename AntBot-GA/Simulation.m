@@ -48,7 +48,10 @@
     
     for(int generation = 0; generation < generationCount; generation++) {
         
-        for(Team* team in colonies){team.tagsCollected = 0;}
+        for(Team* team in colonies) {
+            team.tagsCollected = 0;
+            team.totalTime = 0;
+        }
         
         dispatch_queue_t queue = dispatch_get_global_queue(0, 0);
         dispatch_apply(evaluationCount, queue, ^(size_t idx) {
@@ -283,8 +286,8 @@
                     }
                 }
                 
-                if ((float)team.tagsCollected/(float)tagCount >= tagFractionCutoff) {
-                    team.totalTime = tick;
+                if (((float)team.tagsCollected/(evaluationCount * (float)tagCount)) >= tagFractionCutoff) {
+                    [team setTotalTime:[team totalTime] + tick];
                     break;
                 }
             }

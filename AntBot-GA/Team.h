@@ -24,5 +24,6 @@
 
 //Non-evolved variables:
 @property (nonatomic) float tagsCollected;
+@property (nonatomic) int totalTime;
 
 @end

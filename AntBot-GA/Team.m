@@ -6,7 +6,7 @@
 @synthesize travelGiveUpProbability, searchGiveUpProbability;
 @synthesize uninformedSearchCorrelation, informedSearchCorrelationDecayRate;
 @synthesize pheromoneDecayRate, pheromoneLayingRate, siteFidelityRate, pheromoneFollowingRate;
-@synthesize tagsCollected;
+@synthesize tagsCollected, totalTime;
 
 -(id) initRandom {
     if(self = [super init]) {

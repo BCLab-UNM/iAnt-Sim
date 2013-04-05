@@ -40,6 +40,8 @@
 @property (nonatomic) float positionalError;
 @property (nonatomic) float detectionError;
 
+@property (nonatomic) float tagFractionCutoff;
+
 @property (nonatomic) BOOL randomizeParameters;
 
 @property (nonatomic) NSString* parameterFile;

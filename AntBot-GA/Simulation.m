@@ -117,7 +117,7 @@
                              * then decide which 'cell' best accomplishes traveling in this direction.  We then move the robot,
                              * and may change the robot/world state based on certain criteria (i.e. it reaches its destination).
                              */
-                        case ROBOT_STATUS_DEPARTING:;
+                        case ROBOT_STATUS_DEPARTING:
                             if((!robot.informed && (randomFloat(1.) < team.travelGiveUpProbability)) ||
                                 (NSEqualPoints(robot.position, robot.target))){
                                 robot.status = ROBOT_STATUS_SEARCHING;
@@ -125,6 +125,7 @@
                             }
                             
                             [robot move];
+                            break;
                             
                             /*
                              * The robot is performing a random walk.

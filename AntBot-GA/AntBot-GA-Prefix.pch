@@ -3,7 +3,6 @@
 
     #define PILE_RADIUS 2
     #define SEARCH_DELAY 4
-    #define RETURN_DELAY 0
     #define CROSSOVER_RATE 10
     #define STEP_COUNT 6750
     #define GRID_WIDTH 90

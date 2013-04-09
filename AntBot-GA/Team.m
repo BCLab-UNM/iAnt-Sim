@@ -34,7 +34,7 @@
         }
         else {
             NSArray *parameters = [paramterString componentsSeparatedByString:@","];
-            if ([parameters count] == 9) {
+            if ([parameters count] == 8) {
                 NSEnumerator *parametersEnumerator = [parameters objectEnumerator];
                 pheromoneDecayRate = [[parametersEnumerator nextObject] floatValue];
                 

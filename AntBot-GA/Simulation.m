@@ -24,7 +24,6 @@
 @synthesize averageTeam, bestTeam;
 @synthesize tickRate;
 @synthesize randomizeParameters;
-@synthesize tagFractionCutoff;
 @synthesize parameterFile;
 @synthesize positionalError, detectionError;
 @synthesize delegate, viewDelegate;
@@ -282,11 +281,6 @@
                         [viewDelegate updateRobots:robots tags:tagsArray pheromones:pheromones];
                     }
                 }
-                
-                if ((float)team.tagsCollected/(float)tagCount >= tagFractionCutoff) {
-                    team.totalTime = tick;
-                    break;
-                }
             }
         }
     }
@@ -320,7 +314,7 @@
                 Team *p1 = [colonies objectAtIndex:randomInt(teamCount)],
                 *p2 = [colonies objectAtIndex:randomInt(teamCount)];
                 while (p1 == p2) {p2 = [colonies objectAtIndex:randomInt(teamCount)];}
-                parent[j] = ((float)p1.tagsCollected/(float)p1.totalTime > (float)p2.tagsCollected/(float)p2.totalTime) ? p1 : p2;
+                parent[j] = (p1.tagsCollected > p2.tagsCollected) ? p1 : p2;
             }
             
             NSMutableDictionary* parameters = [child getParameters];

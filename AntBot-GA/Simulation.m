@@ -23,8 +23,8 @@
 @synthesize distributionRandom, distributionPowerlaw, distributionClustered, tagCount, evaluationCount;
 @synthesize averageTeam, bestTeam;
 @synthesize tickRate;
-@synthesize randomizeParameters;
-@synthesize parameterFile;
+@synthesize fixedStepSize;
+@synthesize randomizeParameters, parameterFile;
 @synthesize positionalError, detectionError;
 @synthesize delegate, viewDelegate;
 
@@ -89,7 +89,10 @@
                     if(tags[i][j]){[tags[i][j] setPickedUp:NO];}
                 }
             }
-            for(int i = 0; i < robotCount; i++){[[robots objectAtIndex:i] reset];}
+            for(int i = 0; i < robotCount; i++) {
+                [[robots objectAtIndex:i] reset];
+                [[robots objectAtIndex:i] setStepSize:(fixedStepSize ? 1 : (int)floor(randomLogNormal(0, team.stepSizeVariation)) + 1)];
+            }
             [pheromones removeAllObjects];
             
             for(int tick = 0; tick < STEP_COUNT; tick++){
@@ -143,16 +146,22 @@
                                 break;
                             }
                             
-                            if(tick - robot.lastTurned >= 3 * SEARCH_DELAY) { //Change direction every 3 iterations.
-                                float dTheta;
-                                if(robot.searchTime >= 0) {
-                                    float informedSearchCorrelation = exponentialDecay(2*M_2PI-team.uninformedSearchCorrelation, robot.searchTime++, team.informedSearchCorrelationDecayRate);
-                                    dTheta = clip(randomNormal(0, informedSearchCorrelation+team.uninformedSearchCorrelation),-M_PI,M_PI);
+                            if(tick - robot.lastTurned >= robot.stepSize * SEARCH_DELAY) {
+                                if (fixedStepSize) {
+                                    float dTheta;
+                                    if(robot.searchTime >= 0) {
+                                        float informedSearchCorrelation = exponentialDecay(2*M_2PI-team.uninformedSearchCorrelation, robot.searchTime++, team.informedSearchCorrelationDecayRate);
+                                        dTheta = clip(randomNormal(0, informedSearchCorrelation+team.uninformedSearchCorrelation),-M_PI,M_PI);
+                                    }
+                                    else {
+                                        dTheta = clip(randomNormal(0, team.uninformedSearchCorrelation),-M_PI,M_PI);
+                                    }
+                                    robot.direction = pmod(robot.direction+dTheta,M_2PI);
                                 }
                                 else {
-                                    dTheta = clip(randomNormal(0, team.uninformedSearchCorrelation),-M_PI,M_PI);
+                                    robot.direction = randomFloat(M_2_PI);
+                                    robot.stepSize = (int)floor(randomLogNormal(0, team.stepSizeVariation)) + 1;
                                 }
-                                robot.direction = pmod(robot.direction+dTheta,M_2PI);
                                 robot.lastTurned = tick;
                             }
                             

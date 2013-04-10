@@ -62,6 +62,13 @@ static inline float randomNormal(float m, float s) {
 }
 
 /*
+ * Returns sample from a log-normal distribution with location parameter mu and scale parameter sigma
+ */
+static inline float randomLogNormal(float mu, float sigma) {
+    return expf(randomNormal(mu, sigma));
+}
+
+/*
  * Returns a sample from an exponential distribution with rate parameter lambda
  */
 static inline float randomExponential(float lambda) {

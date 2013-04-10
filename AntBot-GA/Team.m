@@ -4,7 +4,7 @@
 @implementation Team
 
 @synthesize travelGiveUpProbability, searchGiveUpProbability;
-@synthesize uninformedSearchCorrelation, informedSearchCorrelationDecayRate;
+@synthesize uninformedSearchCorrelation, informedSearchCorrelationDecayRate, stepSizeVariation;
 @synthesize pheromoneDecayRate, pheromoneLayingRate, siteFidelityRate, pheromoneFollowingRate;
 @synthesize tagsCollected;
 
@@ -17,6 +17,7 @@
         
         uninformedSearchCorrelation = randomFloat(2*M_2PI);
         informedSearchCorrelationDecayRate = randomExponential(5.0);
+        stepSizeVariation = randomExponential(0.5);
         
         pheromoneLayingRate = randomExponential(1.0);
         siteFidelityRate = randomExponential(1.0);
@@ -34,7 +35,7 @@
         }
         else {
             NSArray *parameters = [paramterString componentsSeparatedByString:@","];
-            if ([parameters count] == 8) {
+            if ([parameters count] == 9) {
                 NSEnumerator *parametersEnumerator = [parameters objectEnumerator];
                 pheromoneDecayRate = [[parametersEnumerator nextObject] floatValue];
                 
@@ -43,6 +44,7 @@
                 
                 uninformedSearchCorrelation = [[parametersEnumerator nextObject] floatValue];
                 informedSearchCorrelationDecayRate = [[parametersEnumerator nextObject] floatValue];
+                stepSizeVariation = [[parametersEnumerator nextObject] floatValue];
                 
                 pheromoneLayingRate = [[parametersEnumerator nextObject] floatValue];
                 siteFidelityRate = [[parametersEnumerator nextObject] floatValue];
@@ -61,6 +63,7 @@
              [NSNumber numberWithFloat:searchGiveUpProbability],
              [NSNumber numberWithFloat:uninformedSearchCorrelation],
              [NSNumber numberWithFloat:informedSearchCorrelationDecayRate],
+             [NSNumber numberWithFloat:stepSizeVariation],
              [NSNumber numberWithFloat:pheromoneLayingRate],
              [NSNumber numberWithFloat:siteFidelityRate],
              [NSNumber numberWithFloat:pheromoneFollowingRate],nil] forKeys:
@@ -70,6 +73,7 @@
              @"searchGiveUpProbability",
              @"uninformedSearchCorrelation",
              @"informedSearchCorrelationDecayRate",
+             @"stepSizeVariation",
              @"pheromoneLayingRate",
              @"siteFidelityRate",
              @"pheromoneFollowingRate",nil]];
@@ -83,6 +87,7 @@
     
     uninformedSearchCorrelation = [[parameters objectForKey:@"uninformedSearchCorrelation"] floatValue];
     informedSearchCorrelationDecayRate = [[parameters objectForKey:@"informedSearchCorrelationDecayRate"] floatValue];
+    stepSizeVariation = [[parameters objectForKey:@"stepSizeVariation"] floatValue];
     
     pheromoneLayingRate = [[parameters objectForKey:@"pheromoneLayingRate"] floatValue];
     siteFidelityRate = [[parameters objectForKey:@"siteFidelityRate"] floatValue];

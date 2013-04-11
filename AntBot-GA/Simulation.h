@@ -37,10 +37,9 @@
 
 @property (nonatomic) float tickRate;
 
-@property (nonatomic) BOOL fixedStepSize;
+@property (nonatomic) BOOL realWorldError;
 
-@property (nonatomic) float positionalError;
-@property (nonatomic) float detectionError;
+@property (nonatomic) BOOL fixedStepSize;
 
 @property (nonatomic) BOOL randomizeParameters;
 @property (nonatomic) NSString* parameterFile;

@@ -238,7 +238,7 @@
                                     }
                                     else if ((randomFloat(1.) < exponentialCDF(robot.neighbors + 1, team.siteFidelityRate)) &&
                                              (([pheromones count] == 0) ||
-                                              (randomFloat(1.) > exponentialCDF(robot.neighbors - 9, team.pheromoneFollowingRate)))) {
+                                              (randomFloat(1.) > exponentialCDF(9 - robot.neighbors, team.pheromoneFollowingRate)))) {
                                                  robot.target = [self perturbTargetPosition:perturbedTagPosition];
                                                  robot.informed = ROBOT_INFORMED_MEMORY;
                                              }

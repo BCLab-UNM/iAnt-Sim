@@ -232,11 +232,11 @@
                                     //pheromones may now be empty as a result of decay, so we check again here
                                     if (([pheromones count] > 0) &&
                                         (randomFloat(1.) < exponentialCDF(9 - robot.neighbors, team.pheromoneFollowingRate)) &&
-                                        (randomFloat(1.) > exponentialCDF(robot.neighbors, team.siteFidelityRate))) {
+                                        (randomFloat(1.) > exponentialCDF(robot.neighbors + 1, team.siteFidelityRate))) {
                                         robot.target = [self perturbTargetPosition:pheromone];
                                         robot.informed = ROBOT_INFORMED_PHEROMONE;
                                     }
-                                    else if ((randomFloat(1.) < exponentialCDF(robot.neighbors+1, team.siteFidelityRate)) &&
+                                    else if ((randomFloat(1.) < exponentialCDF(robot.neighbors + 1, team.siteFidelityRate)) &&
                                              (([pheromones count] == 0) ||
                                               (randomFloat(1.) > exponentialCDF(robot.neighbors - 9, team.pheromoneFollowingRate)))) {
                                                  robot.target = [self perturbTargetPosition:perturbedTagPosition];

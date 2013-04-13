@@ -165,7 +165,7 @@
                                     else {
                                         robot.stepSize = (int)floor(randomLogNormal(0, team.uninformedStepSizeVariation)) + 1;
                                     }
-                                    robot.direction = randomFloat(M_2_PI);
+                                    robot.direction = randomFloat(M_2PI);
                                 }
                                 robot.lastTurned = tick;
                             }

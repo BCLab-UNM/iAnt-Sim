@@ -91,7 +91,7 @@
             }
             for(int i = 0; i < robotCount; i++) {
                 [[robots objectAtIndex:i] reset];
-                [[robots objectAtIndex:i] setStepSize:(fixedStepSize ? 1 : (int)floor(randomLogNormal(0, team.stepSizeVariation)) + 1)];
+                [[robots objectAtIndex:i] setStepSize:(fixedStepSize ? 1 : (int)floor(randomLogNormal(0, team.uninformedStepSizeVariation)) + 1)];
             }
             [pheromones removeAllObjects];
             
@@ -159,8 +159,13 @@
                                     robot.direction = pmod(robot.direction+dTheta,M_2PI);
                                 }
                                 else {
+                                    if (robot.searchTime >= 0) {
+                                        robot.stepSize = (int)floor(randomLogNormal(0, team.informedStepSizeVariation)) + 1;
+                                    }
+                                    else {
+                                        robot.stepSize = (int)floor(randomLogNormal(0, team.uninformedStepSizeVariation)) + 1;
+                                    }
                                     robot.direction = randomFloat(M_2_PI);
-                                    robot.stepSize = (int)floor(randomLogNormal(0, team.stepSizeVariation)) + 1;
                                 }
                                 robot.lastTurned = tick;
                             }

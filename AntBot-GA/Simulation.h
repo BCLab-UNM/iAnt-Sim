@@ -39,7 +39,8 @@
 
 @property (nonatomic) BOOL realWorldError;
 
-@property (nonatomic) BOOL fixedStepSize;
+@property (nonatomic) BOOL variableStepSize;
+@property (nonatomic) BOOL uniformDirection;
 
 @property (nonatomic) BOOL randomizeParameters;
 @property (nonatomic) NSString* parameterFile;

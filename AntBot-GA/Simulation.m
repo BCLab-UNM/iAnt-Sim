@@ -24,7 +24,7 @@
 @synthesize averageTeam, bestTeam;
 @synthesize tickRate;
 @synthesize realWorldError;
-@synthesize fixedStepSize;
+@synthesize variableStepSize, uniformDirection;
 @synthesize randomizeParameters, parameterFile;
 @synthesize delegate, viewDelegate;
 
@@ -91,7 +91,7 @@
             }
             for(int i = 0; i < robotCount; i++) {
                 [[robots objectAtIndex:i] reset];
-                [[robots objectAtIndex:i] setStepSize:(fixedStepSize ? 1 : (int)floor(randomLogNormal(0, team.uninformedStepSizeVariation)) + 1)];
+                [[robots objectAtIndex:i] setStepSize:(variableStepSize ? (int)floor(randomLogNormal(0, team.uninformedStepSizeVariation)) + 1 : 1)];
             }
             [pheromones removeAllObjects];
             
@@ -147,7 +147,19 @@
                             }
                             
                             if(tick - robot.lastTurned >= robot.stepSize * SEARCH_DELAY) {
-                                if (fixedStepSize) {
+                                if (variableStepSize) {
+                                    if (robot.searchTime >= 0) {
+                                        robot.stepSize = (int)floor(randomLogNormal(0, team.informedStepSizeVariation)) + 1;
+                                    }
+                                    else {
+                                        robot.stepSize = (int)floor(randomLogNormal(0, team.uninformedStepSizeVariation)) + 1;
+                                    }
+                                }
+                                
+                                if (uniformDirection) {
+                                    robot.direction = randomFloat(M_2PI);
+                                }
+                                else {
                                     float dTheta;
                                     if(robot.searchTime >= 0) {
                                         float informedSearchCorrelation = exponentialDecay(2*M_2PI-team.uninformedSearchCorrelation, robot.searchTime++, team.informedSearchCorrelationDecayRate);
@@ -158,15 +170,7 @@
                                     }
                                     robot.direction = pmod(robot.direction+dTheta,M_2PI);
                                 }
-                                else {
-                                    if (robot.searchTime >= 0) {
-                                        robot.stepSize = (int)floor(randomLogNormal(0, team.informedStepSizeVariation)) + 1;
-                                    }
-                                    else {
-                                        robot.stepSize = (int)floor(randomLogNormal(0, team.uninformedStepSizeVariation)) + 1;
-                                    }
-                                    robot.direction = randomFloat(M_2PI);
-                                }
+                                
                                 robot.lastTurned = tick;
                             }
                             

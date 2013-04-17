@@ -15,8 +15,7 @@
 //Random walk parameters:
 @property (nonatomic) float uninformedSearchCorrelation;
 @property (nonatomic) float informedSearchCorrelationDecayRate;
-@property (nonatomic) float uninformedStepSizeVariation;
-@property (nonatomic) float informedStepSizeVariation;
+@property (nonatomic) float stepSizeVariation;
 
 //Pheromone parameters:
 @property (nonatomic) float pheromoneDecayRate;

@@ -91,7 +91,7 @@
             }
             for(int i = 0; i < robotCount; i++) {
                 [[robots objectAtIndex:i] reset];
-                [[robots objectAtIndex:i] setStepSize:(variableStepSize ? (int)floor(randomLogNormal(0, team.uninformedStepSizeVariation)) + 1 : 1)];
+                [[robots objectAtIndex:i] setStepSize:(variableStepSize ? (int)floor(randomLogNormal(0, team.stepSizeVariation)) + 1 : 1)];
             }
             [pheromones removeAllObjects];
             
@@ -148,12 +148,7 @@
                             
                             if(tick - robot.lastTurned >= robot.stepSize * SEARCH_DELAY) {
                                 if (variableStepSize) {
-                                    if (robot.searchTime >= 0) {
-                                        robot.stepSize = (int)floor(randomLogNormal(0, team.informedStepSizeVariation)) + 1;
-                                    }
-                                    else {
-                                        robot.stepSize = (int)floor(randomLogNormal(0, team.uninformedStepSizeVariation)) + 1;
-                                    }
+                                    robot.stepSize = (int)floor(randomLogNormal(0, team.stepSizeVariation)) + 1;
                                 }
                                 
                                 if (uniformDirection) {
@@ -175,7 +170,8 @@
                             }
                             
                             //If our current direction takes us outside the world, frantically spin around until this isn't the case.
-                            robot.target = NSMakePoint(roundf(robot.position.x+cos(robot.direction)),roundf(robot.position.y+sin(robot.direction)));
+                            int stepsRemaining = robot.stepSize - (tick - robot.lastTurned)/SEARCH_DELAY;
+                            robot.target = NSMakePoint(roundf(robot.position.x+(cos(robot.direction)*stepsRemaining)),roundf(robot.position.y+(sin(robot.direction)*stepsRemaining)));
                             while(robot.target.x < 0 || robot.target.y < 0 || robot.target.x >= GRID_WIDTH || robot.target.y >= GRID_HEIGHT) {
                                 robot.direction = randomFloat(M_2PI);
                                 robot.target = NSMakePoint(roundf(robot.position.x+cos(robot.direction)),roundf(robot.position.y+sin(robot.direction)));

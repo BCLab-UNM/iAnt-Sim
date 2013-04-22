@@ -89,9 +89,9 @@
                     if(tags[i][j]){[tags[i][j] setPickedUp:NO];}
                 }
             }
-            for(int i = 0; i < robotCount; i++) {
-                [[robots objectAtIndex:i] reset];
-                [[robots objectAtIndex:i] setStepSize:(variableStepSize ? (int)floor(randomLogNormal(0, team.stepSizeVariation)) + 1 : 1)];
+            for(Robot* robot in robots) {
+                [robot reset];
+                [robot setStepSize:(variableStepSize ? (int)floor(randomLogNormal(0, team.stepSizeVariation)) + 1 : 1)];
             }
             [pheromones removeAllObjects];
             
@@ -184,7 +184,7 @@
                             robot.target = NSMakePoint(roundf(robot.position.x+cos(robot.direction)),roundf(robot.position.y+sin(robot.direction)));
                             if(robot.target.x >= 0 && robot.target.y >= 0 && robot.target.x < GRID_WIDTH && robot.target.y < GRID_HEIGHT) {
                                 Tag* t = tags[(int)robot.target.y][(int)robot.target.x];
-                                if([self detectTag] && (t != 0) && !t.pickedUp) { //Note we use shortcircuiting here.
+                                if(detectTag(realWorldError) && (t != 0) && !t.pickedUp) { //Note we use shortcircuiting here.
                                     [t setPickedUp:YES];
                                     robot.carrying = t;
                                     robot.status = ROBOT_STATUS_RETURNING;
@@ -195,7 +195,7 @@
                                     for(int dx = -1; dx <= 1; dx++) {
                                         for(int dy = -1; dy <= 1; dy++) {
                                             if((robot.carrying.x+dx>=0 && robot.carrying.x+dx<GRID_WIDTH) && (robot.carrying.y+dy>=0 && robot.carrying.y+dy<GRID_HEIGHT)) {
-                                                robot.neighbors += [self detectNeighbor] && (tags[robot.carrying.y+dy][robot.carrying.x+dx] != 0) && !(tags[robot.carrying.y+dy][robot.carrying.x+dx].pickedUp);
+                                                robot.neighbors += detectTag(realWorldError) && (tags[robot.carrying.y+dy][robot.carrying.x+dx] != 0) && !(tags[robot.carrying.y+dy][robot.carrying.x+dx].pickedUp);
                                             }
                                         }
                                     }
@@ -218,7 +218,8 @@
                                 if(robot.carrying != nil) {
                                     [team setTagsCollected:team.tagsCollected+1];
                                     
-                                    NSPoint perturbedTagPosition = [self perturbTagPosition:NSMakePoint(robot.carrying.x, robot.carrying.y)];
+                                    NSPoint tagPosition = NSMakePoint(robot.carrying.x, robot.carrying.y);
+                                    NSPoint perturbedTagPosition = perturbTagPosition(realWorldError,tagPosition);
                                     if(randomFloat(1.) < exponentialCDF(robot.neighbors+1, team.pheromoneLayingRate)) {
                                         Pheromone* p = [[Pheromone alloc] init];
                                         p.x = perturbedTagPosition.x;
@@ -238,13 +239,13 @@
                                     if (([pheromones count] > 0) &&
                                         (randomFloat(1.) < exponentialCDF(9 - robot.neighbors, team.pheromoneFollowingRate)) &&
                                         (randomFloat(1.) > exponentialCDF(robot.neighbors + 1, team.siteFidelityRate))) {
-                                        robot.target = [self perturbTargetPosition:pheromone];
+                                        robot.target = perturbTargetPosition(realWorldError,pheromone);
                                         robot.informed = ROBOT_INFORMED_PHEROMONE;
                                     }
                                     else if ((randomFloat(1.) < exponentialCDF(robot.neighbors + 1, team.siteFidelityRate)) &&
                                              (([pheromones count] == 0) ||
                                               (randomFloat(1.) > exponentialCDF(9 - robot.neighbors, team.pheromoneFollowingRate)))) {
-                                                 robot.target = [self perturbTargetPosition:perturbedTagPosition];
+                                                 robot.target = perturbTargetPosition(realWorldError,perturbedTagPosition);
                                                  robot.informed = ROBOT_INFORMED_MEMORY;
                                              }
                                     else {
@@ -263,7 +264,7 @@
                                     
                                     //pheromones may now be empty as a result of decay, so we check again here
                                     if ([pheromones count] > 0) {
-                                        robot.target = [self perturbTargetPosition:pheromone];
+                                        robot.target = perturbTargetPosition(realWorldError,pheromone);
                                         robot.informed = ROBOT_INFORMED_PHEROMONE;
                                     }
                                     else {
@@ -298,43 +299,6 @@
             }
         }
     }
-}
-
-
-/*
- * Introduces error into recorded tag position - Simulates localization error in real robot
- */
--(NSPoint) perturbTagPosition:(NSPoint)position {
-    if (realWorldError) {
-        position.x = roundf(clip(randomNormal(position.x - 17.6, 78.9),0,GRID_WIDTH-1));
-        position.y = roundf(clip(randomNormal(position.y - 14.6, 46.7),0,GRID_HEIGHT-1));
-    }
-    return position;
-}
-
-/*
- * Introduces error into target position - Simulates traveling error in real robot
- */
--(NSPoint) perturbTargetPosition:(NSPoint)position {
-    if (realWorldError) {
-        position.x = roundf(clip(randomNormal(position.x + 6.63, 43.5),0,GRID_WIDTH-1));
-        position.y = roundf(clip(randomNormal(position.y + 10.6, 58.4),0,GRID_HEIGHT-1));
-    }
-    return position;
-}
-
-/*
- * Introduces error into tag reading - Simulates probability of missing tag
- */
--(BOOL) detectTag {
-    return (realWorldError ? (randomFloat(1.) <= 0.55) : TRUE);
-}
-
-/*
- * Introduces error into neighbor reading = Simulates probability of missing neighboring tags
- */
--(BOOL) detectNeighbor {
-    return (realWorldError ? randomFloat(1.) <= 0.43 : TRUE);
 }
 
 /*
@@ -487,7 +451,6 @@
     
     return NSMakePoint(-1,-1);
 }
-
 
 /*
  * Custom getter for averageTeam (lazy evaluation)

@@ -134,8 +134,8 @@ static inline CGFloat NSDistance(NSPoint point1,NSPoint point2)
  */
 static inline NSPoint perturbTagPosition(bool realWorldError,NSPoint position) {
     if (realWorldError) {
-        position.x = roundf(clip(randomNormal(position.x - 17.6, 78.9),0,GRID_WIDTH-1));
-        position.y = roundf(clip(randomNormal(position.y - 14.6, 46.7),0,GRID_HEIGHT-1));
+        position.x = roundf(clip(randomNormal(position.x - 17.6, 78.9),0,gridWidth-1));
+        position.y = roundf(clip(randomNormal(position.y - 14.6, 46.7),0,gridHeight-1));
     }
     return position;
 }
@@ -145,8 +145,8 @@ static inline NSPoint perturbTagPosition(bool realWorldError,NSPoint position) {
  */
 static inline NSPoint perturbTargetPosition(bool realWorldError, NSPoint position) {
     if (realWorldError) {
-        position.x = roundf(clip(randomNormal(position.x + 6.63, 43.5),0,GRID_WIDTH-1));
-        position.y = roundf(clip(randomNormal(position.y + 10.6, 58.4),0,GRID_HEIGHT-1));
+        position.x = roundf(clip(randomNormal(position.x + 6.63, 43.5),0,gridWidth-1));
+        position.y = roundf(clip(randomNormal(position.y + 10.6, 58.4),0,gridHeight-1));
     }
     return position;
 }

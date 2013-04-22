@@ -14,12 +14,13 @@
 
 @interface Simulation : NSObject {
     NSMutableArray* colonies;
+    Tag* __autoreleasing **tags;
 }
 
 -(int) start;
 -(void) runEvaluation;
 -(void) breedColonies;
--(void) initDistributionForArray:(Tag* __strong[90][90])tags;
+-(void) initDistributionForArray;
 -(NSPoint) getPheromone:(NSMutableArray*)pheromones atTick:(int)tick withDecayRate:(float)decayRate;
 
 @property (readonly, nonatomic) Team* averageTeam;

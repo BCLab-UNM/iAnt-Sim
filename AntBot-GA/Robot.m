@@ -42,8 +42,8 @@
     float improvementSum = 0;
     int dxMin = (x == 0) ? 0 : -1;
     int dyMin = (y == 0) ? 0 : -1;
-    int dxMax = (x == (GRID_WIDTH-1)) ? 0 : 1;
-    int dyMax = (y == (GRID_HEIGHT-1)) ? 0 : 1;
+    int dxMax = (x == (gridWidth-1)) ? 0 : 1;
+    int dyMax = (y == (gridHeight-1)) ? 0 : 1;
     for(int dx = dxMin; dx <=dxMax; dx++) {
         for(int dy = dyMin; dy<=dyMax; dy++) {
             if(dx || dy) {

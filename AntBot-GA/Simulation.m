@@ -78,8 +78,8 @@
  */
 -(void) runEvaluation {
     @autoreleasepool {
-        tags = (Tag* __autoreleasing **)malloc(gridWidth * gridHeight * sizeof(Tag* __autoreleasing *));
-        [self initDistributionForArray];
+        Array2D* tags = [[Array2D alloc] initWithRows:gridWidth cols:gridHeight];
+        [self initDistributionForArray:tags];
         
         NSMutableArray* robots = [[NSMutableArray alloc] initWithCapacity:robotCount];
         NSMutableArray* pheromones = [[NSMutableArray alloc] init];
@@ -88,7 +88,7 @@
         for(Team* team in colonies) {
             for(int i = 0; i < gridHeight; i++) {
                 for(int j = 0; j < gridWidth; j++) {
-                    if(tags[i][j]){[tags[i][j] setPickedUp:NO];}
+                    if([tags objectAtRow:i col:j] != [NSNull null]){[[tags objectAtRow:i col:j] setPickedUp:NO];}
                 }
             }
             for(Robot* robot in robots) {
@@ -185,8 +185,8 @@
                             //Reusing robot.target here (without consequence, it just gets overwritten when moving).
                             robot.target = NSMakePoint(roundf(robot.position.x+cos(robot.direction)),roundf(robot.position.y+sin(robot.direction)));
                             if(robot.target.x >= 0 && robot.target.y >= 0 && robot.target.x < gridWidth && robot.target.y < gridHeight) {
-                                Tag* t = tags[(int)robot.target.y][(int)robot.target.x];
-                                if(detectTag(realWorldError) && (t != 0) && !t.pickedUp) { //Note we use shortcircuiting here.
+                                Tag* t = [tags objectAtRow:(int)robot.target.y col:(int)robot.target.x];
+                                if(detectTag(realWorldError) && ![t isKindOfClass:[NSNull class]] && ![t pickedUp]) { //Note we use shortcircuiting here.
                                     [t setPickedUp:YES];
                                     robot.carrying = t;
                                     robot.status = ROBOT_STATUS_RETURNING;
@@ -197,7 +197,9 @@
                                     for(int dx = -1; dx <= 1; dx++) {
                                         for(int dy = -1; dy <= 1; dy++) {
                                             if((robot.carrying.x+dx>=0 && robot.carrying.x+dx<gridWidth) && (robot.carrying.y+dy>=0 && robot.carrying.y+dy<gridHeight)) {
-                                                robot.neighbors += detectTag(realWorldError) && (tags[robot.carrying.y+dy][robot.carrying.x+dx] != 0) && !(tags[robot.carrying.y+dy][robot.carrying.x+dx].pickedUp);
+                                                robot.neighbors += detectTag(realWorldError) &&
+                                                                ([tags objectAtRow:robot.carrying.y+dy col:robot.carrying.x+dx] != [NSNull null]) &&
+                                                                !([[tags objectAtRow:robot.carrying.y+dy col:robot.carrying.x+dx] pickedUp]);
                                             }
                                         }
                                     }
@@ -288,20 +290,12 @@
                 if(tickRate != 0.f){[NSThread sleepForTimeInterval:tickRate];}
                 if(viewDelegate != nil) {
                     if([viewDelegate respondsToSelector:@selector(updateRobots:tags:pheromones:)]) {
-                        NSMutableArray* tagsArray = [[NSMutableArray alloc] init];
-                        for(int y = 0; y < gridHeight; y++) {
-                            for(int x = 0; x < gridWidth; x++) {
-                                if(tags[y][x]){[tagsArray addObject:tags[y][x]];}
-                            }
-                        }
                         [self getPheromone:pheromones atTick:tick withDecayRate:team.pheromoneDecayRate];
-                        [viewDelegate updateRobots:robots tags:tagsArray pheromones:pheromones];
+                        [viewDelegate update:robots :tags :pheromones];
                     }
                 }
             }
         }
-        
-        free(tags);
     }
 }
 
@@ -357,12 +351,7 @@
  * Creates a random distribution of tags.
  * Called at the beginning of each evaluation.
  */
--(void) initDistributionForArray {
-    for(int i = 0; i < gridHeight; i++) {
-        for(int j = 0; j < gridWidth; j++) {
-            tags[i][j]=0;
-        }
-    }
+-(void) initDistributionForArray:(Array2D*)tags {
     
     int pilesOf[tagCount]; //Key is size of pile.  Value is number of piles with this many tags.
     for(int i = 0; i < tagCount; i++){pilesOf[i]=0;}
@@ -385,9 +374,9 @@
                 do {
                     tagX = randomInt(gridWidth);
                     tagY = randomInt(gridHeight);
-                } while(tags[tagY][tagX]);
+                } while([tags objectAtRow:tagY col:tagX] != [NSNull null]);
                 
-                tags[tagY][tagX] = [[Tag alloc] initWithX:tagX andY:tagY];
+                [tags setObjectAtRow:tagY col:tagX to:[[Tag alloc] initWithX:tagX andY:tagY]];
             }
         }
         else {
@@ -420,9 +409,9 @@
                         tagY = clip(roundf(pileY + (rad * sin(dir))),0,gridHeight-1);
                         
                         maxRadius += 1;
-                    } while(tags[tagY][tagX]);
+                    } while([tags objectAtRow:tagY col:tagX] != [NSNull null]);
                     
-                    tags[tagY][tagX] = [[Tag alloc] initWithX:tagX andY:tagY];
+                    [tags setObjectAtRow:tagY col:tagX to:[[Tag alloc] initWithX:tagX andY:tagY]];
                 }
             }
         }

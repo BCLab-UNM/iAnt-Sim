@@ -1,10 +1,11 @@
 #import <Foundation/Foundation.h>
+#import "Array2D.h"
 
 @class Team;
 @class Tag;
 
 @interface NSObject(SimulationViewNotifications)
--(void) updateRobots:(NSMutableArray*)robots tags:(NSMutableArray*)tags pheromones:(NSMutableArray*)pheromones;
+-(void) update:(NSMutableArray*)robots :(Array2D*)tags :(NSMutableArray*)pheromones;
 @end
 
 @interface NSObject(SimulationNotifications)
@@ -14,13 +15,12 @@
 
 @interface Simulation : NSObject {
     NSMutableArray* colonies;
-    Tag* __autoreleasing **tags;
 }
 
 -(int) start;
 -(void) runEvaluation;
 -(void) breedColonies;
--(void) initDistributionForArray;
+-(void) initDistributionForArray:(Array2D*)tags;
 -(NSPoint) getPheromone:(NSMutableArray*)pheromones atTick:(int)tick withDecayRate:(float)decayRate;
 
 @property (readonly, nonatomic) Team* averageTeam;

@@ -28,7 +28,7 @@
     if (y >= numberOfColumns) {
         [NSException raise:@"Invalid column value" format:@"column of %zd is invalid",y];
     }
-    size_t index = x * (numberOfColumns + y);
+    size_t index = x * numberOfColumns + y;
     return [backingStore objectAtIndex:index];
 }
 
@@ -36,7 +36,7 @@
     if (y >= numberOfColumns) {
         [NSException raise:@"Invalid column value" format:@"column of %zd is invalid",y];
     }
-    size_t index = x * (numberOfColumns + y);
+    size_t index = x * numberOfColumns + y;
     [backingStore replaceObjectAtIndex:index withObject:value];
 }
 

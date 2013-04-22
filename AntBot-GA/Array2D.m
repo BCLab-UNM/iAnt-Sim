@@ -17,23 +17,26 @@
         numberOfRows = rows;
         numberOfColumns = cols;
         backingStore = [NSMutableArray arrayWithCapacity:numberOfRows * numberOfColumns];
+        for (int i = 0; i < numberOfRows * numberOfColumns; i++) {
+            [backingStore addObject:[NSNull null]];
+        }
     }
     return self;
 }
 
--(id)objectAtRow:(size_t)row col:(size_t)col {
-    if (col >= numberOfColumns) {
-        [NSException raise:@"Invalid column value" format:@"column of %zd is invalid",col];
+-(id)objectAtRow:(size_t)x col:(size_t)y {
+    if (y >= numberOfColumns) {
+        [NSException raise:@"Invalid column value" format:@"column of %zd is invalid",y];
     }
-    size_t index = row * (numberOfColumns + col);
+    size_t index = x * (numberOfColumns + y);
     return [backingStore objectAtIndex:index];
 }
 
--(void)setObjectAt:(size_t)row :(size_t)col to:(id)value {
-    if (col >= numberOfColumns) {
-        [NSException raise:@"Invalid column value" format:@"column of %zd is invalid",col];
+-(void)setObjectAtRow:(size_t)x col:(size_t)y to:(id)value {
+    if (y >= numberOfColumns) {
+        [NSException raise:@"Invalid column value" format:@"column of %zd is invalid",y];
     }
-    size_t index = row * (numberOfColumns + col);
+    size_t index = x * (numberOfColumns + y);
     [backingStore replaceObjectAtIndex:index withObject:value];
 }
 

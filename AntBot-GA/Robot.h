@@ -15,13 +15,14 @@
 
 -(void) reset;
 -(void) move;
+-(void) broadcastPheromone:(NSPoint)location toTeam:(NSMutableArray*)robots atRange:(int)distance;
 
 @property (nonatomic) int status; //Indicates what state the robot is in (see #define'd above).
 @property (nonatomic) int informed; //Indicates what type of information is influencing the robot's behavior (see #define'd above).
 
 //In general, positions of (-1,-1) denote an empty/unused/uninitialized position.
 @property (nonatomic) NSPoint position; //Where the robot currently is.
-@property (nonatomic) NSPoint target;
+@property (nonatomic) NSPoint target; //Where the robot is going.
 
 @property (nonatomic) float direction; //Direction robot is moving (used in random walk).
 @property (nonatomic) int searchTime; //Amount of ticks the robot has been performing a random walk.
@@ -31,5 +32,7 @@
 
 @property (nonatomic) Tag* carrying; //Reference to which Tag the robot is carrying, if any.  nil otherwise.
 @property (nonatomic) int neighbors; //Yeah this sucks, but the problem is we have to know what the neighbor count of the seed was AT THE TIME THE SEED WAS COLLECTED.  We can't just calculate it when the robot returns to the nest because the state of the grid could be mutated, leading to undesired behavior.  Oh well.
+
+@property (nonatomic) NSPoint localPheromone; //Buffer to store latest pheromone location received from neighboring robots
 
 @end

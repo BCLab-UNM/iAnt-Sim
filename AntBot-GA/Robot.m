@@ -7,6 +7,7 @@
 @synthesize position, target;
 @synthesize direction, searchTime, lastMoved, lastTurned;
 @synthesize carrying, neighbors;
+@synthesize localPheromone;
 
 -(void) reset {
     status = ROBOT_STATUS_INACTIVE;
@@ -21,6 +22,8 @@
     lastTurned = 0;
     
     carrying = nil;
+    
+    localPheromone = NSMakePoint(-1,-1);
 }
 
 
@@ -62,6 +65,17 @@
         for(int dy = dyMin; dy<= dyMax; dy++) {
             if(r < improvements[dx+1][dy+1]){position = NSMakePoint(x+dx,y+dy); return;}
             r -= improvements[dx+1][dy+1];
+        }
+    }
+}
+
+/*
+ * Transmit resource location information to other nearby robots
+ */
+-(void) broadcastPheromone:(NSPoint)location toTeam:(NSMutableArray *)robots atRange:(int)distance{
+    for (Robot* robot in robots) {
+        if ((robot != self) && (NSDistance(self.position, robot.position) <= distance)) {
+            robot.localPheromone = location;
         }
     }
 }

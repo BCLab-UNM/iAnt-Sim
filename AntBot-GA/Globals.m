@@ -10,6 +10,17 @@
 
 @implementation Globals
 
+int pileRadius;
+int searchDelay;
+int crossoverRate;
+int stepCount;
+int gridWidth;
+int gridHeight;
+int gridSize;
+int nestX;
+int nestY;
+int M_2PI;
+
 +(void) initialize {
     pileRadius = 2;
     searchDelay = 4;

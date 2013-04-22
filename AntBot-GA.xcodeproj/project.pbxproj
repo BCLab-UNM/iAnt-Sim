@@ -18,6 +18,8 @@
 		40ED661F16DABE50006F8494 /* Tag.m in Sources */ = {isa = PBXBuildFile; fileRef = 40ED661416DABE50006F8494 /* Tag.m */; };
 		40ED662016DABE50006F8494 /* Util.h in Headers */ = {isa = PBXBuildFile; fileRef = 40ED661516DABE50006F8494 /* Util.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		40ED662116DABE8F006F8494 /* GA.h in Headers */ = {isa = PBXBuildFile; fileRef = 40ED65C216DABD31006F8494 /* GA.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		423C12C91724DFAD00297C18 /* Globals.h in Headers */ = {isa = PBXBuildFile; fileRef = 423C12C71724DFAD00297C18 /* Globals.h */; };
+		423C12CA1724DFAD00297C18 /* Globals.m in Sources */ = {isa = PBXBuildFile; fileRef = 423C12C81724DFAD00297C18 /* Globals.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -37,6 +39,8 @@
 		40ED661316DABE50006F8494 /* Tag.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Tag.h; sourceTree = "<group>"; };
 		40ED661416DABE50006F8494 /* Tag.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Tag.m; sourceTree = "<group>"; };
 		40ED661516DABE50006F8494 /* Util.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Util.h; sourceTree = "<group>"; };
+		423C12C71724DFAD00297C18 /* Globals.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Globals.h; sourceTree = "<group>"; };
+		423C12C81724DFAD00297C18 /* Globals.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Globals.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -90,6 +94,8 @@
 		40ED65BF16DABD31006F8494 /* AntBot-GA */ = {
 			isa = PBXGroup;
 			children = (
+				423C12C71724DFAD00297C18 /* Globals.h */,
+				423C12C81724DFAD00297C18 /* Globals.m */,
 				40ED660B16DABE50006F8494 /* Robot.h */,
 				40ED660C16DABE50006F8494 /* Robot.m */,
 				40ED660D16DABE50006F8494 /* Team.h */,
@@ -126,6 +132,7 @@
 				40ED661E16DABE50006F8494 /* Tag.h in Headers */,
 				40ED662016DABE50006F8494 /* Util.h in Headers */,
 				40ED662116DABE8F006F8494 /* GA.h in Headers */,
+				423C12C91724DFAD00297C18 /* Globals.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -184,6 +191,7 @@
 				40ED661916DABE50006F8494 /* Team.m in Sources */,
 				40ED661B16DABE50006F8494 /* Simulation.m in Sources */,
 				40ED661F16DABE50006F8494 /* Tag.m in Sources */,
+				423C12CA1724DFAD00297C18 /* Globals.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

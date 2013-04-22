@@ -1,14 +1,4 @@
 #ifdef __OBJC__
     #import <Cocoa/Cocoa.h>
-
-    #define PILE_RADIUS 2
-    #define SEARCH_DELAY 4
-    #define CROSSOVER_RATE 10
-    #define STEP_COUNT 6750
-    #define GRID_WIDTH 90
-    #define GRID_HEIGHT 90
-    #define GRID_SIZE (GRID_WIDTH * GRID_HEIGHT)
-    #define NEST_X 45
-    #define NEST_Y 45
-    #define M_2PI (2*M_PI)
+    #include "Globals.h"
 #endif

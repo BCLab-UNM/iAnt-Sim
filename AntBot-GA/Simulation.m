@@ -289,9 +289,9 @@
                 
                 if(tickRate != 0.f){[NSThread sleepForTimeInterval:tickRate];}
                 if(viewDelegate != nil) {
-                    if([viewDelegate respondsToSelector:@selector(updateRobots:tags:pheromones:)]) {
+                    if([viewDelegate respondsToSelector:@selector(updateDisplayWindowWithRobots:tags:pheromones:)]) {
                         [self getPheromone:pheromones atTick:tick withDecayRate:team.pheromoneDecayRate];
-                        [viewDelegate update:robots :tags :pheromones];
+                        [viewDelegate updateDisplayWindowWithRobots:robots tags:tags pheromones:pheromones];
                     }
                 }
             }

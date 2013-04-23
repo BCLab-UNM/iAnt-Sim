@@ -40,4 +40,25 @@
     [backingStore replaceObjectAtIndex:index withObject:value];
 }
 
+
+#pragma NSFastEnumeration methods
+
+/*
+ * We simply forward the fast enumeration call directly to backingStore
+ */
+-(NSUInteger)countByEnumeratingWithState:(NSFastEnumerationState *)state objects:(__unsafe_unretained id [])buffer count:(NSUInteger)len {
+    return [backingStore countByEnumeratingWithState:state objects:buffer count:len];
+}
+
+
+#pragma NSCopying methods
+
+-(id)copyWithZone:(NSZone *)zone {
+    Array2D *arrayCopy = [[[self class] allocWithZone:zone] init];
+    if (arrayCopy) {
+        arrayCopy = self;
+    }
+    return arrayCopy;
+}
+
 @end

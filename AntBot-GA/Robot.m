@@ -4,7 +4,7 @@
 @implementation Robot
 
 @synthesize status, informed;
-@synthesize position, target;
+@synthesize position, target, recruitmentTarget;
 @synthesize direction, searchTime, lastMoved, lastTurned;
 @synthesize carrying, neighbors;
 @synthesize localPheromone;
@@ -15,6 +15,7 @@
     
     position = NSMakePoint(-1,-1);
     target = NSMakePoint(-1,-1);
+    recruitmentTarget = NSMakePoint(-1,-1);
     
     direction = randomFloat(M_2PI);
     searchTime = -1;

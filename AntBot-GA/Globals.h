@@ -20,5 +20,6 @@ extern int gridSize;
 extern int nestX;
 extern int nestY;
 extern int M_2PI;
+extern int wirelessRange;
 
 @end

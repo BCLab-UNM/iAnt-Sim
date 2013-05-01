@@ -157,7 +157,7 @@
                                 break;
                             }
                             
-                            if (decentralizedPheromones && ([robot informed] == ROBOT_INFORMED_MEMORY)) {
+                            if (decentralizedPheromones && ([robot informed] == ROBOT_INFORMED_MEMORY) && robot.recruitmentTarget.x > 0) {
                                 float decayedRange = exponentialDecay(wirelessRange, robot.searchTime, team.informedSearchCorrelationDecayRate);
                                 [robot broadcastPheromone:[robot recruitmentTarget] toTeam:robots atRange:decayedRange];
                             }
@@ -266,9 +266,15 @@
                                     }
                                     else if ((randomFloat(1.) < exponentialCDF(robot.neighbors + 1, team.siteFidelityRate)) &&
                                              (([pheromones count] == 0) || (randomFloat(1.) > exponentialCDF(9 - robot.neighbors, team.pheromoneFollowingRate)))) {
-                                        robot.recruitmentTarget = perturbedTagPosition;
                                         robot.target = perturbTargetPosition(realWorldError,perturbedTagPosition);
                                         robot.informed = ROBOT_INFORMED_MEMORY;
+                                        //Decide whether to broadcast pheromones locally
+                                        if (decentralizedPheromones && (randomFloat(1.) < exponentialCDF(robot.neighbors+1, team.pheromoneLayingRate))) {
+                                            robot.recruitmentTarget = perturbedTagPosition;
+                                        }
+                                        else {
+                                            robot.recruitmentTarget = NSMakePoint(-1,-1);
+                                        }
                                     }
                                     else {
                                         robot.target = edge(gridWidth,gridHeight);

@@ -1,11 +1,3 @@
-//
-//  Globals.h
-//  AntBot-GA
-//
-//  Created by Joshua Hecker on 4/21/13.
-//  Copyright (c) 2013 AntBot. All rights reserved.
-//
-
 #import <Foundation/Foundation.h>
 
 @interface Globals : NSObject

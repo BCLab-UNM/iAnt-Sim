@@ -1,11 +1,3 @@
-//
-//  Array2D.h
-//  AntBot-GA
-//
-//  Created by Joshua Hecker on 4/22/13.
-//  Copyright (c) 2013 AntBot. All rights reserved.
-//
-
 #import <Foundation/Foundation.h>
 
 @interface Array2D : NSObject <NSFastEnumeration, NSCopying> {

@@ -1,11 +1,3 @@
-//
-//  Array2D.m
-//  AntBot-GA
-//
-//  Created by Joshua Hecker on 4/22/13.
-//  Copyright (c) 2013 AntBot. All rights reserved.
-//
-
 #import "Array2D.h"
 
 @implementation Array2D

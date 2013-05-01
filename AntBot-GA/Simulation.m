@@ -144,6 +144,7 @@
                                     robot.status = ROBOT_STATUS_RETURNING;
                                 }
                                 robot.localPheromone = NSMakePoint(-1,-1);
+                                robot.recruitmentTarget = NSMakePoint(-1,-1);
                                 break;
                             }
                             
@@ -196,6 +197,8 @@
                                     robot.status = ROBOT_STATUS_RETURNING;
                                     robot.target = NSMakePoint(nestX,nestY);
                                     robot.neighbors = 0;
+                                    robot.localPheromone = NSMakePoint(-1,-1);
+                                    robot.recruitmentTarget = NSMakePoint(-1,-1);
                                     
                                     //Sum up all non-picked-up seeds in the moore neighbor.
                                     for(int dx = -1; dx <= 1; dx++) {
@@ -303,9 +306,9 @@
                 
                 if(tickRate != 0.f){[NSThread sleepForTimeInterval:tickRate];}
                 if(viewDelegate != nil) {
-                    if([viewDelegate respondsToSelector:@selector(updateDisplayWindowWithRobots:tags:pheromones:)]) {
+                    if([viewDelegate respondsToSelector:@selector(updateDisplayWindowWithRobots:team:tags:pheromones:)]) {
                         [self getPheromone:pheromones atTick:tick withDecayRate:team.pheromoneDecayRate];
-                        [viewDelegate updateDisplayWindowWithRobots:robots tags:tags pheromones:pheromones];
+                        [viewDelegate updateDisplayWindowWithRobots:robots team:team tags:tags pheromones:pheromones];
                     }
                 }
             }

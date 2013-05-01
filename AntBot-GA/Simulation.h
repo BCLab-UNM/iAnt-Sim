@@ -43,6 +43,8 @@
 @property (nonatomic) BOOL variableStepSize;
 @property (nonatomic) BOOL uniformDirection;
 
+@property (nonatomic) BOOL decentralizedPheromones;
+
 @property (nonatomic) BOOL randomizeParameters;
 @property (nonatomic) NSString* parameterFile;
 

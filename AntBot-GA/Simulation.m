@@ -25,6 +25,7 @@
 @synthesize tickRate;
 @synthesize realWorldError;
 @synthesize variableStepSize, uniformDirection;
+@synthesize decentralizedPheromones;
 @synthesize randomizeParameters, parameterFile;
 @synthesize delegate, viewDelegate;
 
@@ -143,9 +144,22 @@
                             if(tick - robot.lastMoved < searchDelay){break;}
                             
                             if(randomFloat(1.) < team.searchGiveUpProbability) {
-                                robot.target = NSMakePoint(nestX,nestY);
-                                robot.status = ROBOT_STATUS_RETURNING;
+                                if (decentralizedPheromones && (robot.localPheromone.x > 0)) {
+                                    robot.target = robot.localPheromone;
+                                    robot.informed = ROBOT_INFORMED_PHEROMONE;
+                                    robot.status = ROBOT_STATUS_DEPARTING;
+                                }
+                                else {
+                                    robot.target = NSMakePoint(nestX,nestY);
+                                    robot.status = ROBOT_STATUS_RETURNING;
+                                }
+                                robot.localPheromone = NSMakePoint(-1,-1);
                                 break;
+                            }
+                            
+                            if (decentralizedPheromones && ([robot informed] == ROBOT_INFORMED_MEMORY)) {
+                                float decayedRange = exponentialDecay(wirelessRange, robot.searchTime, team.informedSearchCorrelationDecayRate);
+                                [robot broadcastPheromone:[robot recruitmentTarget] toTeam:robots atRange:decayedRange];
                             }
                             
                             if(tick - robot.lastTurned >= robot.stepSize * searchDelay) {
@@ -222,9 +236,13 @@
                                 if(robot.carrying != nil) {
                                     [team setTagsCollected:team.tagsCollected+1];
                                     
+                                    //Record position where tag was found, then perturb it to simulate error
                                     NSPoint tagPosition = NSMakePoint(robot.carrying.x, robot.carrying.y);
                                     NSPoint perturbedTagPosition = perturbTagPosition(realWorldError,tagPosition);
-                                    if(randomFloat(1.) < exponentialCDF(robot.neighbors+1, team.pheromoneLayingRate)) {
+                                    
+                                    //Add (perturbed) tag position to global pheromone array if using centralized pheromones
+                                    //Use of *decentralized pheromones* guarantees that the pheromones array will always be empty, which means robots will only be recruited from the nest when using *centralized pheromones*
+                                    if(!decentralizedPheromones && (randomFloat(1.) < exponentialCDF(robot.neighbors+1, team.pheromoneLayingRate))) {
                                         Pheromone* p = [[Pheromone alloc] init];
                                         p.x = perturbedTagPosition.x;
                                         p.y = perturbedTagPosition.y;
@@ -247,11 +265,11 @@
                                         robot.informed = ROBOT_INFORMED_PHEROMONE;
                                     }
                                     else if ((randomFloat(1.) < exponentialCDF(robot.neighbors + 1, team.siteFidelityRate)) &&
-                                             (([pheromones count] == 0) ||
-                                              (randomFloat(1.) > exponentialCDF(9 - robot.neighbors, team.pheromoneFollowingRate)))) {
-                                                 robot.target = perturbTargetPosition(realWorldError,perturbedTagPosition);
-                                                 robot.informed = ROBOT_INFORMED_MEMORY;
-                                             }
+                                             (([pheromones count] == 0) || (randomFloat(1.) > exponentialCDF(9 - robot.neighbors, team.pheromoneFollowingRate)))) {
+                                        robot.recruitmentTarget = perturbedTagPosition;
+                                        robot.target = perturbTargetPosition(realWorldError,perturbedTagPosition);
+                                        robot.informed = ROBOT_INFORMED_MEMORY;
+                                    }
                                     else {
                                         robot.target = edge(gridWidth,gridHeight);
                                         robot.informed = ROBOT_INFORMED_NONE;

@@ -1,21 +1,11 @@
 #import <Cocoa/Cocoa.h>
 #import <dispatch/dispatch.h>
+#import "Pheromone.h"
 #import "Simulation.h"
 #import "Team.h"
 #import "Robot.h"
 #import "Tag.h"
 #include "Util.h"
-
-@interface Pheromone : NSObject {}
-@property (nonatomic) int x;
-@property (nonatomic) int y;
-@property (nonatomic) float n;
-@property (nonatomic) int updated;
-@end
-
-@implementation Pheromone
-@synthesize x,y,n,updated;
-@end
 
 @implementation Simulation
 

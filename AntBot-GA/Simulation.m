@@ -155,7 +155,7 @@
                             
                             if(tick - robot.lastTurned >= robot.stepSize * searchDelay) {
                                 if (variableStepSize) {
-                                    robot.stepSize = (int)floor(randomLogNormal(0, team.stepSizeVariation)) + 1;
+                                    robot.stepSize = (int)round(randomLogNormal(0, team.stepSizeVariation));
                                 }
                                 
                                 if (uniformDirection) {

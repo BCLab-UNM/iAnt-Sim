@@ -14,12 +14,12 @@
 
 
 @interface Simulation : NSObject {
-    NSMutableArray* colonies;
+    NSMutableArray* teams;
 }
 
 -(int) start;
 -(void) runEvaluation;
--(void) breedColonies;
+-(void) breedTeams;
 -(void) initDistributionForArray:(Array2D*)tags;
 -(NSPoint) getPheromone:(NSMutableArray*)pheromones atTick:(int)tick withDecayRate:(float)decayRate;
 

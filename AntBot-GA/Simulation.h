@@ -45,6 +45,8 @@
 
 @property (nonatomic) BOOL decentralizedPheromones;
 
+@property (nonatomic) BOOL adaptiveWalk;
+
 @property (nonatomic) BOOL randomizeParameters;
 @property (nonatomic) NSString* parameterFile;
 

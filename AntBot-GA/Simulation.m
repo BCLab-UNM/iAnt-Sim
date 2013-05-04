@@ -14,7 +14,7 @@
 @synthesize averageTeam, bestTeam;
 @synthesize tickRate;
 @synthesize realWorldError;
-@synthesize variableStepSize, uniformDirection;
+@synthesize variableStepSize, uniformDirection, adaptiveWalk;
 @synthesize decentralizedPheromones;
 @synthesize randomizeParameters, parameterFile;
 @synthesize delegate, viewDelegate;
@@ -148,7 +148,7 @@
                                 break;
                             }
                             
-                            if (decentralizedPheromones && ([robot informed] == ROBOT_INFORMED_MEMORY) && robot.recruitmentTarget.x > 0) {
+                            if (decentralizedPheromones && (robot.searchTime >= 0) && ([robot informed] == ROBOT_INFORMED_MEMORY) && robot.recruitmentTarget.x > 0) {
                                 float decayedRange = exponentialDecay(wirelessRange, robot.searchTime, team.informedSearchCorrelationDecayRate);
                                 [robot broadcastPheromone:[robot recruitmentTarget] toTeam:robots atRange:decayedRange];
                             }
@@ -295,8 +295,12 @@
                                 }
                                 
                                 //The old GA used a searchTime value of >= 0 to indicated we're doing an INFORMED random walk.
-                                if(robot.informed == ROBOT_INFORMED_NONE){robot.searchTime = -1;}
-                                else{robot.searchTime = 0;}
+                                if(robot.informed == ROBOT_INFORMED_NONE || (!adaptiveWalk)) {
+                                    robot.searchTime = -1;
+                                }
+                                else{
+                                    robot.searchTime = 0;
+                                }
                                 
                                 robot.status = ROBOT_STATUS_DEPARTING;
                             }

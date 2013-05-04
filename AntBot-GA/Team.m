@@ -17,7 +17,7 @@
         
         uninformedSearchCorrelation = randomFloat(2*M_2PI);
         informedSearchCorrelationDecayRate = randomExponential(5.0);
-        stepSizeVariation = randomFloat(2.0);
+        stepSizeVariation = randomExponential(1.0);
         
         pheromoneLayingRate = randomExponential(1.0);
         siteFidelityRate = randomExponential(1.0);

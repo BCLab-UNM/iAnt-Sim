@@ -1,5 +1,10 @@
 #import <Foundation/Foundation.h>
 #import "Array2D.h"
+#import "Pheromone.h"
+#import "Team.h"
+#import "Robot.h"
+#import "Tag.h"
+#include "Util.h"
 
 @class Team;
 @class Tag;

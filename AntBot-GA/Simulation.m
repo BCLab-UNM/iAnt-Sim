@@ -1,11 +1,6 @@
 #import <Cocoa/Cocoa.h>
 #import <dispatch/dispatch.h>
-#import "Pheromone.h"
 #import "Simulation.h"
-#import "Team.h"
-#import "Robot.h"
-#import "Tag.h"
-#include "Util.h"
 
 @implementation Simulation
 
@@ -114,9 +109,11 @@
                              * and may change the robot/world state based on certain criteria (i.e. it reaches its destination).
                              */
                         case ROBOT_STATUS_DEPARTING:
-                            if((!robot.informed && (randomFloat(1.) < team.travelGiveUpProbability)) ||
-                               (NSEqualPoints(robot.position, robot.target))){
-                                robot.status = ROBOT_STATUS_SEARCHING;
+                            if((!robot.informed && (randomFloat(1.) < team.travelGiveUpProbability)) || (NSEqualPoints(robot.position, robot.target))) {
+                                [robot setStatus:ROBOT_STATUS_SEARCHING];
+                                [robot turn:uniformDirection withParameters:team];
+                                [robot setLastTurned:(tick + [robot delay] + 1)];
+                                [robot setLastMoved:tick];
                                 break;
                             }
                             
@@ -125,80 +122,71 @@
                             
                             /*
                              * The robot is performing a random walk.
-                             * In this state, the robot only exhibits behavior once every SEARCH_DELAY ticks.
                              * It will randomly change its direction based on how long it has been searching and move in this direction.
                              * If it finds a tag, its state changes to ROBOT_STATUS_RETURNING (it brings the tag back to the nest.
                              * All site fidelity and pheromone work, however, is taken care of once the robot actually arrives at the nest.
                              */
                         case ROBOT_STATUS_SEARCHING:
-                            if(tick - robot.lastMoved < searchDelay){break;}
+                            if(tick - [robot lastMoved] <= [robot delay]) {
+                                break;
+                            }
+                            [robot setDelay:0];
                             
-                            if(randomFloat(1.) < team.searchGiveUpProbability) {
-                                if (decentralizedPheromones && (robot.localPheromone.x > 0)) {
-                                    robot.target = robot.localPheromone;
-                                    robot.informed = ROBOT_INFORMED_PHEROMONE;
-                                    robot.status = ROBOT_STATUS_DEPARTING;
+                            if(randomFloat(1.) < [team searchGiveUpProbability]) {
+                                if (decentralizedPheromones && ([robot localPheromone].x > 0)) {
+                                    [robot setTarget:[robot localPheromone]];
+                                    [robot setInformed:ROBOT_INFORMED_PHEROMONE];
+                                    [robot setStatus:ROBOT_STATUS_DEPARTING];
                                 }
                                 else {
-                                    robot.target = NSMakePoint(nestX,nestY);
-                                    robot.status = ROBOT_STATUS_RETURNING;
+                                    [robot setTarget:NSMakePoint(nestX,nestY)];
+                                    [robot setStatus:ROBOT_STATUS_RETURNING];
                                 }
-                                robot.localPheromone = NSMakePoint(-1,-1);
-                                robot.recruitmentTarget = NSMakePoint(-1,-1);
+                                [robot setLocalPheromone:NSMakePoint(-1,-1)];
+                                [robot setRecruitmentTarget:NSMakePoint(-1,-1)];
                                 break;
                             }
                             
-                            if (decentralizedPheromones && (robot.searchTime >= 0) && ([robot informed] == ROBOT_INFORMED_MEMORY) && robot.recruitmentTarget.x > 0) {
-                                float decayedRange = exponentialDecay(wirelessRange, robot.searchTime, team.informedSearchCorrelationDecayRate);
+                            if (decentralizedPheromones && ([robot searchTime] >= 0) && ([robot informed] == ROBOT_INFORMED_MEMORY) && [robot recruitmentTarget].x > 0) {
+                                float decayedRange = exponentialDecay(wirelessRange, [robot searchTime], [team informedSearchCorrelationDecayRate]);
                                 [robot broadcastPheromone:[robot recruitmentTarget] toTeam:robots atRange:decayedRange];
                             }
                             
-                            if(tick - robot.lastTurned >= robot.stepSize * searchDelay) {
-                                if (variableStepSize) {
-                                    robot.stepSize = (int)round(randomLogNormal(0, team.stepSizeVariation));
-                                }
-                                
-                                if (uniformDirection) {
-                                    robot.direction = randomFloat(M_2PI);
-                                }
-                                else {
-                                    float dTheta;
-                                    if(robot.searchTime >= 0) {
-                                        float informedSearchCorrelation = exponentialDecay(2*M_2PI-team.uninformedSearchCorrelation, robot.searchTime++, team.informedSearchCorrelationDecayRate);
-                                        dTheta = clip(randomNormal(0, informedSearchCorrelation+team.uninformedSearchCorrelation),-M_PI,M_PI);
-                                    }
-                                    else {
-                                        dTheta = clip(randomNormal(0, team.uninformedSearchCorrelation),-M_PI,M_PI);
-                                    }
-                                    robot.direction = pmod(robot.direction+dTheta,M_2PI);
-                                }
-                                
-                                robot.lastTurned = tick;
-                            }
+                            int stepsRemaining = [robot stepSize] - (tick - [robot lastTurned]);
+                            NSLog(@"%d",stepsRemaining);
+                            [robot setTarget:NSMakePoint(roundf([robot position].x+(cos(robot.direction)*stepsRemaining)),roundf([robot position].y+(sin([robot direction])*stepsRemaining)))];
                             
                             //If our current direction takes us outside the world, frantically spin around until this isn't the case.
-                            int stepsRemaining = robot.stepSize - (tick - robot.lastTurned) / searchDelay;
-                            robot.target = NSMakePoint(roundf(robot.position.x+(cos(robot.direction)*stepsRemaining)),roundf(robot.position.y+(sin(robot.direction)*stepsRemaining)));
-                            while(robot.target.x < 0 || robot.target.y < 0 || robot.target.x >= gridWidth || robot.target.y >= gridHeight) {
-                                robot.direction = randomFloat(M_2PI);
-                                robot.target = NSMakePoint(roundf(robot.position.x+cos(robot.direction)),roundf(robot.position.y+sin(robot.direction)));
+                            while([robot target].x < 0 || [robot target].y < 0 || [robot target].x >= gridWidth || [robot target].y >= gridHeight) {
+                                [robot setDirection:randomFloat(M_2PI)];
+                                [robot setTarget:NSMakePoint(roundf([robot position].x+cos([robot direction])),roundf([robot position].y+sin([robot direction])))];
                             }
                             
                             [robot move];
                             
+                            if(stepsRemaining <= 1) {
+                                if (variableStepSize) {
+                                    [robot setStepSize:(int)round(randomLogNormal(0, team.stepSizeVariation))];
+                                }
+                                
+                                [robot turn:uniformDirection withParameters:team];
+                                [robot setLastTurned:(tick + robot.delay + 1)];
+                            }
+                            
                             //After we've moved 1 square ahead, check one square ahead for a tag.
                             //Reusing robot.target here (without consequence, it just gets overwritten when moving).
-                            robot.target = NSMakePoint(roundf(robot.position.x+cos(robot.direction)),roundf(robot.position.y+sin(robot.direction)));
-                            if(robot.target.x >= 0 && robot.target.y >= 0 && robot.target.x < gridWidth && robot.target.y < gridHeight) {
-                                Tag* t = [tags objectAtRow:(int)robot.target.y col:(int)robot.target.x];
+                            [robot setTarget:NSMakePoint(roundf([robot position].x+cos([robot direction])),roundf([robot position].y+sin([robot direction])))];
+                            if([robot target].x >= 0 && [robot target].y >= 0 && [robot target].x < gridWidth && [robot target].y < gridHeight) {
+                                Tag* t = [tags objectAtRow:(int)[robot target].y col:(int)[robot target].x];
                                 if(detectTag(realWorldError) && ![t isKindOfClass:[NSNull class]] && ![t pickedUp]) { //Note we use shortcircuiting here.
                                     [t setPickedUp:YES];
-                                    robot.carrying = t;
-                                    robot.status = ROBOT_STATUS_RETURNING;
-                                    robot.target = NSMakePoint(nestX,nestY);
-                                    robot.neighbors = 0;
-                                    robot.localPheromone = NSMakePoint(-1,-1);
-                                    robot.recruitmentTarget = NSMakePoint(-1,-1);
+                                    [robot setCarrying:t];
+                                    [robot setStatus:ROBOT_STATUS_NEIGHBOR_SEARCH];
+                                    [robot setDelay:9];
+                                    [robot setTarget:NSMakePoint(nestX,nestY)];
+                                    [robot setNeighbors:0];
+                                    [robot setLocalPheromone:NSMakePoint(-1,-1)];
+                                    [robot setRecruitmentTarget:NSMakePoint(-1,-1)];
                                     
                                     //Sum up all non-picked-up seeds in the moore neighbor.
                                     for(int dx = -1; dx <= 1; dx++) {
@@ -213,7 +201,16 @@
                                 }
                             }
                             
-                            robot.lastMoved = tick;
+                            [robot setLastMoved:tick];
+                            break;
+                         
+                            /*
+                             * Robot is held here to emulate neighbor search time in physical robots
+                             */
+                        case ROBOT_STATUS_NEIGHBOR_SEARCH:
+                            if (tick - [robot lastMoved] > [robot delay]) {
+                                [robot setStatus:ROBOT_STATUS_RETURNING];
+                            }
                             break;
                             
                             /*

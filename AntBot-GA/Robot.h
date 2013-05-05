@@ -1,9 +1,11 @@
 #import <Foundation/Foundation.h>
+#import "Team.h"
 
 #define ROBOT_STATUS_INACTIVE 0
 #define ROBOT_STATUS_DEPARTING 1
 #define ROBOT_STATUS_SEARCHING 2
-#define ROBOT_STATUS_RETURNING 3
+#define ROBOT_STATUS_NEIGHBOR_SEARCH 3
+#define ROBOT_STATUS_RETURNING 4
 
 #define ROBOT_INFORMED_NONE 0
 #define ROBOT_INFORMED_MEMORY 1
@@ -15,6 +17,7 @@
 
 -(void) reset;
 -(void) move;
+-(void) turn:(BOOL)uniformDirection withParameters:(Team*)params;
 -(void) broadcastPheromone:(NSPoint)location toTeam:(NSMutableArray*)robots atRange:(int)distance;
 
 @property (nonatomic) int status; //Indicates what state the robot is in (see #define'd above).
@@ -29,6 +32,7 @@
 @property (nonatomic) int searchTime; //Amount of ticks the robot has been performing a random walk.
 @property (nonatomic) int lastMoved; //tick at which the robot last moved (used in random walk).
 @property (nonatomic) int lastTurned; //tick at which the robot last turned (used in random walk).
+@property (nonatomic) int delay; //Number of ticks the robot is penalized to emulate physical robots (used in random walk).
 @property (nonatomic) int stepSize; //Number of grid cells robot moves before turning
 
 @property (nonatomic) Tag* carrying; //Reference to which Tag the robot is carrying, if any.  nil otherwise.

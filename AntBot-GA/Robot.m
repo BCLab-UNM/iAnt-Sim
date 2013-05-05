@@ -5,7 +5,7 @@
 
 @synthesize status, informed;
 @synthesize position, target, recruitmentTarget;
-@synthesize direction, searchTime, lastMoved, lastTurned;
+@synthesize direction, searchTime, lastMoved, lastTurned, delay;
 @synthesize carrying, neighbors;
 @synthesize localPheromone;
 
@@ -68,6 +68,31 @@
             r -= improvements[dx+1][dy+1];
         }
     }
+}
+
+-(void) turn:(BOOL)uniformDirection withParameters:(Team *)params {
+    //We keep track of the amount of turning the robot does so we can penalize it with a time delay
+    // (emulating the physical robots)
+    float dTheta;
+    if (uniformDirection) {
+        float newDirection = randomFloat(M_2PI);
+        dTheta = pointDirection(0, 0, cos(direction-newDirection), sin(direction-newDirection));
+        direction = newDirection;
+    }
+    else {
+        if(searchTime >= 0) {
+            float informedSearchCorrelation = exponentialDecay(2*M_2PI-params.uninformedSearchCorrelation, searchTime++, params.informedSearchCorrelationDecayRate);
+            dTheta = clip(randomNormal(0, informedSearchCorrelation+params.uninformedSearchCorrelation),-M_PI,M_PI);
+        }
+        else {
+            dTheta = clip(randomNormal(0, params.uninformedSearchCorrelation),-M_PI,M_PI);
+        }
+        direction = pmod(direction+dTheta,M_2PI);
+    }
+    
+    //We delay the robot 1 tick for every PI/4 radians (i.e. 45 degrees) of turning
+    //NOTE: We increment PI/4 by a small epsilon value to avoid over-penalizing at PI (i.e. 180 degrees)
+    delay = (int)abs(dTheta/(M_PI_4 + 0.001)) + 1;
 }
 
 /*

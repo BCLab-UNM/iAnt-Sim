@@ -122,13 +122,6 @@ static inline float exponentialDecay(float quantity, float time, float lambda) {
     return (quantity * exp(-lambda*time));
 }
 
-static inline CGFloat NSDistance(NSPoint point1,NSPoint point2)
-{
-    float dx = point2.x - point1.x;
-    float dy = point2.y - point1.y;
-    return sqrt(dx*dx + dy*dy);
-};
-
 /*
  * Introduces error into recorded tag position - Simulates localization error in real robot
  */

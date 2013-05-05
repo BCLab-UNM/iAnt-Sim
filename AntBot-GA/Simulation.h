@@ -14,12 +14,12 @@
 
 
 @interface Simulation : NSObject {
-    NSMutableArray* colonies;
+    NSMutableArray* teams;
 }
 
 -(int) start;
 -(void) runEvaluation;
--(void) breedColonies;
+-(void) breedTeams;
 -(void) initDistributionForArray:(Array2D*)tags;
 -(NSPoint) getPheromone:(NSMutableArray*)pheromones atTick:(int)tick withDecayRate:(float)decayRate;
 
@@ -44,6 +44,8 @@
 @property (nonatomic) BOOL uniformDirection;
 
 @property (nonatomic) BOOL decentralizedPheromones;
+
+@property (nonatomic) BOOL adaptiveWalk;
 
 @property (nonatomic) BOOL randomizeParameters;
 @property (nonatomic) NSString* parameterFile;

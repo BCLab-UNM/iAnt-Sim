@@ -14,7 +14,7 @@
 @synthesize averageTeam, bestTeam;
 @synthesize tickRate;
 @synthesize realWorldError;
-@synthesize variableStepSize, uniformDirection;
+@synthesize variableStepSize, uniformDirection, adaptiveWalk;
 @synthesize decentralizedPheromones;
 @synthesize randomizeParameters, parameterFile;
 @synthesize delegate, viewDelegate;
@@ -27,20 +27,20 @@
     srandomdev(); //initialize array of random numbers
     [Globals initialize]; //initialize global variables
     
-    colonies = [[NSMutableArray alloc] initWithCapacity:teamCount];
+    teams = [[NSMutableArray alloc] initWithCapacity:teamCount];
     for(int i = 0; i < teamCount; i++) {
         if (randomizeParameters) {
-            [colonies addObject:[[Team alloc] initRandom]];
+            [teams addObject:[[Team alloc] initRandom]];
         }
         else {
-            [colonies addObject:[[Team alloc] initWithSpecificFile:parameterFile]];
+            [teams addObject:[[Team alloc] initWithSpecificFile:parameterFile]];
         }
     }
     evaluationCount = (viewDelegate != nil) ? 1 : evaluationCount;
     
     for(int generation = 0; generation < generationCount; generation++) {
         
-        for(Team* team in colonies){team.tagsCollected = 0;}
+        for(Team* team in teams){team.tagsCollected = 0;}
         
         dispatch_queue_t queue = dispatch_get_global_queue(0, 0);
         dispatch_apply(evaluationCount, queue, ^(size_t idx) {
@@ -49,11 +49,11 @@
             }
         });
         
-        [self breedColonies];
+        [self breedTeams];
         
         if(delegate) {
             
-            //Technically should pass in average and best colonies here.
+            //Technically should pass in average and best teams here.
             if([delegate respondsToSelector:@selector(finishedGeneration:)]) {
                 [delegate finishedGeneration:generation];
             }
@@ -76,7 +76,7 @@
         NSMutableArray* pheromones = [[NSMutableArray alloc] init];
         for(int i = 0; i < robotCount; i++){[robots addObject:[[Robot alloc] init]];}
         
-        for(Team* team in colonies) {
+        for(Team* team in teams) {
             for(int i = 0; i < gridHeight; i++) {
                 for(int j = 0; j < gridWidth; j++) {
                     if([tags objectAtRow:i col:j] != [NSNull null]){[[tags objectAtRow:i col:j] setPickedUp:NO];}
@@ -148,14 +148,14 @@
                                 break;
                             }
                             
-                            if (decentralizedPheromones && ([robot informed] == ROBOT_INFORMED_MEMORY) && robot.recruitmentTarget.x > 0) {
+                            if (decentralizedPheromones && (robot.searchTime >= 0) && ([robot informed] == ROBOT_INFORMED_MEMORY) && robot.recruitmentTarget.x > 0) {
                                 float decayedRange = exponentialDecay(wirelessRange, robot.searchTime, team.informedSearchCorrelationDecayRate);
                                 [robot broadcastPheromone:[robot recruitmentTarget] toTeam:robots atRange:decayedRange];
                             }
                             
                             if(tick - robot.lastTurned >= robot.stepSize * searchDelay) {
                                 if (variableStepSize) {
-                                    robot.stepSize = (int)floor(randomLogNormal(0, team.stepSizeVariation)) + 1;
+                                    robot.stepSize = (int)round(randomLogNormal(0, team.stepSizeVariation));
                                 }
                                 
                                 if (uniformDirection) {
@@ -295,8 +295,12 @@
                                 }
                                 
                                 //The old GA used a searchTime value of >= 0 to indicated we're doing an INFORMED random walk.
-                                if(robot.informed == ROBOT_INFORMED_NONE){robot.searchTime = -1;}
-                                else{robot.searchTime = 0;}
+                                if(robot.informed == ROBOT_INFORMED_NONE || (!adaptiveWalk)) {
+                                    robot.searchTime = -1;
+                                }
+                                else{
+                                    robot.searchTime = 0;
+                                }
                                 
                                 robot.status = ROBOT_STATUS_DEPARTING;
                             }
@@ -317,11 +321,11 @@
 }
 
 /*
- * 'Breeds' and mutates colonies.
+ * 'Breeds' and mutates teams.
  * There is a slight tradeoff for readability at the cost of efficiency here,
  * which has to do with the use of (and enumeration over) dictionaries.
  */
--(void) breedColonies {
+-(void) breedTeams {
     @autoreleasepool {
         Team* children[teamCount];
         for(int i = 0; i < teamCount; i++) {
@@ -330,9 +334,9 @@
             
             Team* parent[2];
             for(int j = 0; j < 2; j++) {
-                Team *p1 = [colonies objectAtIndex:randomInt(teamCount)],
-                *p2 = [colonies objectAtIndex:randomInt(teamCount)];
-                while (p1 == p2) {p2 = [colonies objectAtIndex:randomInt(teamCount)];}
+                Team *p1 = [teams objectAtIndex:randomInt(teamCount)],
+                *p2 = [teams objectAtIndex:randomInt(teamCount)];
+                while (p1 == p2) {p2 = [teams objectAtIndex:randomInt(teamCount)];}
                 parent[j] = (p1.tagsCollected > p2.tagsCollected) ? p1 : p2;
             }
             
@@ -355,9 +359,9 @@
             [children[i] setParameters:parameters];
         }
         
-        //Set the children to be the new set of colonies for the next generation.
+        //Set the children to be the new set of teams for the next generation.
         for(int i = 0; i < teamCount; i++) {
-            Team* team = [colonies objectAtIndex:i];
+            Team* team = [teams objectAtIndex:i];
             [team setParameters:[children[i] getParameters]];
         }
     }
@@ -470,7 +474,7 @@
     NSMutableDictionary* parameterSums = [[NSMutableDictionary alloc] initWithCapacity:13];
     float tagSum = 0.f;
     
-    for(Team* team in colonies) {
+    for(Team* team in teams) {
         NSMutableDictionary* parameters = [team getParameters];
         tagSum += team.tagsCollected;
         for(NSString* key in parameters) {
@@ -498,7 +502,7 @@
     Team* _maxTeam = [[Team alloc] init];
     int maxTags = 0;
     
-    for(Team* team in colonies) {
+    for(Team* team in teams) {
         if(team.tagsCollected > maxTags) {
             maxTags = team.tagsCollected;
             [_maxTeam setParameters:[team getParameters]];

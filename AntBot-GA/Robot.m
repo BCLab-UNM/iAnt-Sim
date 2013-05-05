@@ -75,7 +75,7 @@
  */
 -(void) broadcastPheromone:(NSPoint)location toTeam:(NSMutableArray *)robots atRange:(int)distance{
     for (Robot* robot in robots) {
-        if ((robot != self) && (NSDistance(self.position, robot.position) <= distance)) {
+        if ((robot != self) && (pointDistance(self.position.x, self.position.y, robot.position.x, robot.position.y) <= distance)) {
             robot.localPheromone = location;
         }
     }

@@ -3,7 +3,6 @@
 @interface Globals : NSObject
 
 extern int pileRadius;
-extern int searchDelay;
 extern int crossoverRate;
 extern int stepCount;
 extern int gridWidth;

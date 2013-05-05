@@ -15,7 +15,6 @@ int wirelessRange;
 
 +(void) initialize {
     pileRadius = 2;
-    searchDelay = 4;
     crossoverRate = 10;
     stepCount = 3600;
     gridWidth = 125;

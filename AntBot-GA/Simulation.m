@@ -153,7 +153,6 @@
                             }
                             
                             int stepsRemaining = [robot stepSize] - (tick - [robot lastTurned]);
-                            NSLog(@"%d",stepsRemaining);
                             [robot setTarget:NSMakePoint(roundf([robot position].x+(cos(robot.direction)*stepsRemaining)),roundf([robot position].y+(sin([robot direction])*stepsRemaining)))];
                             
                             //If our current direction takes us outside the world, frantically spin around until this isn't the case.

@@ -308,7 +308,7 @@
                 if(viewDelegate != nil) {
                     if([viewDelegate respondsToSelector:@selector(updateDisplayWindowWithRobots:team:tags:pheromones:)]) {
                         [self getPheromone:pheromones atTick:tick withDecayRate:team.pheromoneDecayRate];
-                        [viewDelegate updateDisplayWindowWithRobots:[robots copy] team:[team copy] tags:[tags copy] pheromones:[pheromones copy]];
+                        [viewDelegate updateDisplayWindowWithRobots:[robots copy] team:team tags:[tags copy] pheromones:[pheromones copy]];
                     }
                 }
             }

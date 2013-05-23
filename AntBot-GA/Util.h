@@ -1,5 +1,5 @@
-#ifndef __SIMSANDBOX_UTIL_H
-#define __SIMSANDBOX_UTIL_H
+#ifndef __ANTBOT_GA_UTIL_H
+#define __ANTBOT_GA_UTIL_H
 
 /*
  * Returns a random float in the range [0,x].

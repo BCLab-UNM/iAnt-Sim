@@ -44,6 +44,7 @@
         adaptiveWalk = YES;
         
         decentralizedPheromones = NO;
+        wirelessRange = 10;
         
         parameterFile = nil;
     }

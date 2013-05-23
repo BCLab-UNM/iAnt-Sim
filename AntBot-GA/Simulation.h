@@ -36,12 +36,18 @@
 @property (nonatomic) int robotCount;
 @property (nonatomic) int tagCount;
 @property (nonatomic) int evaluationCount;
+@property (nonatomic) int tickCount;
 
 @property (nonatomic) float distributionRandom;
 @property (nonatomic) float distributionPowerlaw;
 @property (nonatomic) float distributionClustered;
 
-@property (nonatomic) float tickRate;
+@property (nonatomic) int pileRadius;
+
+@property (nonatomic) int crossoverRate;
+
+@property (nonatomic) NSSize gridSize;
+@property (nonatomic) NSPoint nest;
 
 @property (nonatomic) BOOL realWorldError;
 
@@ -49,13 +55,14 @@
 @property (nonatomic) BOOL uniformDirection;
 
 @property (nonatomic) BOOL decentralizedPheromones;
+@property (nonatomic) int wirelessRange;
 
 @property (nonatomic) BOOL adaptiveWalk;
 
-@property (nonatomic) BOOL randomizeParameters;
 @property (nonatomic) NSString* parameterFile;
 
 @property (nonatomic) NSObject* delegate;
 @property (nonatomic) NSObject* viewDelegate;
+@property (nonatomic) float tickRate;
 
 @end

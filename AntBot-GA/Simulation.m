@@ -4,15 +4,51 @@
 
 @implementation Simulation
 
-@synthesize teamCount, generationCount, robotCount;
-@synthesize distributionRandom, distributionPowerlaw, distributionClustered, tagCount, evaluationCount;
+@synthesize teamCount, generationCount, robotCount, tagCount, evaluationCount, tickCount;
+@synthesize distributionRandom, distributionPowerlaw, distributionClustered;
 @synthesize averageTeam, bestTeam;
-@synthesize tickRate;
+@synthesize pileRadius;
+@synthesize crossoverRate;
+@synthesize gridSize, nest;
 @synthesize realWorldError;
 @synthesize variableStepSize, uniformDirection, adaptiveWalk;
-@synthesize decentralizedPheromones;
-@synthesize randomizeParameters, parameterFile;
+@synthesize decentralizedPheromones, wirelessRange;
+@synthesize parameterFile;
 @synthesize delegate, viewDelegate;
+@synthesize tickRate;
+
+-(id) init {
+    if(self = [super init]) {
+        teamCount = 100;
+        generationCount = 100;
+        robotCount = 6;
+        tagCount = 256;
+        evaluationCount = 8;
+        tickCount = 3600;
+        
+        distributionClustered = 0.;
+        distributionPowerlaw = 1.;
+        distributionRandom = 0.;
+        
+        pileRadius = 2;
+        
+        crossoverRate = 10;
+        
+        gridSize = NSMakeSize(125, 125);
+        nest = NSMakePoint(62, 62);
+        
+        realWorldError = NO;
+        
+        variableStepSize = NO;
+        uniformDirection = NO;
+        adaptiveWalk = YES;
+        
+        decentralizedPheromones = NO;
+        
+        parameterFile = nil;
+    }
+    return self;
+}
 
 /*
  * Starts the simulation run.
@@ -23,11 +59,11 @@
     
     teams = [[NSMutableArray alloc] initWithCapacity:teamCount];
     for(int i = 0; i < teamCount; i++) {
-        if(randomizeParameters) {
-            [teams addObject:[[Team alloc] initRandom]];
+        if(parameterFile) {
+            [teams addObject:[[Team alloc] initWithFile:parameterFile]];
         }
         else {
-            [teams addObject:[[Team alloc] initWithFile:parameterFile]];
+            [teams addObject:[[Team alloc] initRandom]];
         }
     }
     evaluationCount = (viewDelegate != nil) ? 1 : evaluationCount;
@@ -63,7 +99,7 @@
  */
 -(void) runEvaluation {
     @autoreleasepool {
-        Array2D* tags = [[Array2D alloc] initWithRows:gridWidth cols:gridHeight];
+        Array2D* tags = [[Array2D alloc] initWithRows:gridSize.width cols:gridSize.height];
         [self initDistributionForArray:tags];
         
         NSMutableArray* robots = [[NSMutableArray alloc] initWithCapacity:robotCount];
@@ -71,8 +107,8 @@
         for(int i = 0; i < robotCount; i++){[robots addObject:[[Robot alloc] init]];}
         
         for(Team* team in teams) {
-            for(int i = 0; i < gridHeight; i++) {
-                for(int j = 0; j < gridWidth; j++) {
+            for(int i = 0; i < gridSize.height; i++) {
+                for(int j = 0; j < gridSize.width; j++) {
                     if([tags objectAtRow:i col:j] != [NSNull null]){[[tags objectAtRow:i col:j] setPickedUp:NO];}
                 }
             }
@@ -82,7 +118,7 @@
             }
             [pheromones removeAllObjects];
             
-            for(int tick = 0; tick < stepCount; tick++){
+            for(int tick = 0; tick < tickCount; tick++){
                 for(Robot* robot in robots) {
                     
                     switch(robot.status) {
@@ -93,8 +129,8 @@
                          */
                         case ROBOT_STATUS_INACTIVE:
                             robot.status = ROBOT_STATUS_DEPARTING;
-                            robot.position = NSMakePoint(nestX, nestY);
-                            robot.target = edge(gridWidth, gridHeight);
+                            robot.position = nest;
+                            robot.target = edge(gridSize);
                             //Fallthrough to ROBOT_STATUS_DEPARTING.
                             
                         /*
@@ -116,7 +152,7 @@
                                 break;
                             }
                             
-                            [robot move];
+                            [robot moveWithin:gridSize];
                             break;
                             
                         /*
@@ -138,7 +174,7 @@
                                     [robot setStatus:ROBOT_STATUS_DEPARTING];
                                 }
                                 else {
-                                    [robot setTarget:NSMakePoint(nestX, nestY)];
+                                    [robot setTarget:nest];
                                     [robot setStatus:ROBOT_STATUS_RETURNING];
                                 }
                                 [robot setLocalPheromone:NSNullPoint];
@@ -155,12 +191,12 @@
                             [robot setTarget:NSMakePoint(roundf([robot position].x + (cos(robot.direction) * stepsRemaining)), roundf([robot position].y + (sin([robot direction]) * stepsRemaining)))];
                             
                             //If our current direction takes us outside the world, frantically spin around until this isn't the case.
-                            while([robot target].x < 0 || [robot target].y < 0 || [robot target].x >= gridWidth || [robot target].y >= gridHeight) {
+                            while([robot target].x < 0 || [robot target].y < 0 || [robot target].x >= gridSize.width || [robot target].y >= gridSize.height) {
                                 [robot setDirection:randomFloat(M_2PI)];
                                 [robot setTarget:NSMakePoint(roundf([robot position].x + cos([robot direction])), roundf([robot position].y + sin([robot direction])))];
                             }
                             
-                            [robot move];
+                            [robot moveWithin:gridSize];
                             
                             if(stepsRemaining <= 1) {
                                 if (variableStepSize) {
@@ -174,14 +210,14 @@
                             //After we've moved 1 square ahead, check one square ahead for a tag.
                             //Reusing robot.target here (without consequence, it just gets overwritten when moving).
                             [robot setTarget:NSMakePoint(roundf([robot position].x + cos([robot direction])), roundf([robot position].y + sin([robot direction])))];
-                            if([robot target].x >= 0 && [robot target].y >= 0 && [robot target].x < gridWidth && [robot target].y < gridHeight) {
+                            if([robot target].x >= 0 && [robot target].y >= 0 && [robot target].x < gridSize.width && [robot target].y < gridSize.height) {
                                 Tag* t = [tags objectAtRow:(int)[robot target].y col:(int)[robot target].x];
                                 if(detectTag(realWorldError) && ![t isKindOfClass:[NSNull class]] && ![t pickedUp]) { //Note we use shortcircuiting here.
                                     [t setPickedUp:YES];
                                     [robot setCarrying:t];
                                     [robot setStatus:ROBOT_STATUS_NEIGHBOR_SEARCH];
                                     [robot setDelay:9];
-                                    [robot setTarget:NSMakePoint(nestX, nestY)];
+                                    [robot setTarget:nest];
                                     [robot setNeighbors:0];
                                     [robot setLocalPheromone:NSNullPoint];
                                     [robot setRecruitmentTarget:NSNullPoint];
@@ -189,7 +225,7 @@
                                     //Sum up all non-picked-up seeds in the moore neighbor.
                                     for(int dx = -1; dx <= 1; dx++) {
                                         for(int dy = -1; dy <= 1; dy++) {
-                                            if((robot.carrying.x + dx >= 0 && robot.carrying.x + dx < gridWidth) && (robot.carrying.y + dy >= 0 && robot.carrying.y + dy < gridHeight)) {
+                                            if((robot.carrying.x + dx >= 0 && robot.carrying.x + dx < gridSize.width) && (robot.carrying.y + dy >= 0 && robot.carrying.y + dy < gridSize.height)) {
                                                 robot.neighbors += detectTag(realWorldError) &&
                                                                 ([tags objectAtRow:robot.carrying.y + dy col:robot.carrying.x + dx] != [NSNull null]) &&
                                                                 !([[tags objectAtRow:robot.carrying.y + dy col:robot.carrying.x + dx] pickedUp]);
@@ -217,7 +253,7 @@
                          * Stuff like laying/assigning of pheromones is handled here.
                          */
                         case ROBOT_STATUS_RETURNING:
-                            [robot move];
+                            [robot moveWithin:gridSize];
                             
                             //Lots of repeated code in here.
                             if(NSEqualPoints(robot.position, robot.target)) {
@@ -226,7 +262,7 @@
                                     
                                     //Record position where tag was found, then perturb it to simulate error
                                     NSPoint tagPosition = NSMakePoint(robot.carrying.x, robot.carrying.y);
-                                    NSPoint perturbedTagPosition = perturbTagPosition(realWorldError, tagPosition);
+                                    NSPoint perturbedTagPosition = perturbTagPosition(realWorldError, tagPosition, gridSize);
                                     
                                     //Add (perturbed) tag position to global pheromone array if using centralized pheromones
                                     //Use of *decentralized pheromones* guarantees that the pheromones array will always be empty, which means robots will only be recruited from the nest when using *centralized pheromones*
@@ -245,12 +281,12 @@
                                     if(NSEqualPoints(pheromone, NSNullPoint) &&
                                         (randomFloat(1.) < exponentialCDF(9 - robot.neighbors, team.pheromoneFollowingRate)) &&
                                         (randomFloat(1.) > exponentialCDF(robot.neighbors + 1, team.siteFidelityRate))) {
-                                        robot.target = perturbTargetPosition(realWorldError, pheromone);
+                                        robot.target = perturbTargetPosition(realWorldError, pheromone, gridSize);
                                         robot.informed = ROBOT_INFORMED_PHEROMONE;
                                     }
                                     else if((randomFloat(1.) < exponentialCDF(robot.neighbors + 1, team.siteFidelityRate)) &&
                                              (randomFloat(1.) > exponentialCDF(9 - robot.neighbors, team.pheromoneFollowingRate))) {
-                                        robot.target = perturbTargetPosition(realWorldError, perturbedTagPosition);
+                                        robot.target = perturbTargetPosition(realWorldError, perturbedTagPosition, gridSize);
                                         robot.informed = ROBOT_INFORMED_MEMORY;
                                         //Decide whether to broadcast pheromones locally
                                         if(decentralizedPheromones && (randomFloat(1.) < exponentialCDF(robot.neighbors + 1, team.pheromoneLayingRate))) {
@@ -261,7 +297,7 @@
                                         }
                                     }
                                     else {
-                                        robot.target = edge(gridWidth, gridHeight);
+                                        robot.target = edge(gridSize);
                                         robot.informed = ROBOT_INFORMED_NONE;
                                     }
                                     
@@ -272,11 +308,11 @@
                                     NSPoint pheromone = [self getPheromone:pheromones atTick:tick withDecayRate:team.pheromoneDecayRate];
                                     
                                     if(NSEqualPoints(pheromone, NSNullPoint)) {
-                                        robot.target = edge(gridWidth, gridHeight);
+                                        robot.target = edge(gridSize);
                                         robot.informed = ROBOT_INFORMED_NONE;
                                     }
                                     else {
-                                        robot.target = perturbTargetPosition(realWorldError, pheromone);
+                                        robot.target = perturbTargetPosition(realWorldError, pheromone, gridSize);
                                         robot.informed = ROBOT_INFORMED_PHEROMONE;
                                     }
                                 }
@@ -380,8 +416,8 @@
             for(int i = 0; i < pilesOf[1]; i++) {
                 int tagX, tagY;
                 do {
-                    tagX = randomInt(gridWidth);
-                    tagY = randomInt(gridHeight);
+                    tagX = randomInt(gridSize.width);
+                    tagY = randomInt(gridSize.height);
                 } while([tags objectAtRow:tagY col:tagX] != [NSNull null]);
                 
                 [tags setObjectAtRow:tagY col:tagX to:[[Tag alloc] initWithX:tagX andY:tagY]];
@@ -393,8 +429,8 @@
                 
                 int overlapping = 1;
                 while(overlapping) {
-                    pileX = randomIntRange(pileRadius, gridWidth - (pileRadius * 2));
-                    pileY = randomIntRange(pileRadius, gridHeight - (pileRadius * 2));
+                    pileX = randomIntRange(pileRadius, gridSize.width - (pileRadius * 2));
+                    pileY = randomIntRange(pileRadius, gridSize.height - (pileRadius * 2));
                     
                     //Make sure the place we picked isn't close to another pile.  Pretty naive.
                     overlapping = 0;
@@ -413,8 +449,8 @@
                         float rad = randomFloat(maxRadius);
                         float dir = randomFloat(M_2PI);
                         
-                        tagX = clip(roundf(pileX + (rad * cos(dir))), 0, gridWidth - 1);
-                        tagY = clip(roundf(pileY + (rad * sin(dir))), 0, gridHeight - 1);
+                        tagX = clip(roundf(pileX + (rad * cos(dir))), 0, gridSize.width - 1);
+                        tagY = clip(roundf(pileY + (rad * sin(dir))), 0, gridSize.height - 1);
                         
                         maxRadius += 1;
                     } while([tags objectAtRow:tagY col:tagX] != [NSNull null]);

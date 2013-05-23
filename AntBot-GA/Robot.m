@@ -32,7 +32,7 @@
  * Moves the robot towards its target.
  * Uses the Kenneth motion planning algorithm.
  */
--(void) move {
+-(void) moveWithin:(NSSize)bounds {
     if(NSEqualPoints(position, target)){return;}
     
     //Calculate the highest distance improvement we can get for every neighboring cell.  Ugly but optimized.
@@ -43,8 +43,8 @@
     float improvementSum = 0;
     int dxMin = (x == 0) ? 0 : -1;
     int dyMin = (y == 0) ? 0 : -1;
-    int dxMax = (x == (gridWidth - 1)) ? 0 : 1;
-    int dyMax = (y == (gridHeight - 1)) ? 0 : 1;
+    int dxMax = (x == (bounds.width - 1)) ? 0 : 1;
+    int dyMax = (y == (bounds.height - 1)) ? 0 : 1;
     for(int dx = dxMin; dx <= dxMax; dx++) {
         for(int dy = dyMin; dy <= dyMax; dy++) {
             if(dx || dy) {

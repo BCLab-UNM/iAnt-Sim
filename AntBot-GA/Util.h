@@ -95,14 +95,14 @@ static inline float clip(float x, float min, float max) {
  * Given dimensions of a grid/world, returns an NSPoint corresponding
  * to a random point located on the edge of the world.
  */
-static inline NSPoint edge(int w, int h) {
-    int rw = randomInt(w);
-    int rh = randomInt(h);
+static inline NSPoint edge(NSSize size) {
+    int rw = randomInt(size.width);
+    int rh = randomInt(size.height);
     switch(randomInt(4)) {
         case 0: return NSMakePoint(rw, 0); break;
         case 1: return NSMakePoint(0, rh); break;
-        case 2: return NSMakePoint(rw, h - 1); break;
-        case 3: return NSMakePoint(w - 1, rh); break;
+        case 2: return NSMakePoint(rw, size.height - 1); break;
+        case 3: return NSMakePoint(size.width - 1, rh); break;
     }
     return NSMakePoint(-1, -1); //Should never happen.
 }
@@ -124,10 +124,10 @@ static inline float exponentialDecay(float quantity, float time, float lambda) {
 /*
  * Introduces error into recorded tag position - Simulates localization error in real robot
  */
-static inline NSPoint perturbTagPosition(bool realWorldError, NSPoint position) {
+static inline NSPoint perturbTagPosition(bool realWorldError, NSPoint position, NSSize size) {
     if(realWorldError) {
-        position.x = roundf(clip(randomNormal(position.x - (17.6 / 8), (78.9 / 8)), 0, gridWidth - 1));
-        position.y = roundf(clip(randomNormal(position.y - (14.6 / 8), (46.7 / 8)), 0, gridHeight - 1));
+        position.x = roundf(clip(randomNormal(position.x - (17.6 / 8), (78.9 / 8)), 0, size.width - 1));
+        position.y = roundf(clip(randomNormal(position.y - (14.6 / 8), (46.7 / 8)), 0, size.height - 1));
     }
     return position;
 }
@@ -135,10 +135,10 @@ static inline NSPoint perturbTagPosition(bool realWorldError, NSPoint position) 
 /*
  * Introduces error into target position - Simulates traveling error in real robot
  */
-static inline NSPoint perturbTargetPosition(bool realWorldError, NSPoint position) {
+static inline NSPoint perturbTargetPosition(bool realWorldError, NSPoint position, NSSize size) {
     if(realWorldError) {
-        position.x = roundf(clip(randomNormal(position.x + (1.59 / 8), (44.6 / 8)), 0, gridWidth - 1));
-        position.y = roundf(clip(randomNormal(position.y + (64.4 / 8), (111. / 8)), 0, gridHeight - 1));
+        position.x = roundf(clip(randomNormal(position.x + (1.59 / 8), (44.6 / 8)), 0, size.width - 1));
+        position.y = roundf(clip(randomNormal(position.y + (64.4 / 8), (111. / 8)), 0, size.height - 1));
     }
     return position;
 }

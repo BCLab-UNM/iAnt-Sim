@@ -16,7 +16,7 @@
 @interface Robot : NSObject {}
 
 -(void) reset;
--(void) move;
+-(void) moveWithin:(NSSize)bounds;
 -(void) turn:(BOOL)uniformDirection withParameters:(Team*)params;
 -(void) broadcastPheromone:(NSPoint)location toRobots:(NSMutableArray*)robots atRange:(int)distance;
 

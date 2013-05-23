@@ -10,7 +10,7 @@
 @class Tag;
 
 @interface NSObject(SimulationViewNotifications)
--(void) updateDisplayWindowWithRobots:(NSMutableArray*)r team:(Team*)team tags:(Array2D*)tags pheromones:(NSMutableArray*)p;
+-(void) updateDisplayWindowWithRobots:(NSMutableArray*)_robots team:(Team*)_team tags:(Array2D*)_tags pheromones:(NSMutableArray*)_pheromones;
 @end
 
 @interface NSObject(SimulationNotifications)

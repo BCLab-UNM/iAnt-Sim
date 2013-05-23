@@ -3,7 +3,7 @@
 @interface Team : NSObject {}
 
 -(id) initRandom;
--(id) initWithSpecificFile:(NSString*)filePath;
+-(id) initWithFile:(NSString*)filePath;
 
 -(NSMutableDictionary*) getParameters;
 -(void) setParameters:(NSMutableDictionary*)parameters;

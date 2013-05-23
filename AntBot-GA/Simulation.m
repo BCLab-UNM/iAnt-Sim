@@ -20,7 +20,6 @@
 -(int) start {
     
     srandomdev(); //Seed random number generator.
-    [Globals initialize]; //Initialize global variables.
     
     teams = [[NSMutableArray alloc] initWithCapacity:teamCount];
     for(int i = 0; i < teamCount; i++) {
@@ -133,7 +132,7 @@
                             [robot setDelay:0];
                             
                             if(randomFloat(1.) < [team searchGiveUpProbability]) {
-                                if (decentralizedPheromones && ([robot localPheromone].x > 0)) {
+                                if(decentralizedPheromones && !NSEqualPoints([robot localPheromone], NSNullPoint)) {
                                     [robot setTarget:[robot localPheromone]];
                                     [robot setInformed:ROBOT_INFORMED_PHEROMONE];
                                     [robot setStatus:ROBOT_STATUS_DEPARTING];
@@ -142,14 +141,14 @@
                                     [robot setTarget:NSMakePoint(nestX, nestY)];
                                     [robot setStatus:ROBOT_STATUS_RETURNING];
                                 }
-                                [robot setLocalPheromone:NSMakePoint(-1, -1)];
-                                [robot setRecruitmentTarget:NSMakePoint(-1, -1)];
+                                [robot setLocalPheromone:NSNullPoint];
+                                [robot setRecruitmentTarget:NSNullPoint];
                                 break;
                             }
                             
-                            if (decentralizedPheromones && ([robot searchTime] >= 0) && ([robot informed] == ROBOT_INFORMED_MEMORY) && [robot recruitmentTarget].x > 0) {
+                            if(decentralizedPheromones && ([robot searchTime] >= 0) && ([robot informed] == ROBOT_INFORMED_MEMORY) && [robot recruitmentTarget].x > 0) {
                                 float decayedRange = exponentialDecay(wirelessRange, [robot searchTime], [team informedSearchCorrelationDecayRate]);
-                                [robot broadcastPheromone:[robot recruitmentTarget] toTeam:robots atRange:decayedRange];
+                                [robot broadcastPheromone:[robot recruitmentTarget] toRobots:robots atRange:decayedRange];
                             }
                             
                             int stepsRemaining = [robot stepSize] - (tick - [robot lastTurned]);
@@ -184,8 +183,8 @@
                                     [robot setDelay:9];
                                     [robot setTarget:NSMakePoint(nestX, nestY)];
                                     [robot setNeighbors:0];
-                                    [robot setLocalPheromone:NSMakePoint(-1, -1)];
-                                    [robot setRecruitmentTarget:NSMakePoint(-1, -1)];
+                                    [robot setLocalPheromone:NSNullPoint];
+                                    [robot setRecruitmentTarget:NSNullPoint];
                                     
                                     //Sum up all non-picked-up seeds in the moore neighbor.
                                     for(int dx = -1; dx <= 1; dx++) {
@@ -240,21 +239,17 @@
                                         [pheromones addObject:p];
                                     }
                                     
-                                    //Calling getPheromone here to force decay before guard check
-                                    NSPoint pheromone = NSMakePoint(-1, -1);
-                                    if([pheromones count] > 0) {
-                                        pheromone = [self getPheromone:pheromones atTick:tick withDecayRate:team.pheromoneDecayRate];
-                                    }
+                                    NSPoint pheromone = [self getPheromone:pheromones atTick:tick withDecayRate:team.pheromoneDecayRate];
                                     
                                     //pheromones may now be empty as a result of decay, so we check again here
-                                    if(([pheromones count] > 0) &&
+                                    if(NSEqualPoints(pheromone, NSNullPoint) &&
                                         (randomFloat(1.) < exponentialCDF(9 - robot.neighbors, team.pheromoneFollowingRate)) &&
                                         (randomFloat(1.) > exponentialCDF(robot.neighbors + 1, team.siteFidelityRate))) {
                                         robot.target = perturbTargetPosition(realWorldError, pheromone);
                                         robot.informed = ROBOT_INFORMED_PHEROMONE;
                                     }
                                     else if((randomFloat(1.) < exponentialCDF(robot.neighbors + 1, team.siteFidelityRate)) &&
-                                             (([pheromones count] == 0) || (randomFloat(1.) > exponentialCDF(9 - robot.neighbors, team.pheromoneFollowingRate)))) {
+                                             (randomFloat(1.) > exponentialCDF(9 - robot.neighbors, team.pheromoneFollowingRate))) {
                                         robot.target = perturbTargetPosition(realWorldError, perturbedTagPosition);
                                         robot.informed = ROBOT_INFORMED_MEMORY;
                                         //Decide whether to broadcast pheromones locally
@@ -262,7 +257,7 @@
                                             robot.recruitmentTarget = perturbedTagPosition;
                                         }
                                         else {
-                                            robot.recruitmentTarget = NSMakePoint(-1, -1);
+                                            robot.recruitmentTarget = NSNullPoint;
                                         }
                                     }
                                     else {
@@ -273,20 +268,16 @@
                                     robot.carrying = nil;
                                 }
                                 else {
-                                    //Calling getPheromone here to force decay before guard check
-                                    NSPoint pheromone = NSMakePoint(-1, -1);
-                                    if([pheromones count] > 0) {
-                                        pheromone = [self getPheromone:pheromones atTick:tick withDecayRate:team.pheromoneDecayRate];
-                                    }
+                                    //If no pheromones exist, pheromone will be (-1, -1).
+                                    NSPoint pheromone = [self getPheromone:pheromones atTick:tick withDecayRate:team.pheromoneDecayRate];
                                     
-                                    //pheromones may now be empty as a result of decay, so we check again here
-                                    if([pheromones count] > 0) {
-                                        robot.target = perturbTargetPosition(realWorldError, pheromone);
-                                        robot.informed = ROBOT_INFORMED_PHEROMONE;
-                                    }
-                                    else {
+                                    if(NSEqualPoints(pheromone, NSNullPoint)) {
                                         robot.target = edge(gridWidth, gridHeight);
                                         robot.informed = ROBOT_INFORMED_NONE;
+                                    }
+                                    else {
+                                        robot.target = perturbTargetPosition(realWorldError, pheromone);
+                                        robot.informed = ROBOT_INFORMED_PHEROMONE;
                                     }
                                 }
                                 
@@ -294,7 +285,7 @@
                                 if(robot.informed == ROBOT_INFORMED_NONE || !adaptiveWalk) {
                                     robot.searchTime = -1;
                                 }
-                                else{
+                                else {
                                     robot.searchTime = 0;
                                 }
                                 
@@ -445,7 +436,7 @@
     
     for(int i = 0; i < [pheromones count]; i++) {
         Pheromone* pheromone = [pheromones objectAtIndex:i];
-        pheromone.n = exponentialDecay(pheromone.n, tick-pheromone.updated, decayRate);
+        pheromone.n = exponentialDecay(pheromone.n, tick - pheromone.updated, decayRate);
         if(pheromone.n < .001){[pheromones removeObjectAtIndex:i]; i--;}
         else {
             pheromone.updated = tick;
@@ -459,7 +450,7 @@
         r -= pheromone.n;
     }
     
-    return NSMakePoint(-1, -1);
+    return NSNullPoint;
 }
 
 /*

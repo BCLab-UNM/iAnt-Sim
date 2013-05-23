@@ -18,7 +18,7 @@
 -(void) reset;
 -(void) move;
 -(void) turn:(BOOL)uniformDirection withParameters:(Team*)params;
--(void) broadcastPheromone:(NSPoint)location toTeam:(NSMutableArray*)robots atRange:(int)distance;
+-(void) broadcastPheromone:(NSPoint)location toRobots:(NSMutableArray*)robots atRange:(int)distance;
 
 @property (nonatomic) int status; //Indicates what state the robot is in (see #define'd above).
 @property (nonatomic) int informed; //Indicates what type of information is influencing the robot's behavior (see #define'd above).

@@ -2,27 +2,15 @@
 
 @implementation Globals
 
-int pileRadius;
-int searchDelay;
-int crossoverRate;
-int stepCount;
-int gridWidth;
-int gridHeight;
-int nestX;
-int nestY;
-int M_2PI;
-int wirelessRange;
-
-+(void) initialize {
-    pileRadius = 2;
-    crossoverRate = 10;
-    stepCount = 3600;
-    gridWidth = 125;
-    gridHeight = 125;
-    nestX = gridWidth / 2;
-    nestY = gridHeight / 2;
-    M_2PI = 2 * M_PI;
-    wirelessRange = 10;
-}
+const int pileRadius = 2;
+const int crossoverRate = 10;
+const int stepCount = 3600;
+const int gridWidth = 125;
+const int gridHeight = 125;
+const int nestX = gridWidth / 2;
+const int nestY = gridHeight / 2;
+const int M_2PI = 2 * M_PI;
+const NSPoint NSNullPoint = {-1, -1};
+const int wirelessRange = 10;
 
 @end

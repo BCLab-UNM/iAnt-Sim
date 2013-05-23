@@ -13,9 +13,9 @@
     status = ROBOT_STATUS_INACTIVE;
     informed = ROBOT_INFORMED_NONE;
     
-    position = NSMakePoint(-1, -1);
-    target = NSMakePoint(-1, -1);
-    recruitmentTarget = NSMakePoint(-1, -1);
+    position = NSNullPoint;
+    target = NSNullPoint;
+    recruitmentTarget = NSNullPoint;
     
     direction = randomFloat(M_2PI);
     searchTime = -1;
@@ -24,7 +24,7 @@
     
     carrying = nil;
     
-    localPheromone = NSMakePoint(-1, -1);
+    localPheromone = NSNullPoint;
 }
 
 
@@ -98,9 +98,9 @@
 /*
  * Transmit resource location information to other nearby robots
  */
--(void) broadcastPheromone:(NSPoint)location toTeam:(NSMutableArray *)robots atRange:(int)distance{
+-(void) broadcastPheromone:(NSPoint)location toRobots:(NSMutableArray *)robots atRange:(int)distance {
     for(Robot* robot in robots) {
-        if((robot != self) && (pointDistance(self.position.x, self.position.y, robot.position.x, robot.position.y) <= distance)) {
+        if((robot != self) && (pointDistance(self.position.x, self.position.y, robot.position.x, robot.position.y) < distance)) {
             robot.localPheromone = location;
         }
     }

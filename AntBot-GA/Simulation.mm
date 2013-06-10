@@ -2,6 +2,9 @@
 #import <dispatch/dispatch.h>
 #import "Simulation.h"
 
+using namespace std;
+using namespace cv;
+
 @implementation Simulation
 
 @synthesize teamCount, generationCount, robotCount, exploreTime;
@@ -97,11 +100,12 @@
                          * The robot hasn't been initialized yet.
                          * Give it some basic starting values and then fall-through to the next state.
                          */
-                        case ROBOT_STATUS_INACTIVE:
+                        case ROBOT_STATUS_INACTIVE:{
                             robot.status = ROBOT_STATUS_DEPARTING;
                             robot.position = NSMakePoint(nestX, nestY);
                             robot.target = edge(gridWidth, gridHeight);
                             //Fallthrough to ROBOT_STATUS_DEPARTING.
+                        }
                             
                         /*
                          * The robot is either:
@@ -113,7 +117,7 @@
                          * then decide which 'cell' best accomplishes traveling in this direction.  We then move the robot,
                          * and may change the robot/world state based on certain criteria (i.e. it reaches its destination).
                          */
-                        case ROBOT_STATUS_DEPARTING:
+                        case ROBOT_STATUS_DEPARTING:{
                             if (tick >= exploreTime && initialRun == YES) {
                                 robot.status = ROBOT_STATUS_RETURNING;
                                 [robot setTarget:NSMakePoint(nestX,nestY)];
@@ -139,6 +143,7 @@
                             
                             [robot move];
                             break;
+                        }
                             
                         /*
                          * The robot is performing a random walk.
@@ -146,7 +151,7 @@
                          * If it finds a tag, its state changes to ROBOT_STATUS_RETURNING (it brings the tag back to the nest.
                          * All site fidelity and pheromone work, however, is taken care of once the robot actually arrives at the nest.
                          */
-                        case ROBOT_STATUS_SEARCHING:
+                        case ROBOT_STATUS_SEARCHING:{
                             if(tick - [robot lastMoved] <= [robot delay]) {
                                 break;
                             }
@@ -223,6 +228,7 @@
                            
                             [robot setLastMoved:tick];
                             break;
+                        }
                          
                         /*
                          * Robot is held here to emulate neighbor search time in physical robots
@@ -238,7 +244,7 @@
                          * It is either carrying food, or it gave up on its search and is returning to base for further instruction.
                          * Stuff like laying/assigning of pheromones is handled here.
                          */
-                        case ROBOT_STATUS_RETURNING:
+                        case ROBOT_STATUS_RETURNING:{
                             [robot move];
                             
                             //Lots of repeated code in here.
@@ -254,6 +260,7 @@
                                     if(allHome == NO) {break;}
                                     else if(allHome == YES) {
                                         //EM goes here
+                                        Mat m = Mat(*(__bridge Mat*)foundTags);
                                         [foundTags removeAllObjects];
 //                                        for(Centroid* centroid in centroids) {
 //                                            Pheromone* p = [[Pheromone alloc] init];
@@ -342,8 +349,9 @@
                                 
                             }
                             break;
+                        }
                             
-                        case ROBOT_STATUS_EXPLORING:
+                        case ROBOT_STATUS_EXPLORING:{
                             if (tick >= exploreTime) {
                                 robot.status = ROBOT_STATUS_RETURNING;
                                 [robot setTarget:NSMakePoint(nestX,nestY)];
@@ -355,7 +363,7 @@
                             }
                             [robot setDelay:0];
                             
-                            stepsRemaining = [robot stepSize] - (tick - [robot lastTurned]);
+                            int stepsRemaining = [robot stepSize] - (tick - [robot lastTurned]);
                             [robot setTarget:NSMakePoint(roundf([robot position].x+(cos(robot.direction)*stepsRemaining)),roundf([robot position].y+(sin([robot direction])*stepsRemaining)))];
                     
                             //If our current direction takes us outside the world, frantically spin around until this isn't the case.
@@ -388,16 +396,13 @@
                             //[robot setInformed:ROBOT_INFORMED_PHEROMONE];
                             [robot setLastMoved:tick];
                             break;
+                        }
                             
                         //This makes the robots hold their current position. NO-OP
-                        case ROBOT_STATUS_WAITING:
+                        case ROBOT_STATUS_WAITING:{
                             break;
-                            
                         }
-                    
-                        
-                            
-                    
+                    }
                 }
             
                 if(tickRate != 0.f){[NSThread sleepForTimeInterval:tickRate];}

@@ -13,7 +13,7 @@
 		40ED661816DABE50006F8494 /* Team.h in Headers */ = {isa = PBXBuildFile; fileRef = 40ED660D16DABE50006F8494 /* Team.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		40ED661916DABE50006F8494 /* Team.m in Sources */ = {isa = PBXBuildFile; fileRef = 40ED660E16DABE50006F8494 /* Team.m */; };
 		40ED661A16DABE50006F8494 /* Simulation.h in Headers */ = {isa = PBXBuildFile; fileRef = 40ED660F16DABE50006F8494 /* Simulation.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		40ED661B16DABE50006F8494 /* Simulation.m in Sources */ = {isa = PBXBuildFile; fileRef = 40ED661016DABE50006F8494 /* Simulation.m */; };
+		40ED661B16DABE50006F8494 /* Simulation.mm in Sources */ = {isa = PBXBuildFile; fileRef = 40ED661016DABE50006F8494 /* Simulation.mm */; };
 		40ED661E16DABE50006F8494 /* Tag.h in Headers */ = {isa = PBXBuildFile; fileRef = 40ED661316DABE50006F8494 /* Tag.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		40ED661F16DABE50006F8494 /* Tag.m in Sources */ = {isa = PBXBuildFile; fileRef = 40ED661416DABE50006F8494 /* Tag.m */; };
 		40ED662016DABE50006F8494 /* Util.h in Headers */ = {isa = PBXBuildFile; fileRef = 40ED661516DABE50006F8494 /* Util.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -276,7 +276,7 @@
 		40ED660D16DABE50006F8494 /* Team.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Team.h; sourceTree = "<group>"; };
 		40ED660E16DABE50006F8494 /* Team.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Team.m; sourceTree = "<group>"; };
 		40ED660F16DABE50006F8494 /* Simulation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Simulation.h; sourceTree = "<group>"; };
-		40ED661016DABE50006F8494 /* Simulation.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Simulation.m; sourceTree = "<group>"; };
+		40ED661016DABE50006F8494 /* Simulation.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = Simulation.mm; sourceTree = "<group>"; };
 		40ED661316DABE50006F8494 /* Tag.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Tag.h; sourceTree = "<group>"; };
 		40ED661416DABE50006F8494 /* Tag.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Tag.m; sourceTree = "<group>"; };
 		40ED661516DABE50006F8494 /* Util.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Util.h; sourceTree = "<group>"; };
@@ -626,7 +626,7 @@
 				40ED660D16DABE50006F8494 /* Team.h */,
 				40ED660E16DABE50006F8494 /* Team.m */,
 				40ED660F16DABE50006F8494 /* Simulation.h */,
-				40ED661016DABE50006F8494 /* Simulation.m */,
+				40ED661016DABE50006F8494 /* Simulation.mm */,
 				40ED661316DABE50006F8494 /* Tag.h */,
 				40ED661416DABE50006F8494 /* Tag.m */,
 				42A6366D176405C500F44BD3 /* OpenCV */,
@@ -1375,7 +1375,7 @@
 			files = (
 				40ED661716DABE50006F8494 /* Robot.m in Sources */,
 				40ED661916DABE50006F8494 /* Team.m in Sources */,
-				40ED661B16DABE50006F8494 /* Simulation.m in Sources */,
+				40ED661B16DABE50006F8494 /* Simulation.mm in Sources */,
 				40ED661F16DABE50006F8494 /* Tag.m in Sources */,
 				423C12CA1724DFAD00297C18 /* Globals.m in Sources */,
 				423C12D71725B9BA00297C18 /* Array2D.m in Sources */,

@@ -13,9 +13,9 @@
     status = ROBOT_STATUS_INACTIVE;
     informed = ROBOT_INFORMED_NONE;
     
-    position = NSMakePoint(-1,-1);
-    target = NSMakePoint(-1,-1);
-    recruitmentTarget = NSMakePoint(-1,-1);
+    position = NSNullPoint;
+    target = NSNullPoint;
+    recruitmentTarget = NSNullPoint;
     
     direction = randomFloat(M_2PI);
     searchTime = -1;
@@ -24,7 +24,7 @@
     
     carrying = nil;
     
-    localPheromone = NSMakePoint(-1,-1);
+    localPheromone = NSNullPoint;
 }
 
 
@@ -33,39 +33,39 @@
  * Uses the Kenneth motion planning algorithm.
  */
 -(void) move {
-    if(NSEqualPoints(position,target)){return;}
+    if(NSEqualPoints(position, target)){return;}
     
     //Calculate the highest distance improvement we can get for every neighboring cell.  Ugly but optimized.
     float x = position.x;
     float y = position.y;
-    float dis = pointDistance(x,y,target.x,target.y);
+    float dis = pointDistance(x, y, target.x, target.y);
     float improvements[3][3];
     float improvementSum = 0;
     int dxMin = (x == 0) ? 0 : -1;
     int dyMin = (y == 0) ? 0 : -1;
-    int dxMax = (x == (gridWidth-1)) ? 0 : 1;
-    int dyMax = (y == (gridHeight-1)) ? 0 : 1;
-    for(int dx = dxMin; dx <=dxMax; dx++) {
-        for(int dy = dyMin; dy<=dyMax; dy++) {
+    int dxMax = (x == (gridWidth - 1)) ? 0 : 1;
+    int dyMax = (y == (gridHeight - 1)) ? 0 : 1;
+    for(int dx = dxMin; dx <= dxMax; dx++) {
+        for(int dy = dyMin; dy <= dyMax; dy++) {
             if(dx || dy) {
-                if(x+dx == target.x && y+dy == target.y){position = target; return;}
-                float improvement = dis-pointDistance(x+dx, y+dy, target.x, target.y);
+                if(x + dx == target.x && y + dy == target.y){position = target; return;}
+                float improvement = dis - pointDistance(x + dx, y + dy, target.x, target.y);
                 if(improvement > 0.f) {
                     improvementSum += improvement;
-                    improvements[dx+1][dy+1] = improvement;
+                    improvements[dx + 1][dy + 1] = improvement;
                 }
-                else{improvements[dx+1][dy+1] = 0.;}
+                else{improvements[dx + 1][dy + 1] = 0.;}
             }
-            else{improvements[dx+1][dy+1] = 0.;}
+            else{improvements[dx + 1][dy + 1] = 0.;}
         }
     }
     
     //Pick a random neighbor based on a random number weighted on how much of a distance improvement we can get.
     float r = randomFloat(improvementSum);
     for(int dx = dxMin; dx <= dxMax; dx++) {
-        for(int dy = dyMin; dy<= dyMax; dy++) {
-            if(r < improvements[dx+1][dy+1]){position = NSMakePoint(x+dx,y+dy); return;}
-            r -= improvements[dx+1][dy+1];
+        for(int dy = dyMin; dy <= dyMax; dy++) {
+            if(r < improvements[dx + 1][dy + 1]){position = NSMakePoint(x + dx, y + dy); return;}
+            r -= improvements[dx + 1][dy + 1];
         }
     }
 }
@@ -74,33 +74,33 @@
     //We keep track of the amount of turning the robot does so we can penalize it with a time delay
     // (emulating the physical robots)
     float dTheta;
-    if (uniformDirection) {
+    if(uniformDirection) {
         float newDirection = randomFloat(M_2PI);
-        dTheta = pointDirection(0, 0, cos(direction-newDirection), sin(direction-newDirection));
+        dTheta = pointDirection(0, 0, cos(direction - newDirection), sin(direction - newDirection));
         direction = newDirection;
     }
     else {
         if(searchTime >= 0) {
-            float informedSearchCorrelation = exponentialDecay(2*M_2PI-params.uninformedSearchCorrelation, searchTime++, params.informedSearchCorrelationDecayRate);
-            dTheta = clip(randomNormal(0, informedSearchCorrelation+params.uninformedSearchCorrelation),-M_PI,M_PI);
+            float informedSearchCorrelation = exponentialDecay(2 * M_2PI - params.uninformedSearchCorrelation, searchTime++, params.informedSearchCorrelationDecayRate);
+            dTheta = clip(randomNormal(0, informedSearchCorrelation + params.uninformedSearchCorrelation), -M_PI, M_PI);
         }
         else {
-            dTheta = clip(randomNormal(0, params.uninformedSearchCorrelation),-M_PI,M_PI);
+            dTheta = clip(randomNormal(0, params.uninformedSearchCorrelation), -M_PI, M_PI);
         }
-        direction = pmod(direction+dTheta,M_2PI);
+        direction = pmod(direction + dTheta, M_2PI);
     }
     
     //We delay the robot 1 tick for every PI/4 radians (i.e. 45 degrees) of turning
     //NOTE: We increment PI/4 by a small epsilon value to avoid over-penalizing at PI (i.e. 180 degrees)
-    delay = (int)abs(dTheta/(M_PI_4 + 0.001)) + 1;
+    delay = (int)abs(dTheta / (M_PI_4 + 0.001)) + 1;
 }
 
 /*
  * Transmit resource location information to other nearby robots
  */
--(void) broadcastPheromone:(NSPoint)location toTeam:(NSMutableArray *)robots atRange:(int)distance{
-    for (Robot* robot in robots) {
-        if ((robot != self) && (pointDistance(self.position.x, self.position.y, robot.position.x, robot.position.y) <= distance)) {
+-(void) broadcastPheromone:(NSPoint)location toRobots:(NSMutableArray *)robots atRange:(int)distance {
+    for(Robot* robot in robots) {
+        if((robot != self) && (pointDistance(self.position.x, self.position.y, robot.position.x, robot.position.y) < distance)) {
             robot.localPheromone = location;
         }
     }

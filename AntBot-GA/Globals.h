@@ -2,14 +2,15 @@
 
 @interface Globals : NSObject
 
-extern int pileRadius;
-extern int crossoverRate;
-extern int stepCount;
-extern int gridWidth;
-extern int gridHeight;
-extern int nestX;
-extern int nestY;
-extern int M_2PI;
-extern int wirelessRange;
+extern const int pileRadius;
+extern const int crossoverRate;
+extern const int stepCount;
+extern const int gridWidth;
+extern const int gridHeight;
+extern const int nestX;
+extern const int nestY;
+extern const int M_2PI;
+extern const NSPoint NSNullPoint;
+extern const int wirelessRange;
 
 @end

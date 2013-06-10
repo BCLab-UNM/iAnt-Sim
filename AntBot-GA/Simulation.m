@@ -216,7 +216,7 @@
                                 if(detectTag(realWorldError) && ![t isKindOfClass:[NSNull class]] && ![t pickedUp]) { //Note we use shortcircuiting here.
                                     [t setPickedUp:YES];
                                     [robot setCarrying:t];
-                                    [robot setStatus:ROBOT_STATUS_NEIGHBOR_SEARCH];
+                                    [robot setStatus:ROBOT_STATUS_RETURNING];
                                     [robot setDelay:9];
                                     [robot setTarget:nest];
                                     [robot setNeighbors:0];
@@ -238,15 +238,6 @@
                             
                             [robot setLastMoved:tick];
                             break;
-                         
-                        /*
-                         * Robot is held here to emulate neighbor search time in physical robots
-                         */
-                        case ROBOT_STATUS_NEIGHBOR_SEARCH:
-                            if (tick - [robot lastMoved] > [robot delay]) {
-                                [robot setStatus:ROBOT_STATUS_RETURNING];
-                            }
-                            break;
                             
                         /*
                          * The robot is on its way back to the nest.
@@ -254,6 +245,10 @@
                          * Stuff like laying/assigning of pheromones is handled here.
                          */
                         case ROBOT_STATUS_RETURNING:
+                            if(tick - [robot lastMoved] > [robot delay]) {
+                                break;
+                            }
+                            [robot setDelay:0];
                             [robot moveWithin:gridSize];
                             
                             //Lots of repeated code in here.

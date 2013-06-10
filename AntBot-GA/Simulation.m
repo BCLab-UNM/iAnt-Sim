@@ -67,12 +67,9 @@
         [self initDistributionForArray:tags];
         
         BOOL initialRun = YES;
-        int teamNum = 0;
-        static int gen = 0;
         NSMutableArray* robots = [[NSMutableArray alloc] initWithCapacity:robotCount];
         NSMutableArray* pheromones = [[NSMutableArray alloc] init];
         NSMutableArray* foundTags = [[NSMutableArray alloc] init];
-        NSMutableArray* centroids = [[NSMutableArray alloc] initWithCapacity:robotCount];
         for(int i = 0; i < robotCount; i++){[robots addObject:[[Robot alloc] init]];}
         
         for(Team* team in teams) {
@@ -272,8 +269,7 @@
                                         
                                     }
                                 }
-                                
-                            if(NSEqualPoints(robot.position, robot.target)) {
+                    
                                 if(robot.carrying != nil) {
                                     [team setTagsCollected:team.tagsCollected + 1];
                                     

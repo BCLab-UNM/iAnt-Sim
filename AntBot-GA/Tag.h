@@ -7,5 +7,6 @@
 @property (nonatomic) int x;
 @property (nonatomic) int y;
 @property (nonatomic) BOOL pickedUp;
+@property (nonatomic) BOOL discovered;
 
 @end

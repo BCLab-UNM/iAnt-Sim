@@ -260,7 +260,6 @@ using namespace cv;
                                     if(allHome == NO) {break;}
                                     else if(allHome == YES) {
                                         //EM goes here
-                                        Mat m = Mat(*(__bridge Mat*)foundTags);
                                         [foundTags removeAllObjects];
 //                                        for(Centroid* centroid in centroids) {
 //                                            Pheromone* p = [[Pheromone alloc] init];

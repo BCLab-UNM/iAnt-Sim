@@ -15,7 +15,7 @@
         travelGiveUpProbability = randomFloat(1.0);
         searchGiveUpProbability = randomFloat(1.0);
         
-        uninformedSearchCorrelation = randomFloat(2*M_2PI);
+        uninformedSearchCorrelation = randomFloat(2 * M_2PI);
         informedSearchCorrelationDecayRate = randomExponential(5.0);
         stepSizeVariation = randomExponential(1.0);
         
@@ -26,7 +26,7 @@
     return self;
 }
 
--(id) initWithSpecificFile:(NSString *)filePath {
+-(id) initWithFile:(NSString *)filePath {
     if (self = [super init]) {
         NSError* error;
         NSString *paramterString = [NSString stringWithContentsOfFile:filePath encoding:NSUTF8StringEncoding error:&error];
@@ -66,7 +66,7 @@
              [NSNumber numberWithFloat:stepSizeVariation],
              [NSNumber numberWithFloat:pheromoneLayingRate],
              [NSNumber numberWithFloat:siteFidelityRate],
-             [NSNumber numberWithFloat:pheromoneFollowingRate],nil] forKeys:
+             [NSNumber numberWithFloat:pheromoneFollowingRate], nil] forKeys:
             [NSArray arrayWithObjects:
              @"pheromoneDecayRate",
              @"travelGiveUpProbability",
@@ -76,7 +76,7 @@
              @"stepSizeVariation",
              @"pheromoneLayingRate",
              @"siteFidelityRate",
-             @"pheromoneFollowingRate",nil]];
+             @"pheromoneFollowingRate", nil]];
 }
 
 -(void) setParameters:(NSMutableDictionary *)parameters {

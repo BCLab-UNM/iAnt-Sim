@@ -119,7 +119,7 @@
             }
             [pheromones removeAllObjects];
             
-            for(int tick = 0; tick < tickCount; tick++){
+            for(int tick = 0; tick < tickCount; tick++) {
                 for(Robot* robot in robots) {
                     
                     switch(robot.status) {
@@ -351,18 +351,19 @@
             children[i] = [[Team alloc] init];
             Team* child = children[i];
             
+            //TODO pick 4 different candidates -- do tournament selection, make sure candidates + resulting parents are all different.
             Team* parent[2];
             for(int j = 0; j < 2; j++) {
                 Team *p1 = [teams objectAtIndex:randomInt(teamCount)],
                 *p2 = [teams objectAtIndex:randomInt(teamCount)];
-                while((teamCount > 1) && (p1 == p2)){p2 = [teams objectAtIndex:randomInt(teamCount)];}
+                while((teamCount > 2) && (p1 == p2)){p2 = [teams objectAtIndex:randomInt(teamCount)];}
                 parent[j] = (p1.tagsCollected > p2.tagsCollected) ? p1 : p2;
             }
             
             NSMutableDictionary* parameters = [child getParameters];
             for(NSString* key in [parameters allKeys]) {
                 
-                //Independent assortment.
+                //Crossover.
                 [parameters setObject:[[parent[(randomInt(100) < crossoverRate)] getParameters] objectForKey:key] forKey:key];
                 
                 //Random mutations.

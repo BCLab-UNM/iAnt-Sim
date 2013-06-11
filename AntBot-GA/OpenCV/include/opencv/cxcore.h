@@ -40,28 +40,13 @@
 //
 //M*/
 
-#ifndef __OPENCV_CUDA_STREAM_ACCESSOR_HPP__
-#define __OPENCV_CUDA_STREAM_ACCESSOR_HPP__
+#ifndef __OPENCV_OLD_CXCORE_H__
+#define __OPENCV_OLD_CXCORE_H__
 
-#include <cuda_runtime.h>
-#include "opencv2/core/cvdef.h"
+//#if defined(__GNUC__)
+//#warning "This is a deprecated opencv header provided for compatibility. Please include a header from a corresponding opencv module"
+//#endif
 
-// This is only header file that depends on Cuda. All other headers are independent.
-// So if you use OpenCV binaries you do noot need to install Cuda Toolkit.
-// But of you wanna use GPU by yourself, may get cuda stream instance using the class below.
-// In this case you have to install Cuda Toolkit.
+#include "opencv2/core/core_c.h"
 
-namespace cv
-{
-    namespace gpu
-    {
-        class Stream;
-
-        struct StreamAccessor
-        {
-            CV_EXPORTS static cudaStream_t getStream(const Stream& stream);
-        };
-    }
-}
-
-#endif /* __OPENCV_CUDA_STREAM_ACCESSOR_HPP__ */
+#endif

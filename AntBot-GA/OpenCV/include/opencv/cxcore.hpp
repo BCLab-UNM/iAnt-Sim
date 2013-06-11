@@ -7,12 +7,11 @@
 //  copy or use the software.
 //
 //
-//                          License Agreement
+//                           License Agreement
 //                For Open Source Computer Vision Library
 //
 // Copyright (C) 2000-2008, Intel Corporation, all rights reserved.
 // Copyright (C) 2009, Willow Garage Inc., all rights reserved.
-// Copyright (C) 2013, OpenCV Foundation, all rights reserved.
 // Third party copyrights are property of their respective owners.
 //
 // Redistribution and use in source and binary forms, with or without modification,
@@ -41,56 +40,14 @@
 //
 //M*/
 
-#ifndef __OPENCV_CORE_GPULEGACY_PRIVATE_HPP__
-#define __OPENCV_CORE_GPULEGACY_PRIVATE_HPP__
+#ifndef __OPENCV_OLD_CXCORE_HPP__
+#define __OPENCV_OLD_CXCORE_HPP__
 
-#ifndef __OPENCV_BUILD
-#  error this is a private header which should not be used from outside of the OpenCV library
+//#if defined(__GNUC__)
+//#warning "This is a deprecated opencv header provided for compatibility. Please include a header from a corresponding opencv module"
+//#endif
+
+#include "cxcore.h"
+#include "opencv2/core.hpp"
+
 #endif
-
-#include "opencv2/core/gpu_private.hpp"
-
-#ifndef HAVE_CUDA
-#  error gpulegacy module requires CUDA
-#endif
-
-#include "opencv2/gpulegacy.hpp"
-
-namespace cv { namespace gpu
-{
-    class NppStStreamHandler
-    {
-    public:
-        inline explicit NppStStreamHandler(cudaStream_t newStream = 0)
-        {
-            oldStream = nppStSetActiveCUDAstream(newStream);
-        }
-
-        inline ~NppStStreamHandler()
-        {
-            nppStSetActiveCUDAstream(oldStream);
-        }
-
-    private:
-        cudaStream_t oldStream;
-    };
-
-    CV_EXPORTS cv::String getNcvErrorMessage(int code);
-
-    static inline void checkNcvError(int err, const char* file, const int line, const char* func)
-    {
-        if (NCV_SUCCESS != err)
-        {
-            cv::String msg = getNcvErrorMessage(err);
-            cv::error(cv::Error::GpuApiCallError, msg, func, file, line);
-        }
-    }
-}}
-
-#if defined(__GNUC__)
-    #define ncvSafeCall(expr)  cv::gpu::checkNcvError(expr, __FILE__, __LINE__, __func__)
-#else /* defined(__CUDACC__) || defined(__MSVC__) */
-    #define ncvSafeCall(expr)  cv::gpu::checkNcvError(expr, __FILE__, __LINE__, "")
-#endif
-
-#endif // __OPENCV_CORE_GPULEGACY_PRIVATE_HPP__

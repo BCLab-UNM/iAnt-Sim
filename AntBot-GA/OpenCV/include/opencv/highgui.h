@@ -7,11 +7,10 @@
 //  copy or use the software.
 //
 //
-//                           License Agreement
+//                        Intel License Agreement
 //                For Open Source Computer Vision Library
 //
-// Copyright (C) 2000-2008, Intel Corporation, all rights reserved.
-// Copyright (C) 2009-2010, Willow Garage Inc., all rights reserved.
+// Copyright (C) 2000, Intel Corporation, all rights reserved.
 // Third party copyrights are property of their respective owners.
 //
 // Redistribution and use in source and binary forms, with or without modification,
@@ -24,7 +23,7 @@
 //     this list of conditions and the following disclaimer in the documentation
 //     and/or other materials provided with the distribution.
 //
-//   * The name of the copyright holders may not be used to endorse or promote products
+//   * The name of Intel Corporation may not be used to endorse or promote products
 //     derived from this software without specific prior written permission.
 //
 // This software is provided by the copyright holders and contributors "as is" and
@@ -40,19 +39,10 @@
 //
 //M*/
 
-#ifndef __OPENCV_WORLD_HPP__
-#define __OPENCV_WORLD_HPP__
+#ifndef __OPENCV_OLD_HIGHGUI_H__
+#define __OPENCV_OLD_HIGHGUI_H__
 
-#include "opencv2/core.hpp"
-
-#ifdef __cplusplus
-namespace cv
-{
-
-CV_EXPORTS_W bool initAll();
-
-}
-
-#endif
+#include "opencv2/core/core_c.h"
+#include "opencv2/highgui/highgui_c.h"
 
 #endif

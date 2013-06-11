@@ -40,70 +40,37 @@
 //
 //M*/
 
-#ifndef _ncvpyramid_hpp_
-#define _ncvpyramid_hpp_
+#ifndef __OPENCV_OLD_CV_H__
+#define __OPENCV_OLD_CV_H__
 
-#include <memory>
-#include <vector>
-#include "opencv2/gpulegacy/NCV.hpp"
-#include "opencv2/core/cuda/common.hpp"
+#if defined(_MSC_VER)
+    #define CV_DO_PRAGMA(x) __pragma(x)
+    #define __CVSTR2__(x) #x
+    #define __CVSTR1__(x) __CVSTR2__(x)
+    #define __CVMSVCLOC__ __FILE__ "("__CVSTR1__(__LINE__)") : "
+    #define CV_MSG_PRAGMA(_msg) CV_DO_PRAGMA(message (__CVMSVCLOC__ _msg))
+#elif defined(__GNUC__)
+    #define CV_DO_PRAGMA(x) _Pragma (#x)
+    #define CV_MSG_PRAGMA(_msg) CV_DO_PRAGMA(message (_msg))
+#else
+    #define CV_DO_PRAGMA(x)
+    #define CV_MSG_PRAGMA(_msg)
+#endif
+#define CV_WARNING(x) CV_MSG_PRAGMA("Warning: " #x)
 
-namespace cv { namespace gpu { namespace cudev
-{
-    namespace pyramid
-    {
-        CV_EXPORTS void downsampleX2(PtrStepSzb src, PtrStepSzb dst, int depth, int cn, cudaStream_t stream);
-        CV_EXPORTS void interpolateFrom1(PtrStepSzb src, PtrStepSzb dst, int depth, int cn, cudaStream_t stream);
-    }
-}}}
+//CV_WARNING("This is a deprecated opencv header provided for compatibility. Please include a header from a corresponding opencv module")
 
-#if 0 //def _WIN32
+#include "opencv2/core/core_c.h"
+#include "opencv2/imgproc/imgproc_c.h"
+#include "opencv2/photo/photo_c.h"
+#include "opencv2/video/tracking_c.h"
+#include "opencv2/objdetect/objdetect_c.h"
+#include "opencv2/legacy.hpp"
+#include "opencv2/legacy/compat.hpp"
 
-template <class T>
-class CV_EXPORTS NCVMatrixStack
-{
-public:
-    NCVMatrixStack() {this->_arr.clear();}
-    ~NCVMatrixStack()
-    {
-        const Ncv32u nElem = this->_arr.size();
-        for (Ncv32u i=0; i<nElem; i++)
-        {
-            pop_back();
-        }
-    }
-    void push_back(NCVMatrix<T> *elem) {this->_arr.push_back(std::tr1::shared_ptr< NCVMatrix<T> >(elem));}
-    void pop_back() {this->_arr.pop_back();}
-    NCVMatrix<T> * operator [] (int i) const {return this->_arr[i].get();}
-private:
-    std::vector< std::tr1::shared_ptr< NCVMatrix<T> > > _arr;
-};
+#if !defined(CV_IMPL)
+#define CV_IMPL extern "C"
+#endif //CV_IMPL
 
+#endif // __OPENCV_OLD_CV_H_
 
-template <class T>
-class CV_EXPORTS NCVImagePyramid
-{
-public:
-
-    NCVImagePyramid(const NCVMatrix<T> &img,
-                    Ncv8u nLayers,
-                    INCVMemAllocator &alloc,
-                    cudaStream_t cuStream);
-    ~NCVImagePyramid();
-    NcvBool isInitialized() const;
-    NCVStatus getLayer(NCVMatrix<T> &outImg,
-                       NcvSize32u outRoi,
-                       NcvBool bTrilinear,
-                       cudaStream_t cuStream) const;
-
-private:
-
-    NcvBool _isInitialized;
-    const NCVMatrix<T> *layer0;
-    NCVMatrixStack<T> pyramid;
-    Ncv32u nLayers;
-};
-
-#endif //_WIN32
-
-#endif //_ncvpyramid_hpp_

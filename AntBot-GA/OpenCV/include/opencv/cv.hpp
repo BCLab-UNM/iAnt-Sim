@@ -40,68 +40,21 @@
 //
 //M*/
 
-#ifndef __OPENCV_GPU_COMMON_HPP__
-#define __OPENCV_GPU_COMMON_HPP__
+#ifndef __OPENCV_OLD_CV_HPP__
+#define __OPENCV_OLD_CV_HPP__
 
-#include <cuda_runtime.h>
-#include "opencv2/core/gpu_types.hpp"
-#include "opencv2/core/cvdef.h"
-#include "opencv2/core/base.hpp"
+//#if defined(__GNUC__)
+//#warning "This is a deprecated opencv header provided for compatibility. Please include a header from a corresponding opencv module"
+//#endif
 
-#ifndef CV_PI_F
-    #ifndef CV_PI
-        #define CV_PI_F 3.14159265f
-    #else
-        #define CV_PI_F ((float)CV_PI)
-    #endif
+#include "cv.h"
+#include "opencv2/core.hpp"
+#include "opencv2/imgproc.hpp"
+#include "opencv2/photo.hpp"
+#include "opencv2/video.hpp"
+#include "opencv2/highgui.hpp"
+#include "opencv2/features2d.hpp"
+#include "opencv2/calib3d.hpp"
+#include "opencv2/objdetect.hpp"
+
 #endif
-
-namespace cv { namespace gpu {
-    static inline void checkCudaError(cudaError_t err, const char* file, const int line, const char* func)
-    {
-        if (cudaSuccess != err)
-            cv::error(cv::Error::GpuApiCallError, cudaGetErrorString(err), func, file, line);
-    }
-}}
-
-#ifndef cudaSafeCall
-    #if defined(__GNUC__)
-        #define cudaSafeCall(expr)  cv::gpu::checkCudaError(expr, __FILE__, __LINE__, __func__)
-    #else /* defined(__CUDACC__) || defined(__MSVC__) */
-        #define cudaSafeCall(expr)  cv::gpu::checkCudaError(expr, __FILE__, __LINE__, "")
-    #endif
-#endif
-
-namespace cv { namespace gpu
-{
-    template <typename T> static inline bool isAligned(const T* ptr, size_t size)
-    {
-        return reinterpret_cast<size_t>(ptr) % size == 0;
-    }
-
-    static inline bool isAligned(size_t step, size_t size)
-    {
-        return step % size == 0;
-    }
-}}
-
-namespace cv { namespace gpu
-{
-    namespace cudev
-    {
-        __host__ __device__ __forceinline__ int divUp(int total, int grain)
-        {
-            return (total + grain - 1) / grain;
-        }
-
-        template<class T> inline void bindTexture(const textureReference* tex, const PtrStepSz<T>& img)
-        {
-            cudaChannelFormatDesc desc = cudaCreateChannelDesc<T>();
-            cudaSafeCall( cudaBindTexture2D(0, tex, img.ptr(), &desc, img.cols, img.rows, img.step) );
-        }
-    }
-}}
-
-
-
-#endif // __OPENCV_GPU_COMMON_HPP__

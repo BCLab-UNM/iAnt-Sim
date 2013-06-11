@@ -2,9 +2,12 @@
 #import <dispatch/dispatch.h>
 #import "Simulation.h"
 
+using namespace std;
+using namespace cv;
+
 @implementation Simulation
 
-@synthesize teamCount, generationCount, robotCount, tagCount, evaluationCount, tickCount;
+@synthesize teamCount, generationCount, robotCount, tagCount, evaluationCount, tickCount, exploreTime;
 @synthesize distributionRandom, distributionPowerlaw, distributionClustered;
 @synthesize averageTeam, bestTeam;
 @synthesize pileRadius;
@@ -103,16 +106,22 @@
         Array2D* tags = [[Array2D alloc] initWithRows:gridSize.width cols:gridSize.height];
         [self initDistributionForArray:tags];
         
+        BOOL initialRun = YES;
         NSMutableArray* robots = [[NSMutableArray alloc] initWithCapacity:robotCount];
         NSMutableArray* pheromones = [[NSMutableArray alloc] init];
+        NSMutableArray* foundTags = [[NSMutableArray alloc] init];
         for(int i = 0; i < robotCount; i++){[robots addObject:[[Robot alloc] init]];}
         
         for(Team* team in teams) {
             for(int i = 0; i < gridSize.height; i++) {
                 for(int j = 0; j < gridSize.width; j++) {
-                    if([tags objectAtRow:i col:j] != [NSNull null]){[[tags objectAtRow:i col:j] setPickedUp:NO];}
+                    if([tags objectAtRow:i col:j] != [NSNull null]){
+                        [[tags objectAtRow:i col:j] setPickedUp:NO];
+                        [[tags objectAtRow:i col:j] setDiscovered:NO];
+                    }
                 }
             }
+            initialRun = YES;
             for(Robot* robot in robots) {
                 [robot reset];
                 [robot setStepSize:(variableStepSize ? (int)floor(randomLogNormal(0, team.stepSizeVariation)) + 1 : 1)];
@@ -128,11 +137,12 @@
                          * The robot hasn't been initialized yet.
                          * Give it some basic starting values and then fall-through to the next state.
                          */
-                        case ROBOT_STATUS_INACTIVE:
+                        case ROBOT_STATUS_INACTIVE: {
                             robot.status = ROBOT_STATUS_DEPARTING;
                             robot.position = nest;
                             robot.target = edge(gridSize);
                             //Fallthrough to ROBOT_STATUS_DEPARTING.
+                        }
                             
                         /*
                          * The robot is either:
@@ -144,17 +154,33 @@
                          * then decide which 'cell' best accomplishes traveling in this direction.  We then move the robot,
                          * and may change the robot/world state based on certain criteria (i.e. it reaches its destination).
                          */
-                        case ROBOT_STATUS_DEPARTING:
-                            if((!robot.informed && (randomFloat(1.) < team.travelGiveUpProbability)) || (NSEqualPoints(robot.position, robot.target))) {
-                                [robot setStatus:ROBOT_STATUS_SEARCHING];
-                                [robot turn:uniformDirection withParameters:team];
-                                [robot setLastTurned:(tick + [robot delay] + 1)];
-                                [robot setLastMoved:tick];
+                        case ROBOT_STATUS_DEPARTING: {
+                            if (tick >= exploreTime && initialRun == YES) {
+                                robot.status = ROBOT_STATUS_RETURNING;
+                                [robot setTarget:nest];
                                 break;
+                            }
+                            if((!robot.informed && (randomFloat(1.) < team.travelGiveUpProbability)) || (NSEqualPoints(robot.position, robot.target))) {
+                                if(initialRun == YES) {
+                                    [robot setStatus:ROBOT_STATUS_EXPLORING];
+                                    [robot turn:uniformDirection withParameters:team];
+                                    [robot setLastTurned:(tick + [robot delay] + 1)];
+                                    [robot setLastMoved:tick];
+                                    break;
+                                }
+                                else if(initialRun == NO) {
+                                    [robot setStatus:ROBOT_STATUS_SEARCHING];
+                                    [robot turn:uniformDirection withParameters:team];
+                                    [robot setLastTurned:(tick + [robot delay] + 1)];
+                                    [robot setLastMoved:tick];
+                                    break;
+                                }
+
                             }
                             
                             [robot moveWithin:gridSize];
                             break;
+                        }
                             
                         /*
                          * The robot is performing a random walk.
@@ -162,7 +188,7 @@
                          * If it finds a tag, its state changes to ROBOT_STATUS_RETURNING (it brings the tag back to the nest.
                          * All site fidelity and pheromone work, however, is taken care of once the robot actually arrives at the nest.
                          */
-                        case ROBOT_STATUS_SEARCHING:
+                        case ROBOT_STATUS_SEARCHING: {
                             if(tick - [robot lastMoved] <= [robot delay]) {
                                 break;
                             }
@@ -214,6 +240,7 @@
                             if([robot target].x >= 0 && [robot target].y >= 0 && [robot target].x < gridSize.width && [robot target].y < gridSize.height) {
                                 Tag* t = [tags objectAtRow:(int)[robot target].y col:(int)[robot target].x];
                                 if(detectTag(realWorldError) && ![t isKindOfClass:[NSNull class]] && ![t pickedUp]) { //Note we use shortcircuiting here.
+                                    [t setDiscovered:NO];
                                     [t setPickedUp:YES];
                                     [robot setCarrying:t];
                                     [robot setStatus:ROBOT_STATUS_RETURNING];
@@ -235,16 +262,17 @@
                                     }
                                 }
                             }
-                            
+                           
                             [robot setLastMoved:tick];
                             break;
-                            
+                        }
+                    
                         /*
                          * The robot is on its way back to the nest.
                          * It is either carrying food, or it gave up on its search and is returning to base for further instruction.
                          * Stuff like laying/assigning of pheromones is handled here.
                          */
-                        case ROBOT_STATUS_RETURNING:
+                        case ROBOT_STATUS_RETURNING: {
                             if(tick - [robot lastMoved] > [robot delay]) {
                                 break;
                             }
@@ -252,7 +280,34 @@
                             [robot moveWithin:gridSize];
                             
                             //Lots of repeated code in here.
-                            if(NSEqualPoints(robot.position, robot.target)) {
+                            if(NSEqualPoints(robot.position,robot.target)) {
+                                if(initialRun == YES) {
+                                    
+                                    BOOL allHome = YES;
+                                    for(Robot* r in robots) {
+                                        if(!NSEqualPoints(r.position, nest)) {
+                                            allHome = NO;
+                                        }
+                                    }
+                                    if(allHome == NO) {break;}
+                                    else if(allHome == YES) {
+                                        //EM goes here
+                                        [foundTags removeAllObjects];
+//                                        for(Centroid* centroid in centroids) {
+//                                            Pheromone* p = [[Pheromone alloc] init];
+//                                            p.x = centroid.x;
+//                                            p.y = centroid.y;
+//                                            p.n = 1.;
+//                                            p.updated = tick;
+//                                            [pheromones addObject:p];
+//                                            
+//                                        }
+                                        
+                                        initialRun = NO;
+                                        
+                                    }
+                                }
+                    
                                 if(robot.carrying != nil) {
                                     [team setTagsCollected:team.tagsCollected + 1];
                                     
@@ -322,11 +377,65 @@
                                 }
                                 
                                 robot.status = ROBOT_STATUS_DEPARTING;
+                                
                             }
                             break;
+                        }
+                    
+                        case ROBOT_STATUS_EXPLORING: {
+                            if (tick >= exploreTime) {
+                                robot.status = ROBOT_STATUS_RETURNING;
+                                [robot setTarget:nest];
+                                break;
+                            }
+                            
+                            if(tick - [robot lastMoved] <= [robot delay]) {
+                                break;
+                            }
+                            [robot setDelay:0];
+                            
+                            int stepsRemaining = [robot stepSize] - (tick - [robot lastTurned]);
+                            [robot setTarget:NSMakePoint(roundf([robot position].x+(cos(robot.direction)*stepsRemaining)),roundf([robot position].y+(sin([robot direction])*stepsRemaining)))];
+                    
+                            //If our current direction takes us outside the world, frantically spin around until this isn't the case.
+                            while([robot target].x < 0 || [robot target].y < 0 || [robot target].x >= gridSize.width || [robot target].y >= gridSize.height) {
+                                [robot setDirection:randomFloat(M_2PI)];
+                                [robot setTarget:NSMakePoint(roundf([robot position].x+cos([robot direction])),roundf([robot position].y+sin([robot direction])))];
+                            }
+                    
+                            [robot moveWithin:gridSize];
+                    
+                            if(stepsRemaining <= 1) {
+                                [robot setStepSize:(int)round(randomLogNormal(0, team.stepSizeVariation))];
+                                [robot turn:TRUE withParameters:team];
+                                [robot setLastTurned:(tick + robot.delay + 1)];
+                            }
+                    
+                            //After we've moved 1 square ahead, check one square ahead for a tag.
+                            //Reusing robot.target here (without consequence, it just gets overwritten when moving).
+                            [robot setTarget:NSMakePoint(roundf([robot position].x+cos([robot direction])),roundf([robot position].y+sin([robot direction])))];
+                            if([robot target].x >= 0 && [robot target].y >= 0 && [robot target].x < gridSize.width && [robot target].y < gridSize.height) {
+                                Tag* t = [tags objectAtRow:(int)[robot target].y col:(int)[robot target].x];
+                                if(detectTag(realWorldError) && ![t isKindOfClass:[NSNull class]]) { //Note we use shortcircuiting here.
+                                    [foundTags addObject:t];
+                                    [t setDiscovered:YES];
+                                    
+                            
+                                    
+                                }
+                            }
+                            //[robot setInformed:ROBOT_INFORMED_PHEROMONE];
+                            [robot setLastMoved:tick];
+                            break;
+                        }
+                    
+                        //This makes the robots hold their current position. NO-OP
+                        case ROBOT_STATUS_WAITING:{
+                            break;
+                        }
                     }
                 }
-                
+            
                 if(tickRate != 0.f){[NSThread sleepForTimeInterval:tickRate];}
                 if(viewDelegate != nil) {
                     if([viewDelegate respondsToSelector:@selector(updateDisplayWindowWithRobots:team:tags:pheromones:)]) {
@@ -533,5 +642,6 @@
     
     return _maxTeam;
 }
+
 
 @end

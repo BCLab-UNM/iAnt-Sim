@@ -37,6 +37,7 @@
 @property (nonatomic) int tagCount;
 @property (nonatomic) int evaluationCount;
 @property (nonatomic) int tickCount;
+@property (nonatomic) int exploreTime;
 
 @property (nonatomic) float distributionRandom;
 @property (nonatomic) float distributionPowerlaw;

@@ -281,7 +281,7 @@ using namespace cv;
                             [robot moveWithin:gridSize];
                             
                             //Lots of repeated code in here.
-                            if(NSEqualPoints(robot.position,robot.target)) {
+                            if(NSEqualPoints(robot.position, nest)) {
                                 if(initialRun == YES) {
                                     
                                     BOOL allHome = YES;

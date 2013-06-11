@@ -28,6 +28,7 @@ using namespace cv;
         tagCount = 256;
         evaluationCount = 8;
         tickCount = 3600;
+        exploreTime = 0;
         
         distributionClustered = 0.;
         distributionPowerlaw = 1.;

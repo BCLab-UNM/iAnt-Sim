@@ -274,7 +274,7 @@ using namespace cv;
                          * Stuff like laying/assigning of pheromones is handled here.
                          */
                         case ROBOT_STATUS_RETURNING: {
-                            if(tick - [robot lastMoved] > [robot delay]) {
+                            if(tick - [robot lastMoved] <= [robot delay]) {
                                 break;
                             }
                             [robot setDelay:0];

@@ -1,6 +1,6 @@
 #ifdef __OBJC__
     #import <Cocoa/Cocoa.h>
-    #include "Constants.h"
+    #import "Constants.h"
 #endif
 
 #ifdef __cplusplus

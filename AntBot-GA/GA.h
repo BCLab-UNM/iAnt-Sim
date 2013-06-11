@@ -1,6 +1,5 @@
 #import <Foundation/Foundation.h>
 
-#import <AntBot-GA/Globals.h>
 #import <AntBot-GA/Util.h>
 #import <AntBot-GA/Array2D.h>
 #import <AntBot-GA/Pheromone.h>

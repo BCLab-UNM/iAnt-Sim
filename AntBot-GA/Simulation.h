@@ -24,7 +24,7 @@
 
 -(int) start;
 -(void) runEvaluation;
--(void) breedTeams;
+-(void) breedTeams:(int)gen;
 -(void) initDistributionForArray:(Array2D*)tags;
 -(NSPoint) getPheromone:(NSMutableArray*)pheromones atTick:(int)tick withDecayRate:(float)decayRate;
 
@@ -46,6 +46,8 @@
 @property (nonatomic) int pileRadius;
 
 @property (nonatomic) int crossoverRate;
+@property (nonatomic) int mutationRate;
+@property (nonatomic) bool elitism;
 
 @property (nonatomic) NSSize gridSize;
 @property (nonatomic) NSPoint nest;

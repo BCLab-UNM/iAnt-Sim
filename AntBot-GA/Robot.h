@@ -39,6 +39,8 @@
 @property (nonatomic) Tag* carrying; //Reference to which Tag the robot is carrying, if any.  nil otherwise.
 @property (nonatomic) int neighbors; //Yeah this sucks, but the problem is we have to know what the neighbor count of the seed was AT THE TIME THE SEED WAS COLLECTED.  We can't just calculate it when the robot returns to the nest because the state of the grid could be mutated, leading to undesired behavior.  Oh well.
 
+@property (nonatomic) NSMutableArray* discoveredTags; //Tags discovered by robot while in exploration phase
+
 @property (nonatomic) NSPoint localPheromone; //Buffer to store latest pheromone location received from neighboring robots
 
 @end

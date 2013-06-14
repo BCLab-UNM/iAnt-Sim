@@ -8,6 +8,7 @@
 @synthesize direction, searchTime, lastMoved, lastTurned, delay;
 @synthesize carrying, neighbors;
 @synthesize localPheromone;
+@synthesize discoveredTags;
 
 -(void) reset {
     status = ROBOT_STATUS_INACTIVE;
@@ -23,6 +24,8 @@
     lastTurned = 0;
     
     carrying = nil;
+    
+    discoveredTags = [[NSMutableArray alloc] init];
     
     localPheromone = NSNullPoint;
 }

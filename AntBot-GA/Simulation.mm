@@ -88,7 +88,15 @@ using namespace cv;
     
     for(int generation = 0; generation < generationCount; generation++) {
         
-        for(Team* team in teams){team.tagsCollected = 0;}
+        for(Team* team in teams) {
+            [team setTagsCollected:0];
+            if (exploreTime > 0) {
+                [team setExplorePhase:NO];
+            }
+            else {
+                [team setExplorePhase:YES];
+            }
+        }
         
         dispatch_queue_t queue = dispatch_get_global_queue(0, 0);
         dispatch_apply(evaluationCount, queue, ^(size_t idx) {
@@ -120,7 +128,6 @@ using namespace cv;
         Array2D* tags = [[Array2D alloc] initWithRows:gridSize.width cols:gridSize.height];
         [self initDistributionForArray:tags];
         
-        BOOL initialRun = YES;
         NSMutableArray* robots = [[NSMutableArray alloc] initWithCapacity:robotCount];
         NSMutableArray* pheromones = [[NSMutableArray alloc] init];
         for(int i = 0; i < robotCount; i++){[robots addObject:[[Robot alloc] init]];}
@@ -134,7 +141,7 @@ using namespace cv;
                     }
                 }
             }
-            initialRun = YES;
+
             for(Robot* robot in robots) {
                 [robot reset];
                 [robot setStepSize:(variableStepSize ? (int)floor(randomLogNormal(0, team.stepSizeVariation)) + 1 : 1)];
@@ -168,29 +175,20 @@ using namespace cv;
                          * and may change the robot/world state based on certain criteria (i.e. it reaches its destination).
                          */
                         case ROBOT_STATUS_DEPARTING: {
-                            if (tick >= exploreTime && initialRun == YES) {
+                            if (tick >= exploreTime && [team explorePhase]) {
                                 robot.status = ROBOT_STATUS_RETURNING;
                                 [robot setTarget:nest];
                                 break;
                             }
                             if((!robot.informed && (randomFloat(1.) < team.travelGiveUpProbability)) || (NSEqualPoints(robot.position, robot.target))) {
-                                if(initialRun == YES) {
-                                    [robot setStatus:ROBOT_STATUS_EXPLORING];
-                                    [robot turn:uniformDirection withParameters:team];
-                                    [robot setLastTurned:(tick + [robot delay] + 1)];
-                                    [robot setLastMoved:tick];
-                                    break;
-                                }
-                                else if(initialRun == NO) {
-                                    [robot setStatus:ROBOT_STATUS_SEARCHING];
-                                    [robot turn:uniformDirection withParameters:team];
-                                    [robot setLastTurned:(tick + [robot delay] + 1)];
-                                    [robot setLastMoved:tick];
-                                    break;
-                                }
+                                [robot setStatus:([team explorePhase] ? ROBOT_STATUS_EXPLORING : ROBOT_STATUS_SEARCHING)];
+                                [robot turn:uniformDirection withParameters:team];
+                                [robot setLastTurned:(tick + [robot delay] + 1)];
+                                [robot setLastMoved:tick];
+                                break;
 
                             }
-                            
+                
                             [robot moveWithin:gridSize];
                             break;
                         }
@@ -294,7 +292,7 @@ using namespace cv;
                             
                             //Lots of repeated code in here.
                             if(NSEqualPoints(robot.position, nest)) {
-                                if(initialRun == YES) {
+                                if ([team explorePhase]){
                                     
                                     BOOL allHome = YES;
                                     for(Robot* r in robots) {
@@ -303,13 +301,15 @@ using namespace cv;
                                         }
                                     }
                                     
-                                    EM em = [self clusterTags:[robot discoveredTags] ifAllRobotsHome:allHome];
+                                    EM em;
+                                    em = [self clusterTags:[robot discoveredTags] ifAllRobotsHome:allHome];
                                     
                                     if(allHome == NO) {
                                         [robot setStatus:ROBOT_STATUS_WAITING];
                                         break;
                                     }
-                                    else {
+                                    else if (em.isTrained()) {
+                                        
                                         Mat means = em.get<Mat>("means");
                                         vector<Mat> covs = em.get<vector<Mat>>("covs");
                                         
@@ -328,7 +328,7 @@ using namespace cv;
                                             [r setStatus:ROBOT_STATUS_RETURNING];
                                         }
                                         
-                                        initialRun = NO;
+                                        [team setExplorePhase:NO];
                                     }
                                 }
                     
@@ -477,33 +477,40 @@ using namespace cv;
  * Returns trained instantiation of EM if all robots home, untrained otherwise
  */
 -(cv::EM) clusterTags:(NSMutableArray*)foundTags ifAllRobotsHome:(BOOL)allHome {
-    //Append input to aggregate tag array
+    //Create aggregate array
     // (static keyword ensures value is maintained between calls)
     static NSMutableArray* totalFoundTags = [[NSMutableArray alloc] init];
+    
+    //Instantiate NSLock to ensure thread safety during access to totalFoundTags
+    // (also done statically to save memory)
+    static NSLock* threadLock = [[NSLock alloc] init];
+    [threadLock lock]; //lock program
+    
+    //Append input to aggregate tag array
     [totalFoundTags addObjectsFromArray:foundTags];
     
     EM em = EM(MIN((int)[totalFoundTags count],6));
     
-    //If all robots have returned to the nest, run EM on aggregate tag array
-    if (allHome) {
-        if ([totalFoundTags count]) {
-            Mat aggregate((int)[totalFoundTags count], 2, CV_64F); //Create [totalFoundTags count] x 2 matrix
-            
-            int counter = 0;
-            //Iterate over all tags
-            for (Tag* tag in totalFoundTags) {
-                //Copy x and y location of tag into matrix
-                aggregate.at<double>(counter, 0) = [tag x];
-                aggregate.at<double>(counter, 1) = [tag y];
-                counter++;
-            }
-            
-            //Train EM, starting with maximization step
-            em.trainM(aggregate,Mat::zeros((int)[totalFoundTags count], em.get<int>("nclusters"), CV_64F));
-            
-            [totalFoundTags removeAllObjects];
+    //If all robots have returned to the nest and tags have been found, run EM on aggregate tag array
+    if (allHome && [totalFoundTags count]) {
+        Mat aggregate((int)[totalFoundTags count], 2, CV_64F); //Create [totalFoundTags count] x 2 matrix
+        
+        int counter = 0;
+        //Iterate over all tags
+        for (Tag* tag in totalFoundTags) {
+            //Copy x and y location of tag into matrix
+            aggregate.at<double>(counter, 0) = [tag x];
+            aggregate.at<double>(counter, 1) = [tag y];
+            counter++;
         }
+
+        //Train EM
+        em.train(aggregate);
+
+        [totalFoundTags removeAllObjects];
     }
+    
+    [threadLock unlock]; //unlock program
     
     return em;
 }

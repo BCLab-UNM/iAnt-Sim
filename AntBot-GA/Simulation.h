@@ -15,6 +15,8 @@
 
 @interface NSObject(SimulationNotifications)
 -(void) finishedGeneration:(int)generation;
+-(void) writeTeamToFile:(NSString*)file :(Team*)team;
+-(void) writeHeadersToFile:(NSString*)file;
 @end
 
 
@@ -63,6 +65,8 @@
 @property (nonatomic) BOOL adaptiveWalk;
 
 @property (nonatomic) NSString* parameterFile;
+
+@property (nonatomic) NSString* postEvaluationFile;
 
 @property (nonatomic) NSObject* delegate;
 @property (nonatomic) NSObject* viewDelegate;

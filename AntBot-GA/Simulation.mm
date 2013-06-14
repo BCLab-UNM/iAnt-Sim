@@ -28,6 +28,7 @@ using namespace cv;
 @synthesize variableStepSize, uniformDirection, adaptiveWalk;
 @synthesize decentralizedPheromones, wirelessRange;
 @synthesize parameterFile;
+@synthesize postEvaluationFile;
 @synthesize delegate, viewDelegate;
 @synthesize tickRate;
 
@@ -116,6 +117,33 @@ using namespace cv;
         }
     }
     
+    //Run a super evaluation (100 evaluations) of the mean and best individuals and record the results in a special file.
+    //Get the mean and best teams
+    Team* meanTeam = [self averageTeam];
+    [meanTeam setTagsCollected:0.0]; //Reset tags collected
+    Team* topTeam = [self bestTeam];
+    [topTeam setTagsCollected:0.0]; //Reset tags collected
+    //Reset the teams array to just hold 2 individuals
+    teams = [[NSMutableArray alloc] initWithCapacity:2];
+    //put the mean and best teams in the teams array
+    [teams addObject:meanTeam];
+    [teams addObject:topTeam];
+    //Evaluate the mean and best 100 times
+    [self setEvaluationCount:100];
+    dispatch_queue_t queue = dispatch_get_global_queue(0, 0);
+    dispatch_apply(evaluationCount, queue, ^(size_t idx) {
+        @autoreleasepool {
+            [self runEvaluation];
+        }
+    });
+    //Write the results to a file.
+    if(delegate) {
+        [delegate writeHeadersToFile:postEvaluationFile];
+        [delegate writeTeamToFile:postEvaluationFile :[teams objectAtIndex:0]];
+        [delegate writeTeamToFile:postEvaluationFile :[teams objectAtIndex:1]];
+    }
+    
+    printf("Completed\n");
     return 0;
 }
 

@@ -123,7 +123,6 @@ using namespace cv;
         BOOL initialRun = YES;
         NSMutableArray* robots = [[NSMutableArray alloc] initWithCapacity:robotCount];
         NSMutableArray* pheromones = [[NSMutableArray alloc] init];
-        NSMutableArray* foundTags = [[NSMutableArray alloc] init];
         for(int i = 0; i < robotCount; i++){[robots addObject:[[Robot alloc] init]];}
         
         for(Team* team in teams) {
@@ -303,22 +302,33 @@ using namespace cv;
                                             allHome = NO;
                                         }
                                     }
-                                    if(allHome == NO) {break;}
-                                    else if(allHome == YES) {
-                                        //EM goes here
-                                        [foundTags removeAllObjects];
-//                                        for(Centroid* centroid in centroids) {
-//                                            Pheromone* p = [[Pheromone alloc] init];
-//                                            p.x = centroid.x;
-//                                            p.y = centroid.y;
-//                                            p.n = 1.;
-//                                            p.updated = tick;
-//                                            [pheromones addObject:p];
-//                                            
-//                                        }
+                                    
+                                    EM em = [self clusterTags:[robot discoveredTags] ifAllRobotsHome:allHome];
+                                    
+                                    if(allHome == NO) {
+                                        [robot setStatus:ROBOT_STATUS_WAITING];
+                                        break;
+                                    }
+                                    else {
+                                        Mat means = em.get<Mat>("means");
+                                        vector<Mat> covs = em.get<vector<Mat>>("covs");
+                                        
+                                        [[robot discoveredTags] removeAllObjects];
+                                        
+                                        for(int i = 0; i < em.get<int>("nclusters"); i++) {
+                                            Pheromone* p = [[Pheromone alloc] init];
+                                            p.x = means.at<double>(i,0);
+                                            p.y = means.at<double>(i,1);
+                                            p.n = 1.;
+                                            p.updated = tick;
+                                            [pheromones addObject:p];
+                                        }
+                                        
+                                        for (Robot* r in robots) {
+                                            [r setStatus:ROBOT_STATUS_RETURNING];
+                                        }
                                         
                                         initialRun = NO;
-                                        
                                     }
                                 }
                     
@@ -431,7 +441,7 @@ using namespace cv;
                             if([robot target].x >= 0 && [robot target].y >= 0 && [robot target].x < gridSize.width && [robot target].y < gridSize.height) {
                                 Tag* t = [tags objectAtRow:(int)[robot target].y col:(int)[robot target].x];
                                 if(detectTag(realWorldError) && ![t isKindOfClass:[NSNull class]]) { //Note we use shortcircuiting here.
-                                    [foundTags addObject:t];
+                                    [[robot discoveredTags] addObject:t];
                                     [t setDiscovered:YES];
                                     
                             
@@ -462,10 +472,41 @@ using namespace cv;
     }
 }
 
-
-
-
-
+/*
+ * Executes unsupervised clustering algorithm Expectation-Maximization (EM) on input
+ * Returns trained instantiation of EM if all robots home, untrained otherwise
+ */
+-(cv::EM) clusterTags:(NSMutableArray*)foundTags ifAllRobotsHome:(BOOL)allHome {
+    //Append input to aggregate tag array
+    // (static keyword ensures value is maintained between calls)
+    static NSMutableArray* totalFoundTags = [[NSMutableArray alloc] init];
+    [totalFoundTags addObjectsFromArray:foundTags];
+    
+    EM em = EM(MIN((int)[totalFoundTags count],6));
+    
+    //If all robots have returned to the nest, run EM on aggregate tag array
+    if (allHome) {
+        if ([totalFoundTags count]) {
+            Mat aggregate((int)[totalFoundTags count], 2, CV_64F); //Create [totalFoundTags count] x 2 matrix
+            
+            int counter = 0;
+            //Iterate over all tags
+            for (Tag* tag in totalFoundTags) {
+                //Copy x and y location of tag into matrix
+                aggregate.at<double>(counter, 0) = [tag x];
+                aggregate.at<double>(counter, 1) = [tag y];
+                counter++;
+            }
+            
+            //Train EM, starting with maximization step
+            em.trainM(aggregate,Mat::zeros((int)[totalFoundTags count], em.get<int>("nclusters"), CV_64F));
+            
+            [totalFoundTags removeAllObjects];
+        }
+    }
+    
+    return em;
+}
 
 /*
  */

@@ -91,10 +91,10 @@ using namespace cv;
         for(Team* team in teams) {
             [team setTagsCollected:0];
             if (exploreTime > 0) {
-                [team setExplorePhase:NO];
+                [team setExplorePhase:YES];
             }
             else {
-                [team setExplorePhase:YES];
+                [team setExplorePhase:NO];
             }
         }
         
@@ -308,7 +308,7 @@ using namespace cv;
                                         [robot setStatus:ROBOT_STATUS_WAITING];
                                         break;
                                     }
-                                    else if (em.isTrained()) {
+                                    else {
                                         
                                         Mat means = em.get<Mat>("means");
                                         vector<Mat> covs = em.get<vector<Mat>>("covs");

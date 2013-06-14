@@ -25,5 +25,6 @@
 
 //Non-evolved variables:
 @property (nonatomic) float tagsCollected;
+@property (nonatomic) BOOL explorePhase; //Flag denoting whether robot team is currently exploring for tags instead of collecting them
 
 @end

@@ -100,9 +100,7 @@ using namespace cv;
         
         dispatch_queue_t queue = dispatch_get_global_queue(0, 0);
         dispatch_apply(evaluationCount, queue, ^(size_t idx) {
-            @autoreleasepool {
-                [self runEvaluation];
-            }
+            [self runEvaluation];
         });
         
         [self breedTeams:generation];
@@ -309,18 +307,27 @@ using namespace cv;
                                         break;
                                     }
                                     else {
-                                        
+                                        //Extract means and covariance matrices
                                         Mat means = em.get<Mat>("means");
                                         vector<Mat> covs = em.get<vector<Mat>>("covs");
                                         
-                                        [[robot discoveredTags] removeAllObjects];
-                                        
+                                        //Calculate determinants of covs
+                                        //Store results in covDeterminants
+                                        double determinantSum = 0;
+                                        vector<double> covDeterminants;
+                                        for(Mat cov : covs) {
+                                            covDeterminants.push_back(determinant(cov));
+                                            determinantSum += covDeterminants.back();
+                                        }
+
+                                        //Iterate through clusters
                                         for(int i = 0; i < em.get<int>("nclusters"); i++) {
+                                            //Create pheromone at centroid location
                                             Pheromone* p = [[Pheromone alloc] init];
-                                            p.x = means.at<double>(i,0);
-                                            p.y = means.at<double>(i,1);
-                                            p.n = 1.;
-                                            p.updated = tick;
+                                            [p setX:means.at<double>(i,0)];
+                                            [p setY:means.at<double>(i,1)];
+                                            [p setN:1 - covDeterminants[i]/determinantSum]; //pheromone weight = 1 - det(sigma_i) / sum(det(sigma_i))
+                                            [p setUpdated:tick];
                                             [pheromones addObject:p];
                                         }
                                         
@@ -489,12 +496,14 @@ using namespace cv;
     //Append input to aggregate tag array
     [totalFoundTags addObjectsFromArray:foundTags];
     
-    EM em = EM(MIN((int)[totalFoundTags count],6));
+    //Construct EM for k clusters, where k = sqrt(num points / 2)
+    int k = round(sqrt((double)[totalFoundTags count] / 2));
+    EM em = EM(k);
     
     //If all robots have returned to the nest and tags have been found, run EM on aggregate tag array
     if (allHome && [totalFoundTags count]) {
-        Mat aggregate((int)[totalFoundTags count], 2, CV_64F); //Create [totalFoundTags count] x 2 matrix
         
+        Mat aggregate((int)[totalFoundTags count], 2, CV_64F); //Create [totalFoundTags count] x 2 matrix
         int counter = 0;
         //Iterate over all tags
         for (Tag* tag in totalFoundTags) {

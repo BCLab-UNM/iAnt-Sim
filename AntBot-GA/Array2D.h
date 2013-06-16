@@ -6,7 +6,7 @@
     size_t numberOfColumns;
 }
 
--(id) initWithRows:(size_t) rows cols:(size_t) cols;
+-(id) initWithRows:(size_t)rows cols:(size_t)cols;
 -(id) objectAtRow:(size_t)x col:(size_t)y;
 -(void) setObjectAtRow:(size_t)x col:(size_t)y to:(id)value;
 

@@ -1,5 +1,6 @@
 #import <Foundation/Foundation.h>
 #import "Array2D.h"
+#import "GA.h"
 #import "Pheromone.h"
 #import "Team.h"
 #import "Robot.h"
@@ -22,11 +23,11 @@
 
 @interface Simulation : NSObject {
     NSMutableArray* teams;
+    GA* ga;
 }
 
 -(int) start;
 -(void) runEvaluation;
--(void) breedTeams:(int)gen;
 -(void) initDistributionForArray:(Array2D*)tags;
 -(NSPoint) getPheromone:(NSMutableArray*)pheromones atTick:(int)tick withDecayRate:(float)decayRate;
 
@@ -47,8 +48,8 @@
 
 @property (nonatomic) int pileRadius;
 
-@property (nonatomic) int crossoverRate;
-@property (nonatomic) int mutationRate;
+@property (nonatomic) float crossoverRate;
+@property (nonatomic) float mutationRate;
 @property (nonatomic) bool elitism;
 
 @property (nonatomic) NSSize gridSize;

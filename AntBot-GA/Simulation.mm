@@ -385,10 +385,10 @@ using namespace cv;
                                         [pheromones addObject:p];
                                     }
                                     
+                                    //If no pheromones exist, pheromone will be (-1, -1)
                                     NSPoint pheromone = [self getPheromone:pheromones atTick:tick withDecayRate:team.pheromoneDecayRate];
-                                    
-                                    //pheromones may now be empty as a result of decay, so we check again here
-                                    if(NSEqualPoints(pheromone, NSNullPoint) &&
+
+                                    if(!NSEqualPoints(pheromone, NSNullPoint) &&
                                         (randomFloat(1.) < exponentialCDF(9 - robot.neighbors, team.pheromoneFollowingRate)) &&
                                         (randomFloat(1.) > exponentialCDF(robot.neighbors + 1, team.siteFidelityRate))) {
                                         robot.target = perturbTargetPosition(realWorldError, pheromone, gridSize);
@@ -414,7 +414,7 @@ using namespace cv;
                                     robot.carrying = nil;
                                 }
                                 else {
-                                    //If no pheromones exist, pheromone will be (-1, -1).
+                                    //If no pheromones exist, pheromone will be (-1, -1)
                                     NSPoint pheromone = [self getPheromone:pheromones atTick:tick withDecayRate:team.pheromoneDecayRate];
                                     
                                     if(NSEqualPoints(pheromone, NSNullPoint)) {

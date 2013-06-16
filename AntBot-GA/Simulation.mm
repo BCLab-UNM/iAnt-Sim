@@ -7,13 +7,6 @@ using namespace cv;
 
 @interface Simulation()
 
--(NSMutableArray*) tournamentSelection;
--(void) uniformCrossover:(Team*)child :(NSMutableArray*)parent;
--(void) independentAssortmentCrossover:(Team*)child :(NSMutableArray*)parent;
--(void) onePointCrossover:(Team*)child :(NSMutableArray*)parent;
--(void) twoPointCrossover:(Team*)child :(NSMutableArray*)parent;
--(float) valueDependentVarianceMutation:(float)val :(int)gen;
-
 @end
 
 @implementation Simulation
@@ -48,8 +41,8 @@ using namespace cv;
         
         pileRadius = 2;
         
-        crossoverRate = 100;
-        mutationRate = 10;
+        crossoverRate = 1;
+        mutationRate = 0.1;
         elitism = false;
         
         gridSize = NSMakeSize(125, 125);
@@ -76,6 +69,7 @@ using namespace cv;
     
     srandomdev(); //Seed random number generator.
     
+    //Allocate teams and initialize parameters accordingly
     teams = [[NSMutableArray alloc] initWithCapacity:teamCount];
     for(int i = 0; i < teamCount; i++) {
         if(parameterFile) {
@@ -85,8 +79,14 @@ using namespace cv;
             [teams addObject:[[Team alloc] initRandom]];
         }
     }
+    
+    //Allocate GA
+    ga = [[GA alloc] initWithElitism:elitism crossover:crossoverRate andMutation:mutationRate];
+    
+    //Set evaluation count to 1 if using GUI
     evaluationCount = (viewDelegate != nil) ? 1 : evaluationCount;
     
+    //Main loop
     for(int generation = 0; generation < generationCount; generation++) {
         
         for(Team* team in teams) {
@@ -104,7 +104,7 @@ using namespace cv;
             [self runEvaluation];
         });
         
-        [self breedTeams:generation];
+        [ga breedTeams:teams AtGeneration:generation];
         
         if(delegate) {
             
@@ -550,215 +550,6 @@ using namespace cv;
     [threadLock unlock]; //unlock program
     
     return em;
-}
-
-/*
- */
--(NSMutableArray*) tournamentSelection {
-    NSMutableArray* parent = [[NSMutableArray alloc]init];
-    for(int j = 0; j < 2; j++) {
-        Team *p1 = [teams objectAtIndex:randomInt(teamCount)],
-        *p2 = [teams objectAtIndex:randomInt(teamCount)];
-        //Make sure p1 and p2 are distinct.
-        while ((teamCount > 1) && (p1 == p2)) {p2 = [teams objectAtIndex:randomInt(teamCount)];}
-        //parent[j] gets whichever parent collected more tags
-        if(p1.tagsCollected > p2.tagsCollected){
-            [parent addObject:p1];
-        }else{
-            [parent addObject:p2];
-        }
-    }
-    return parent;
-}
-
-
-
-/*
- */
--(void) independentAssortmentCrossover:(Team*)child :(NSMutableArray*)parent {
-    //Crossover the parameters:
-    NSMutableDictionary* parameters = [child getParameters];
-    for(NSString* key in [parameters allKeys]) {
-        //Independent assortment.
-        //booleans can be treated as integers in C. so a boolean is 0 or 1.
-        //parentNum will be either 0 or 1 for one of the 2 parents.
-        int parentNum = (randomInt(100) < 10);
-        //Getting the parameter specified by key of parent parentNum.
-        Team* p = [parent objectAtIndex:parentNum];
-        id param = [[p getParameters] objectForKey:key];
-        //Setting the child's parameter
-        [parameters setObject:param forKey:key];
-    }
-    [child setParameters:parameters];
-}
-
-
-/*
- */
--(void) uniformCrossover:(Team*)child :(NSMutableArray*)parent {
-    //Crossover the parameters:
-    NSMutableDictionary* parameters = [child getParameters];
-    for(NSString* key in [parameters allKeys]) {
-        //Independent assortment.
-        //booleans can be treated as integers in C. so a boolean is 0 or 1.
-        //parentNum will be either 0 or 1 for one of the 2 parents.
-        int parentNum = (randomInt(100) < 50);
-        //Getting the parameter specified by key of parent parentNum.
-        Team* p = [parent objectAtIndex:parentNum];
-        id param = [[p getParameters] objectForKey:key];
-        //Setting the child's parameter
-        [parameters setObject:param forKey:key];
-    }
-    [child setParameters:parameters];
-}
-
-/*
- */
--(void) onePointCrossover:(Team*)child :(NSMutableArray*)parent {
-    //Crossover the parameters:
-    NSMutableDictionary* parameters = [child getParameters];
-    //Select a point for one-point crossover
-    int crossPoint = randomInt(10); //TODO this is 10 because there are 9 parameters in team. This would be much better if it wasn't a "magic number".
-    int i = 0;
-    for(NSString* key in [parameters allKeys]) {
-        [parameters setObject:[[parent[(crossPoint > i)] getParameters] objectForKey:key] forKey:key];
-        i++;
-    }
-    [child setParameters:parameters];
-}
-
-
-/*
- */
--(void) twoPointCrossover:(Team*)child :(NSMutableArray*)parent {
-    NSMutableDictionary* parameters = [child getParameters];
-    //Select two points for two-point crossover
-    //TODO these are 10 because there are 9 parameters in team. This would be much better if it wasn't a "magic number".
-    int crossPoint1 = randomInt(10);
-    int crossPoint2 = randomInt(10);
-    //Ensure that point 1 is less than point 2.
-    //Allow the points to be equal in which case this is just one point crossover.
-    if(crossPoint1 > crossPoint2){
-        int temp = crossPoint2;
-        crossPoint2 = crossPoint1;
-        crossPoint1 = temp;
-    }
-    int i = 0;
-    for(NSString* key in [parameters allKeys]) {
-        if(i<crossPoint1){
-            [parameters setObject:[[parent[0] getParameters] objectForKey:key] forKey:key];
-        }else if(i<crossPoint2){
-            [parameters setObject:[[parent[1] getParameters] objectForKey:key] forKey:key];
-        }else{
-            [parameters setObject:[[parent[0] getParameters] objectForKey:key] forKey:key];
-        }
-        i++;
-    }
-    [child setParameters:parameters];
-}
-
-
-/*
- */
--(float) valueDependentVarianceMutation:(float)val :(int)gen{
-    //calculate the variance. Larger values will have more variance!
-    //float sig = fabs(val) * .05; //original
-    float sig = 0.025; //small
-    //float sig = 0.005; //smaller
-    //float sig = 1.0/(((float)gen)*4.0 + 10.0); //decreasing variance
-    
-    //Probably smaller variance START
-    /*float sig = 0.05;
-     int randInt = randomInt(100);
-     if(randInt < gen/2){
-     sig = 0.0005;
-     }else if(randInt < gen){
-     sig = 0.005;
-     }*/
-    //Probably smaller variance END
-    
-    //add a random amount sampled from a normal distribution centered at zero.
-    float toReturn = val + randomNormal(0,sig);
-    if(toReturn < 0.0){
-        return 0.0;
-    }else{
-        return toReturn;
-    }
-}
-
-
-
-/*
- * 'Breeds' and mutates teams.
- * There is a slight tradeoff for readability at the cost of efficiency here,
- * which has to do with the use of (and enumeration over) dictionaries.
- * generation is passed because some mutations change as search progresses.
- */
--(void) breedTeams:(int)gen{
-    @autoreleasepool {
-        //Elitism
-        //Allocate a whole new individual.
-        Team* bestIndividual = [[Team alloc] init];
-        if(elitism){
-            //Get the best individual in the population and make sure it is preserved in the next generation.
-            int mostTags = -1;
-            for(int i = 0; i < teamCount; i++) {
-                //Get the ith individual
-                Team *temp = [teams objectAtIndex:i];
-                //If this individual is better than the best so far, then update the elite individual.
-                if(temp.tagsCollected > mostTags){
-                    mostTags = temp.tagsCollected;
-                    //Copy the best individual's parameters.
-                    [bestIndividual setParameters:[temp getParameters]];
-                }
-            }
-        }
-        
-        Team* children[teamCount];
-        for(int i = 0; i < teamCount; i++) {
-            children[i] = [[Team alloc] init];
-            Team* child = children[i];
-            
-            //Selection
-            NSMutableArray* parent = [self tournamentSelection];
-            
-            //Crossover
-            if(randomInt(100) < crossoverRate){
-                [self independentAssortmentCrossover:child :parent];
-                //[self uniformCrossover:child :parent];
-                //[self onePointCrossover:child :parent];
-                //[self twoPointCrossover:child :parent];
-            }else{
-                //Otherwise the child will just be a copy of one of the parents
-                [child setParameters:[[parent objectAtIndex:0] getParameters]];
-            }
-            
-            //Random mutations.
-            NSMutableDictionary* parameters = [child getParameters];
-            for(NSString* key in [parameters allKeys]) {
-                if(randomInt(100) < mutationRate){
-                    float val = [[parameters objectForKey:key] floatValue];
-                    val = [self valueDependentVarianceMutation:val:gen];
-                    [parameters setObject:[NSNumber numberWithFloat:val] forKey:key];
-                }
-            }
-            
-            [children[i] setParameters:parameters];
-        }
-        
-        //Set the children to be the new set of teams for the next generation.
-        for(int i = 0; i < teamCount; i++) {
-            Team* team = [teams objectAtIndex:i];
-            [team setParameters:[children[i] getParameters]];
-        }
-        
-        //If we are using elitism then the first child is replaced by the best individual from the previous generation.
-        if(elitism){
-            Team* team = [teams objectAtIndex:0];
-            [team setParameters:[bestIndividual getParameters]];
-        }
-        
-    }
 }
 
 /*

@@ -1,10 +1,27 @@
 #import <Foundation/Foundation.h>
+#import "Team.h"
+#import "Util.h"
 
-#import <AntBot-GA/Constants.h>
-#import <AntBot-GA/Util.h>
-#import <AntBot-GA/Array2D.h>
-#import <AntBot-GA/Pheromone.h>
-#import <AntBot-GA/Simulation.h>
-#import <AntBot-GA/Robot.h>
-#import <AntBot-GA/Team.h>
-#import <AntBot-GA/Tag.h>
+@interface GA : NSObject {
+    BOOL elitism;
+    float crossoverRate;
+    float mutationRate;
+}
+
+-(id) initWithElitism:(BOOL)_elitism crossover:(float)_crossoverRate andMutation:(float)_mutationRate;
+
+-(void) breedTeams:(NSMutableArray *)teams AtGeneration:(int)generation;
+
+//Selection
+-(NSMutableArray*) tournamentSelectionOn:(NSMutableArray*)teams;
+
+//Crossover
+-(void) independentAssortmentCrossoverFromParents:(NSMutableArray *)parents toChild:(Team *)child withFirstParentBias:(float)bias;
+-(void) uniformCrossoverFromParents:(NSMutableArray *)parents toChild:(Team *)child;
+-(void) onePointCrossoverFromParents:(NSMutableArray *)parents toChild:(Team *)child;
+-(void) twoPointCrossoverFromParents:(NSMutableArray *)parents toChild:(Team *)child;
+
+//Mutation
+-(void) valueDependentVarianceMutationForParameter:(NSNumber **)parameter atGeneration:(int)generation;
+
+@end

@@ -17,7 +17,9 @@
 		40ED661E16DABE50006F8494 /* Tag.h in Headers */ = {isa = PBXBuildFile; fileRef = 40ED661316DABE50006F8494 /* Tag.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		40ED661F16DABE50006F8494 /* Tag.m in Sources */ = {isa = PBXBuildFile; fileRef = 40ED661416DABE50006F8494 /* Tag.m */; };
 		40ED662016DABE50006F8494 /* Util.h in Headers */ = {isa = PBXBuildFile; fileRef = 40ED661516DABE50006F8494 /* Util.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		40ED662116DABE8F006F8494 /* GA.h in Headers */ = {isa = PBXBuildFile; fileRef = 40ED65C216DABD31006F8494 /* GA.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		40ED662116DABE8F006F8494 /* Sim.h in Headers */ = {isa = PBXBuildFile; fileRef = 40ED65C216DABD31006F8494 /* Sim.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		42307A5C176D262A005BB34B /* GA.h in Headers */ = {isa = PBXBuildFile; fileRef = 42307A5A176D262A005BB34B /* GA.h */; };
+		42307A5D176D262A005BB34B /* GA.m in Sources */ = {isa = PBXBuildFile; fileRef = 42307A5B176D262A005BB34B /* GA.m */; };
 		4239E9D51767B7A4007F35EE /* cv.h in Headers */ = {isa = PBXBuildFile; fileRef = 4239E8F51767B7A4007F35EE /* cv.h */; };
 		4239E9D61767B7A4007F35EE /* cv.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 4239E8F61767B7A4007F35EE /* cv.hpp */; };
 		4239E9D71767B7A4007F35EE /* cvaux.h in Headers */ = {isa = PBXBuildFile; fileRef = 4239E8F71767B7A4007F35EE /* cvaux.h */; };
@@ -270,7 +272,7 @@
 		40ED65BD16DABD31006F8494 /* CoreData.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreData.framework; path = System/Library/Frameworks/CoreData.framework; sourceTree = SDKROOT; };
 		40ED65BE16DABD31006F8494 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		40ED65C116DABD31006F8494 /* AntBot-GA-Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "AntBot-GA-Prefix.pch"; sourceTree = "<group>"; };
-		40ED65C216DABD31006F8494 /* GA.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = GA.h; sourceTree = "<group>"; };
+		40ED65C216DABD31006F8494 /* Sim.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Sim.h; sourceTree = "<group>"; };
 		40ED660B16DABE50006F8494 /* Robot.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Robot.h; sourceTree = "<group>"; };
 		40ED660C16DABE50006F8494 /* Robot.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Robot.m; sourceTree = "<group>"; };
 		40ED660D16DABE50006F8494 /* Team.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Team.h; sourceTree = "<group>"; };
@@ -280,6 +282,8 @@
 		40ED661316DABE50006F8494 /* Tag.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Tag.h; sourceTree = "<group>"; };
 		40ED661416DABE50006F8494 /* Tag.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Tag.m; sourceTree = "<group>"; };
 		40ED661516DABE50006F8494 /* Util.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Util.h; sourceTree = "<group>"; };
+		42307A5A176D262A005BB34B /* GA.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GA.h; sourceTree = "<group>"; };
+		42307A5B176D262A005BB34B /* GA.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GA.m; sourceTree = "<group>"; };
 		4239E8F51767B7A4007F35EE /* cv.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = cv.h; sourceTree = "<group>"; };
 		4239E8F61767B7A4007F35EE /* cv.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = cv.hpp; sourceTree = "<group>"; };
 		4239E8F71767B7A4007F35EE /* cvaux.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = cvaux.h; sourceTree = "<group>"; };
@@ -613,11 +617,13 @@
 		40ED65BF16DABD31006F8494 /* AntBot-GA */ = {
 			isa = PBXGroup;
 			children = (
-				40ED65C216DABD31006F8494 /* GA.h */,
+				40ED65C216DABD31006F8494 /* Sim.h */,
 				40ED661516DABE50006F8494 /* Util.h */,
 				423C12D41725B9BA00297C18 /* Array2D.h */,
 				423C12D51725B9BA00297C18 /* Array2D.m */,
 				423C12C71724DFAD00297C18 /* Constants.h */,
+				42307A5A176D262A005BB34B /* GA.h */,
+				42307A5B176D262A005BB34B /* GA.m */,
 				42E1C89F1731AB40000D102A /* Pheromone.h */,
 				42E1C8A01731AB40000D102A /* Pheromone.m */,
 				40ED660B16DABE50006F8494 /* Robot.h */,
@@ -1107,7 +1113,7 @@
 				40ED661A16DABE50006F8494 /* Simulation.h in Headers */,
 				40ED661E16DABE50006F8494 /* Tag.h in Headers */,
 				40ED662016DABE50006F8494 /* Util.h in Headers */,
-				40ED662116DABE8F006F8494 /* GA.h in Headers */,
+				40ED662116DABE8F006F8494 /* Sim.h in Headers */,
 				423C12C91724DFAD00297C18 /* Constants.h in Headers */,
 				423C12D61725B9BA00297C18 /* Array2D.h in Headers */,
 				42E1C8A11731AB40000D102A /* Pheromone.h in Headers */,
@@ -1312,6 +1318,7 @@
 				4239EA9B1767B7A5007F35EE /* stabilizer.hpp in Headers */,
 				4239EA9C1767B7A5007F35EE /* wobble_suppression.hpp in Headers */,
 				4239EA9D1767B7A5007F35EE /* videostab.hpp in Headers */,
+				42307A5C176D262A005BB34B /* GA.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1372,6 +1379,7 @@
 				40ED661F16DABE50006F8494 /* Tag.m in Sources */,
 				423C12D71725B9BA00297C18 /* Array2D.m in Sources */,
 				42E1C8A21731AB40000D102A /* Pheromone.m in Sources */,
+				42307A5D176D262A005BB34B /* GA.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

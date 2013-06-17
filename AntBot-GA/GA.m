@@ -45,10 +45,9 @@
     NSMutableDictionary* parameters = [child getParameters];
     
     for(NSString* key in [parameters allKeys]) {
-        //Independent assortment.
-        //booleans can be treated as integers in C. so a boolean is 0 or 1.
-        //parentNum will be either 0 or 1 for one of the 2 parents.
-        int parentNum = (random() > bias);
+        //Booleans can be treated as integers in C, so a boolean is 0 or 1
+        //parentNum will be either 0 or 1 for one of the 2 parents
+        int parentNum = (randomFloat(1.0) > bias);
         //Getting the parameter specified by key of parent parentNum.
         Team* p = [parents objectAtIndex:parentNum];
         id param = [[p getParameters] objectForKey:key];
@@ -67,10 +66,8 @@
     NSMutableDictionary* parameters = [child getParameters];
     
     for(NSString* key in [parameters allKeys]) {
-        //Independent assortment.
-        //booleans can be treated as integers in C. so a boolean is 0 or 1.
-        //parentNum will be either 0 or 1 for one of the 2 parents.
-        int parentNum = (randomInt(100) < 50);
+        //parentNum will be either 0 or 1 for one of the 2 parents
+        int parentNum = randomInt(2);
         //Getting the parameter specified by key of parent parentNum.
         Team* p = [parents objectAtIndex:parentNum];
         id param = [[p getParameters] objectForKey:key];
@@ -88,7 +85,7 @@
     NSMutableDictionary* parameters = [child getParameters];
     
     //Select a point for one-point crossover
-    int crossPoint = randomInt(10); //TODO this is 10 because there are 9 parameters in team. This would be much better if it wasn't a "magic number".
+    int crossPoint = randomInt((int)[parameters count] + 1);
     int i = 0;
     for(NSString* key in [parameters allKeys]) {
         [parameters setObject:[[parents[(crossPoint > i)] getParameters] objectForKey:key] forKey:key];
@@ -102,12 +99,12 @@
  * Two-point crossover
  */
 -(void) twoPointCrossoverFromParents:(NSMutableArray *)parents toChild:(Team *)child {
-    
     NSMutableDictionary* parameters = [child getParameters];
+    
     //Select two points for two-point crossover
-    //TODO these are 10 because there are 9 parameters in team. This would be much better if it wasn't a "magic number".
-    int crossPoint1 = randomInt(10);
-    int crossPoint2 = randomInt(10);
+    int crossPoint1 = randomInt((int)[parameters count] + 1);
+    int crossPoint2 = randomInt((int)[parameters count] + 1);
+    
     //Ensure that point 1 is less than point 2.
     //Allow the points to be equal in which case this is just one point crossover.
     if(crossPoint1 > crossPoint2) {
@@ -118,10 +115,10 @@
     
     int i = 0;
     for(NSString* key in [parameters allKeys]) {
-        if(i<crossPoint1) {
+        if(i < crossPoint1) {
             [parameters setObject:[[parents[0] getParameters] objectForKey:key] forKey:key];
         }
-        else if(i<crossPoint2) {
+        else if(i < crossPoint2) {
             [parameters setObject:[[parents[1] getParameters] objectForKey:key] forKey:key];
         }
         else {
@@ -175,25 +172,26 @@
  */
 -(void) breedTeams:(NSMutableArray*)teams AtGeneration:(int)generation {
     int teamCount = (int)[teams count];
+    
     //Elitism
     //Allocate a whole new individual.
     Team* bestIndividual = [[Team alloc] init];
-    if(elitism){
+    if(elitism) {
         //Get the best individual in the population and make sure it is preserved in the next generation.
         int mostTags = -1;
-        for(int i = 0; i < teamCount; i++) {
-            //Get the ith individual
-            Team *temp = [teams objectAtIndex:i];
+        for(Team *t in teams) {
             //If this individual is better than the best so far, then update the elite individual.
-            if(temp.tagsCollected > mostTags){
-                mostTags = temp.tagsCollected;
+            if([t tagsCollected] > mostTags) {
+                mostTags = [t tagsCollected];
                 //Copy the best individual's parameters.
-                [bestIndividual setParameters:[temp getParameters]];
+                [bestIndividual setParameters:[t getParameters]];
             }
         }
     }
     
+    //Create new population of children
     Team* children[teamCount];
+    
     for(int i = 0; i < teamCount; i++) {
         children[i] = [[Team alloc] init];
         Team* child = children[i];
@@ -213,7 +211,7 @@
             [child setParameters:[[parents objectAtIndex:0] getParameters]];
         }
         
-        //Random mutations.
+        //Random mutations
         NSMutableDictionary* parameters = [child getParameters];
         for(NSString* key in [parameters allKeys]) {
             if(randomFloat(1.0) < mutationRate){
@@ -233,7 +231,7 @@
     }
     
     //If we are using elitism then the first child is replaced by the best individual from the previous generation.
-    if(elitism){
+    if(elitism) {
         Team* team = [teams objectAtIndex:0];
         [team setParameters:[bestIndividual getParameters]];
     }

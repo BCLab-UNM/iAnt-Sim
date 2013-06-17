@@ -684,7 +684,7 @@ using namespace cv;
  */
 -(Team*) bestTeam {
     Team* _maxTeam = [[Team alloc] init];
-    int maxTags = 0;
+    float maxTags = 0;
     
     for(Team* team in teams) {
         if(team.tagsCollected > maxTags) {

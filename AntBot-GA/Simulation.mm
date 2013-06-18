@@ -128,6 +128,8 @@ using namespace cv;
     [teams addObject:topTeam];
     //Evaluate the mean and best 100 times
     [self setEvaluationCount:100];
+    //Set generation to 1 to stop evolution
+    [self setGenerationCount:1];
     dispatch_queue_t queue = dispatch_get_global_queue(0, 0);
     dispatch_apply(evaluationCount, queue, ^(size_t idx) {
         @autoreleasepool {

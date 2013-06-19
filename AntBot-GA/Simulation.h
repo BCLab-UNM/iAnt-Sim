@@ -31,6 +31,9 @@
 -(void) initDistributionForArray:(Array2D*)tags;
 -(NSPoint) getPheromone:(NSMutableArray*)pheromones atTick:(int)tick withDecayRate:(float)decayRate;
 
+-(NSMutableDictionary*) getParameters;
+-(void) setParameters:(NSMutableDictionary*)parameters;
+
 @property (readonly, nonatomic) Team* averageTeam;
 @property (readonly, nonatomic) Team* bestTeam;
 
@@ -59,14 +62,12 @@
 
 @property (nonatomic) BOOL variableStepSize;
 @property (nonatomic) BOOL uniformDirection;
+@property (nonatomic) BOOL adaptiveWalk;
 
 @property (nonatomic) BOOL decentralizedPheromones;
 @property (nonatomic) int wirelessRange;
 
-@property (nonatomic) BOOL adaptiveWalk;
-
 @property (nonatomic) NSString* parameterFile;
-
 @property (nonatomic) NSString* postEvaluationFile;
 
 @property (nonatomic) NSObject* delegate;

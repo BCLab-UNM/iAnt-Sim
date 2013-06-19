@@ -699,4 +699,120 @@ using namespace cv;
 }
 
 
+/*
+ * Custom getter for all @properties of Simulation
+ */
+-(NSMutableDictionary*) getParameters {
+    NSMutableDictionary* parameters = [[NSMutableDictionary alloc] initWithObjects:
+            [NSArray arrayWithObjects:
+             [NSNumber numberWithInt:teamCount],
+             [NSNumber numberWithInt:generationCount],
+             [NSNumber numberWithInt:robotCount],
+             [NSNumber numberWithInt:tagCount],
+             [NSNumber numberWithInt:evaluationCount],
+             [NSNumber numberWithInt:tickCount],
+             [NSNumber numberWithInt:exploreTime],
+             
+             [NSNumber numberWithFloat:distributionRandom],
+             [NSNumber numberWithFloat:distributionPowerlaw],
+             [NSNumber numberWithFloat:distributionClustered],
+             
+             [NSNumber numberWithInt:pileRadius],
+             
+             [NSNumber numberWithFloat:crossoverRate],
+             [NSNumber numberWithFloat:mutationRate],
+             [NSNumber numberWithBool:elitism],
+
+             NSStringFromSize(gridSize),
+             NSStringFromPoint(nest),
+             
+             [NSNumber numberWithBool:realWorldError],
+             
+             [NSNumber numberWithBool:variableStepSize],
+             [NSNumber numberWithBool:uniformDirection],
+             [NSNumber numberWithBool:adaptiveWalk],
+             
+             [NSNumber numberWithBool:decentralizedPheromones],
+             [NSNumber numberWithInt:wirelessRange], nil] forKeys:
+            [NSArray arrayWithObjects:
+             @"teamCount",
+             @"generationCount",
+             @"robotCount",
+             @"tagCount",
+             @"evaluationCount",
+             @"tickCount",
+             @"exploreTime",
+             
+             @"distributionRandom",
+             @"distributionPowerlaw",
+             @"distributionClustered",
+             
+             @"pileRadius",
+             
+             @"crossoverRate",
+             @"mutationRate",
+             @"elitism",
+             
+             @"gridSize",
+             @"nest",
+             
+             @"realWorldError",
+             
+             @"variableStepSize",
+             @"uniformDirection",
+             @"adaptiveWalk",
+             
+             @"decentralizedPheromones",
+             @"wirelessRange", nil]];
+    
+    if (parameterFile) {
+        [parameters setObject:[NSString stringWithString:parameterFile] forKey:@"parameterFile"];
+    }
+    if (postEvaluationFile) {
+        [parameters setObject:[NSString stringWithString:postEvaluationFile] forKey:@"postEvaluationFile"];
+    }
+    
+    return parameters;
+}
+
+/*
+ * Custom setter for all @properties of Simulation
+ */
+-(void) setParameters:(NSMutableDictionary *)parameters {
+    teamCount = [[parameters objectForKey:@"teamCount"] intValue];
+    generationCount = [[parameters objectForKey:@"generationCount"] intValue];
+    robotCount = [[parameters objectForKey:@"robotCount"] intValue];
+    tagCount = [[parameters objectForKey:@"tagCount"] intValue];
+    evaluationCount = [[parameters objectForKey:@"evaluationCount"] intValue];
+    tickCount = [[parameters objectForKey:@"tickCount"] intValue];
+    exploreTime = [[parameters objectForKey:@"exploreTime"] intValue];
+    
+    distributionRandom = [[parameters objectForKey:@"distributionRandom"] floatValue];
+    distributionPowerlaw = [[parameters objectForKey:@"distributionPowerlaw"] floatValue];
+    distributionClustered = [[parameters objectForKey:@"distributionClustered"] floatValue];
+    
+    pileRadius = [[parameters objectForKey:@"pileRadius"] intValue];
+    
+    crossoverRate = [[parameters objectForKey:@"crossoverRate"] floatValue];
+    mutationRate = [[parameters objectForKey:@"mutationRate"] floatValue];
+    elitism = [[parameters objectForKey:@"elitism"] boolValue];
+    
+    gridSize = NSSizeFromString([parameters objectForKey:@"gridSize"]);
+    nest = NSPointFromString([parameters objectForKey:@"nest"]);
+    
+    realWorldError = [[parameters objectForKey:@"realWorldError"] boolValue];
+    
+    variableStepSize = [[parameters objectForKey:@"variableStepSize"] boolValue];
+    uniformDirection = [[parameters objectForKey:@"uniformDirection"] boolValue];
+    adaptiveWalk = [[parameters objectForKey:@"adaptiveWalk"] boolValue];
+    
+    decentralizedPheromones = [[parameters objectForKey:@"decentralizedPheromones"] boolValue];
+    wirelessRange = [[parameters objectForKey:@"wirelessRange"] boolValue];
+    
+    parameterFile = [parameters objectForKey:@"parameterFile"];
+    postEvaluationFile = [parameters objectForKey:@"postEvaluationFile"];
+}
+
+
+
 @end

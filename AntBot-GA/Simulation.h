@@ -22,12 +22,12 @@
 
 
 @interface Simulation : NSObject {
-    NSMutableArray* teams;
     GA* ga;
 }
 
--(int) start;
--(void) runEvaluation;
+-(NSMutableArray*) run;
+-(void) evaluateTeams:(NSMutableArray*)teams;
+-(NSMutableArray*) evaluateTeam:(Team*)team;
 -(void) initDistributionForArray:(Array2D*)tags;
 -(NSPoint) getPheromone:(NSMutableArray*)pheromones atTick:(int)tick withDecayRate:(float)decayRate;
 

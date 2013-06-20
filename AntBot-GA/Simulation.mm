@@ -7,6 +7,9 @@ using namespace cv;
 
 @interface Simulation()
 
+-(void) setAverageTeamFrom:(NSMutableArray*)teams;
+-(void) setBestTeamFrom:(NSMutableArray*)teams;
+
 @end
 
 @implementation Simulation
@@ -65,12 +68,12 @@ using namespace cv;
 /*
  * Starts the simulation run.
  */
--(int) start {
+-(NSMutableArray*) run {
     
     srandomdev(); //Seed random number generator.
     
     //Allocate teams and initialize parameters accordingly
-    teams = [[NSMutableArray alloc] initWithCapacity:teamCount];
+    NSMutableArray* teams = [[NSMutableArray alloc] initWithCapacity:teamCount];
     for(int i = 0; i < teamCount; i++) {
         if(parameterFile) {
             [teams addObject:[[Team alloc] initWithFile:parameterFile]];
@@ -90,7 +93,7 @@ using namespace cv;
     for(int generation = 0; generation < generationCount; generation++) {
         
         for(Team* team in teams) {
-            [team setTagsCollected:0];
+            [team setTagsCollected:0.];
             if (exploreTime > 0) {
                 [team setExplorePhase:YES];
             }
@@ -101,8 +104,12 @@ using namespace cv;
         
         dispatch_queue_t queue = dispatch_get_global_queue(0, 0);
         dispatch_apply(evaluationCount, queue, ^(size_t idx) {
-            [self runEvaluation];
+            [self evaluateTeams:teams];
         });
+        
+        //Set average and best teams
+        [self setAverageTeamFrom:teams];
+        [self setBestTeamFrom:teams];
         
         [ga breedTeams:teams AtGeneration:generation];
         
@@ -115,43 +122,17 @@ using namespace cv;
         }
     }
     
-    //Run a super evaluation (100 evaluations) of the mean and best individuals and record the results in a special file.
-    //Get the mean and best teams
-    Team* meanTeam = [self averageTeam];
-    [meanTeam setTagsCollected:0.0]; //Reset tags collected
-    Team* topTeam = [self bestTeam];
-    [topTeam setTagsCollected:0.0]; //Reset tags collected
-    //Reset the teams array to just hold 2 individuals
-    teams = [[NSMutableArray alloc] initWithCapacity:2];
-    //put the mean and best teams in the teams array
-    [teams addObject:meanTeam];
-    [teams addObject:topTeam];
-    //Evaluate the mean and best 100 times
-    [self setEvaluationCount:100];
-    //Set generation to 1 to stop evolution
-    [self setGenerationCount:1];
-    dispatch_queue_t queue = dispatch_get_global_queue(0, 0);
-    dispatch_apply(evaluationCount, queue, ^(size_t idx) {
-        @autoreleasepool {
-            [self runEvaluation];
-        }
-    });
-    //Write the results to a file.
-    if(delegate) {
-        [delegate writeHeadersToFile:postEvaluationFile];
-        [delegate writeTeamToFile:postEvaluationFile :[teams objectAtIndex:0]];
-        [delegate writeTeamToFile:postEvaluationFile :[teams objectAtIndex:1]];
-    }
-    
     printf("Completed\n");
-    return 0;
+    
+    //Return an evaluation of the average team from the final generation
+    return [self evaluateTeam:averageTeam];
 }
 
 
 /*
- * Runs a single evaluation
+ * Run a single evaluation
  */
--(void) runEvaluation {
+-(void) evaluateTeams:(NSMutableArray*)teams {
     @autoreleasepool {
         Array2D* tags = [[Array2D alloc] initWithRows:gridSize.width cols:gridSize.height];
         [self initDistributionForArray:tags];
@@ -510,6 +491,23 @@ using namespace cv;
 }
 
 /*
+ * Run 100 post evaluations of the average team from the final generation (i.e. generationCount)
+ */
+-(NSMutableArray*) evaluateTeam:(Team*)team {
+    NSMutableArray* tagsCollected = [[NSMutableArray alloc] init];
+    NSMutableArray* teams = [[NSMutableArray alloc] initWithObjects:averageTeam, nil];
+    
+    for (int i = 0; i < 100; i++) {
+        [self evaluateTeams:teams];
+        [tagsCollected addObject:[NSNumber numberWithFloat:[averageTeam tagsCollected]]];
+        [averageTeam setTagsCollected:0.];
+        
+    }
+    
+    return tagsCollected;
+}
+
+/*
  * Executes unsupervised clustering algorithm Expectation-Maximization (EM) on input
  * Returns trained instantiation of EM if all robots home, untrained otherwise
  */
@@ -655,8 +653,8 @@ using namespace cv;
 /*
  * Custom getter for averageTeam (lazy evaluation)
  */
--(Team*) averageTeam {
-    Team* _averageTeam = [[Team alloc] init];
+-(void) setAverageTeamFrom:(NSMutableArray*)teams {
+    averageTeam = [[Team alloc] init];
     NSMutableDictionary* parameterSums = [[NSMutableDictionary alloc] initWithCapacity:9];
     float tagSum = 0.f;
     
@@ -674,30 +672,26 @@ using namespace cv;
         [parameterSums setObject:[NSNumber numberWithFloat:val] forKey:key];
     }
     
-    _averageTeam.tagsCollected = (tagSum / teamCount) / evaluationCount;
-    [_averageTeam setParameters:parameterSums];
-    
-    return _averageTeam;
+    [averageTeam setTagsCollected:(tagSum / teamCount) / evaluationCount];
+    [averageTeam setParameters:parameterSums];
 }
 
 
 /*
  * Custom getter for bestTeam (lazy evaluation)
  */
--(Team*) bestTeam {
-    Team* _maxTeam = [[Team alloc] init];
+-(void) setBestTeamFrom:(NSMutableArray*)teams {
+    bestTeam = [[Team alloc] init];
     float maxTags = 0;
     
     for(Team* team in teams) {
         if(team.tagsCollected > maxTags) {
             maxTags = team.tagsCollected;
-            [_maxTeam setParameters:[team getParameters]];
+            [bestTeam setParameters:[team getParameters]];
         }
     }
     
-    _maxTeam.tagsCollected = maxTags / evaluationCount;
-    
-    return _maxTeam;
+    [bestTeam setTagsCollected:maxTags / evaluationCount];
 }
 
 

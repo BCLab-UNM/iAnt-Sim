@@ -68,7 +68,6 @@
 @property (nonatomic) int wirelessRange;
 
 @property (nonatomic) NSString* parameterFile;
-@property (nonatomic) NSString* postEvaluationFile;
 
 @property (nonatomic) NSObject* delegate;
 @property (nonatomic) NSObject* viewDelegate;

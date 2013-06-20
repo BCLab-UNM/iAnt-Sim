@@ -24,7 +24,6 @@ using namespace cv;
 @synthesize variableStepSize, uniformDirection, adaptiveWalk;
 @synthesize decentralizedPheromones, wirelessRange;
 @synthesize parameterFile;
-@synthesize postEvaluationFile;
 @synthesize delegate, viewDelegate;
 @synthesize tickRate;
 
@@ -761,13 +760,6 @@ using namespace cv;
              @"decentralizedPheromones",
              @"wirelessRange", nil]];
     
-    if (parameterFile) {
-        [parameters setObject:[NSString stringWithString:parameterFile] forKey:@"parameterFile"];
-    }
-    if (postEvaluationFile) {
-        [parameters setObject:[NSString stringWithString:postEvaluationFile] forKey:@"postEvaluationFile"];
-    }
-    
     return parameters;
 }
 
@@ -804,9 +796,6 @@ using namespace cv;
     
     decentralizedPheromones = [[parameters objectForKey:@"decentralizedPheromones"] boolValue];
     wirelessRange = [[parameters objectForKey:@"wirelessRange"] boolValue];
-    
-    parameterFile = [parameters objectForKey:@"parameterFile"];
-    postEvaluationFile = [parameters objectForKey:@"postEvaluationFile"];
 }
 
 

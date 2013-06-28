@@ -497,10 +497,9 @@ using namespace cv;
     NSMutableArray* teams = [[NSMutableArray alloc] initWithObjects:averageTeam, nil];
     
     for (int i = 0; i < 100; i++) {
+        [averageTeam setTagsCollected:0.];
         [self evaluateTeams:teams];
         [tagsCollected addObject:[NSNumber numberWithFloat:[averageTeam tagsCollected]]];
-        [averageTeam setTagsCollected:0.];
-        
     }
     
     return tagsCollected;

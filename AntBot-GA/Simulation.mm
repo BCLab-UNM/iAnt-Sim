@@ -680,7 +680,7 @@ using namespace cv;
  */
 -(void) setBestTeamFrom:(NSMutableArray*)teams {
     bestTeam = [[Team alloc] init];
-    float maxTags = 0;
+    float maxTags = -1.;
     
     for(Team* team in teams) {
         if(team.tagsCollected > maxTags) {

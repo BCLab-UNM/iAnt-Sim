@@ -10,7 +10,7 @@
 
 -(id) initWithElitism:(BOOL)_elitism crossover:(float)_crossoverRate andMutation:(float)_mutationRate;
 
--(void) breedTeams:(NSMutableArray *)teams AtGeneration:(int)generation;
+-(void) breedTeams:(NSMutableArray *)teams AtGeneration:(int)generation :(int)maxGenerations;
 
 //Selection
 -(NSMutableArray*) tournamentSelectionOn:(NSMutableArray*)teams;
@@ -23,5 +23,8 @@
 
 //Mutation
 -(void) valueDependentVarianceMutationForParameter:(NSNumber **)parameter atGeneration:(int)generation;
+-(void) fixedVarianceMutationForParameter:(NSNumber **)parameter atGeneration: (float)sigma;
+-(void) decreasingVarianceMutationForParameter:(NSNumber **)parameter atGeneration:(int)generation :(int)maxGenerations :(float)maxVariance :(float)minVariance;
+
 
 @end

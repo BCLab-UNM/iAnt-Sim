@@ -110,7 +110,7 @@ using namespace cv;
         [self setAverageTeamFrom:teams];
         [self setBestTeamFrom:teams];
         
-        [ga breedTeams:teams AtGeneration:generation];
+        [ga breedTeams:teams AtGeneration:generation:generationCount];
         
         if(delegate) {
             

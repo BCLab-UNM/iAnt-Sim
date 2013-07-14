@@ -64,10 +64,11 @@
  */
 -(void) uniformCrossoverFromParents:(NSMutableArray *)parents toChild:(Team *)child {
     NSMutableDictionary* parameters = [child getParameters];
-    
+    int parentNum;
     for(NSString* key in [parameters allKeys]) {
-        //parentNum will be either 0 or 1 for one of the 2 parents
-        int parentNum = randomInt(2);
+        //parentNum will be either 0 or 1 to decide which of the 2 parents
+        //to copy each parameter from.
+        parentNum = randomInt(2);
         //Getting the parameter specified by key of parent parentNum.
         Team* p = [parents objectAtIndex:parentNum];
         id param = [[p getParameters] objectForKey:key];
@@ -132,26 +133,11 @@
 
 
 /*
- * Mutation based on value
+ * Gaussian mutation with variance based on value to be mutated.
  */
 -(void) valueDependentVarianceMutationForParameter:(NSNumber **)parameter atGeneration:(int)generation {
     //calculate the variance. Larger values will have more variance!
-    float sigma = fabs([*parameter floatValue]) * .05; //original
-    //float sigma = 0.025; //small
-    //float sigma = 0.005; //smaller
-    //float sigma = 1.0/(((float)generation)*4.0 + 10.0); //decreasing variance
-    
-    //Probably smaller variance START
-    /*float sigma = 0.05;
-     int randInt = randomInt(100);
-     if(randInt < generation/2) {
-        sigma  = 0.0005;
-     }
-     else if(randInt < generation) {
-        sigma = 0.005;
-     }*/
-    //Probably smaller variance END
-    
+    float sigma = fabs([*parameter floatValue]) * .05;    
     //add a random amount sampled from a normal distribution centered at zero.
     float mutatedValue = [*parameter floatValue] + randomNormal(0., sigma);
     if(mutatedValue < 0.0) {
@@ -163,6 +149,39 @@
 }
 
 
+/*
+ * Gaussian mutation with variance decreasing uniformly from 
+ * maxVariance to minVariance based on the fraction of generations elasped.
+ */
+-(void) decreasingVarianceMutationForParameter:(NSNumber **)parameter atGeneration:(int)generation :(int)maxGenerations :(float)maxVariance :(float)minVariance{
+    //calculate the variance using the point-slope form of the line equation.
+    float slope = (maxVariance - minVariance) / (float)maxGenerations;
+    float sigma = (slope*(float)generation) + maxVariance;
+    //add a random amount sampled from a normal distribution centered at zero.
+    float mutatedValue = [*parameter floatValue] + randomNormal(0., sigma);
+    if(mutatedValue < 0.0) {
+        *parameter = [NSNumber numberWithFloat:0.];
+    }
+    else {
+        *parameter = [NSNumber numberWithFloat:mutatedValue];
+    }
+}
+
+
+/*
+ * Gaussian mutation with fixed variance.
+ */
+-(void) fixedVarianceMutationForParameter:(NSNumber **)parameter atGeneration: (float)sigma{
+    //add a random amount sampled from a normal distribution centered at zero.
+    float mutatedValue = [*parameter floatValue] + randomNormal(0., sigma);
+    if(mutatedValue < 0.0) {
+        *parameter = [NSNumber numberWithFloat:0.];
+    }
+    else {
+        *parameter = [NSNumber numberWithFloat:mutatedValue];
+    }
+}
+
 
 /*
  * 'Breeds' and mutates teams.
@@ -170,7 +189,7 @@
  * which has to do with the use of (and enumeration over) dictionaries.
  * generation is passed because some mutations change as search progresses.
  */
--(void) breedTeams:(NSMutableArray*)teams AtGeneration:(int)generation {
+-(void) breedTeams:(NSMutableArray*)teams AtGeneration:(int)generation :(int)maxGenerations{
     int teamCount = (int)[teams count];
     
     //Elitism
@@ -202,9 +221,9 @@
         //Crossover
         if(randomFloat(1.0) < crossoverRate) {
             [self independentAssortmentCrossoverFromParents:parents toChild:child withFirstParentBias:0.9];
-            //[self uniformCrossover:child :parent];
-            //[self onePointCrossover:child :parent];
-            //[self twoPointCrossover:child :parent];
+            //[self uniformCrossoverFromParents:parents toChild:child];
+            //[self onePointCrossoverFromParents:parents toChild:child];
+            //[self twoPointCrossoverFromParents:parents toChild:child];
         }
         else {
             //Otherwise the child will just be a copy of one of the parents
@@ -217,6 +236,13 @@
             if(randomFloat(1.0) < mutationRate){
                 NSNumber* parameter = [parameters objectForKey:key];
                 [self valueDependentVarianceMutationForParameter:&parameter atGeneration:generation];
+                
+                //float maxVariance = 0.1;
+                //float minVariance = 0.005;
+                //[self decreasingVarianceMutationForParameter:&parameter atGeneration:generation:maxGenerations:maxVariance:minVariance];
+
+                //float sigma = 0.005
+                //[self fixedVarianceMutationForParameter:&parameter atGeneration:generation:sigma];
                 [parameters setObject:parameter forKey:key];
             }
         }

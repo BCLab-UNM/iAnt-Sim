@@ -171,7 +171,7 @@
 /*
  * Gaussian mutation with fixed variance.
  */
--(void) fixedVarianceMutationForParameter:(NSNumber **)parameter atGeneration: (float)sigma{
+-(void) fixedVarianceMutationForParameter:(NSNumber **)parameter :(float)sigma{
     //add a random amount sampled from a normal distribution centered at zero.
     float mutatedValue = [*parameter floatValue] + randomNormal(0., sigma);
     if(mutatedValue < 0.0) {
@@ -241,9 +241,9 @@
                 //float minVariance = 0.005;
                 //[self decreasingVarianceMutationForParameter:&parameter atGeneration:generation:maxGenerations:maxVariance:minVariance];
 
-                //float sigma = 0.005
-                //[self fixedVarianceMutationForParameter:&parameter atGeneration:generation:sigma];
-                [parameters setObject:parameter forKey:key];
+                //float sigma = 0.05;
+                //[self fixedVarianceMutationForParameter:&parameter :sigma];
+                //[parameters setObject:parameter forKey:key];
             }
         }
         

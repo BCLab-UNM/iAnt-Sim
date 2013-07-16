@@ -23,7 +23,7 @@
 
 //Mutation
 -(void) valueDependentVarianceMutationForParameter:(NSNumber **)parameter atGeneration:(int)generation;
--(void) fixedVarianceMutationForParameter:(NSNumber **)parameter atGeneration: (float)sigma;
+-(void) fixedVarianceMutationForParameter:(NSNumber **)parameter :(float)sigma;
 -(void) decreasingVarianceMutationForParameter:(NSNumber **)parameter atGeneration:(int)generation :(int)maxGenerations :(float)maxVariance :(float)minVariance;
 
 

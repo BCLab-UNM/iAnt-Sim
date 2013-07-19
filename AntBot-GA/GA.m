@@ -243,7 +243,8 @@
 
                 //float sigma = 0.05;
                 //[self fixedVarianceMutationForParameter:&parameter :sigma];
-                //[parameters setObject:parameter forKey:key];
+
+                [parameters setObject:parameter forKey:key];
             }
         }
         

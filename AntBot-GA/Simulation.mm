@@ -497,7 +497,17 @@ using namespace cv;
     NSMutableArray* teams = [[NSMutableArray alloc] initWithObjects:averageTeam, nil];
     
     for (int i = 0; i < 100; i++) {
+        
+        //Reset
         [averageTeam setTagsCollected:0.];
+        if (exploreTime > 0) {
+            [team setExplorePhase:YES];
+        }
+        else {
+            [team setExplorePhase:NO];
+        }
+        
+        //Evaluate
         [self evaluateTeams:teams];
         [tagsCollected addObject:[NSNumber numberWithFloat:[averageTeam tagsCollected]]];
     }

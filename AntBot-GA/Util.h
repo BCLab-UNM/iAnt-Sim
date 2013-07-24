@@ -108,6 +108,21 @@ static inline NSPoint edge(NSSize size) {
 }
 
 /*
+ * Returns Poisson cumulative probability at a given k and lambda
+ */
+static inline float poissonCDF(float k, float lambda) {
+    float sumAccumulator = 1;
+    float factorialAccumulator = 1;
+    
+    for (int i = 1; i <= floor(k); i++) {
+        factorialAccumulator *= i;
+        sumAccumulator += pow(lambda, i) / factorialAccumulator;
+    }
+    
+    return (exp(-lambda) * sumAccumulator);
+}
+
+/*
  * Returns exponential cumulative probability at a given x and lambda
  */
 static inline float exponentialCDF(float x, float lambda) {

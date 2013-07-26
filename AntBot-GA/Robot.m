@@ -6,9 +6,8 @@
 @synthesize status, informed;
 @synthesize position, target, recruitmentTarget;
 @synthesize direction, searchTime, lastMoved, lastTurned, delay;
-@synthesize carrying, neighbors;
-@synthesize localPheromone;
 @synthesize discoveredTags;
+@synthesize localPheromone;
 
 -(void) reset {
     status = ROBOT_STATUS_INACTIVE;
@@ -23,9 +22,7 @@
     lastMoved = 0;
     lastTurned = 0;
     
-    carrying = nil;
-    
-    discoveredTags = [[NSMutableArray alloc] init];
+    discoveredTags = nil;
     
     localPheromone = NSNullPoint;
 }

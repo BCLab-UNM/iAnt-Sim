@@ -257,25 +257,34 @@ using namespace cv;
                             //Reusing robot.target here (without consequence, it just gets overwritten when moving).
                             [robot setTarget:NSMakePoint(roundf([robot position].x + cos([robot direction])), roundf([robot position].y + sin([robot direction])))];
                             if([robot target].x >= 0 && [robot target].y >= 0 && [robot target].x < gridSize.width && [robot target].y < gridSize.height) {
-                                Tag* t = [tags objectAtRow:(int)[robot target].y col:(int)[robot target].x];
-                                if(detectTag(realWorldError) && ![t isKindOfClass:[NSNull class]] && ![t pickedUp]) { //Note we use shortcircuiting here.
-                                    [t setDiscovered:NO];
-                                    [t setPickedUp:YES];
-                                    [robot setCarrying:t];
+                                Tag* foundTag = [tags objectAtRow:[robot target].y col:[robot target].x];
+                                
+                                //Note we use shortcircuiting here.
+                                if(detectTag(realWorldError) && ![foundTag isKindOfClass:[NSNull class]] && ![foundTag pickedUp]) {                                    [foundTag setDiscovered:NO];
+                                    [foundTag setPickedUp:YES];
+                                    [robot setDiscoveredTags:[[NSMutableArray alloc] initWithObjects:foundTag, nil]];
                                     [robot setStatus:ROBOT_STATUS_RETURNING];
                                     [robot setDelay:9];
                                     [robot setTarget:nest];
-                                    [robot setNeighbors:0];
                                     [robot setLocalPheromone:NSNullPoint];
                                     [robot setRecruitmentTarget:NSNullPoint];
                                     
                                     //Sum up all non-picked-up seeds in the moore neighbor.
                                     for(int dx = -1; dx <= 1; dx++) {
                                         for(int dy = -1; dy <= 1; dy++) {
-                                            if((robot.carrying.x + dx >= 0 && robot.carrying.x + dx < gridSize.width) && (robot.carrying.y + dy >= 0 && robot.carrying.y + dy < gridSize.height)) {
-                                                robot.neighbors += detectTag(realWorldError) &&
-                                                                ([tags objectAtRow:robot.carrying.y + dy col:robot.carrying.x + dx] != [NSNull null]) &&
-                                                                !([[tags objectAtRow:robot.carrying.y + dy col:robot.carrying.x + dx] pickedUp]);
+                                            
+                                            //If neighboring cell is legal
+                                            if(([foundTag x] + dx >= 0 && [foundTag x] + dx < gridSize.width) &&
+                                               ([foundTag y] + dy >= 0 && [foundTag y] + dy < gridSize.height))
+                                            {
+                                                //Look up tag in tags array
+                                                id neighboringTag = [tags objectAtRow:[foundTag y] + dy col:[foundTag x] + dx];
+                                                
+                                                //If tag exists and is detectable
+                                                if ((neighboringTag != [NSNull null]) && !([neighboringTag pickedUp]) && detectTag(realWorldError)) {
+                                                    //Add it to discoveredTags array
+                                                    [[robot discoveredTags] addObject:neighboringTag];
+                                                }
                                             }
                                         }
                                     }
@@ -349,39 +358,44 @@ using namespace cv;
                                     }
                                 }
                     
-                                if(robot.carrying != nil) {
+                                if([[robot discoveredTags] count] > 0) {
                                     [team setTagsCollected:team.tagsCollected + 1];
                                     
+                                    //Retrieve collected tag from discoveredTags array
+                                    Tag* foundTag = [[robot discoveredTags] objectAtIndex:0];
+                                
                                     //Record position where tag was found, then perturb it to simulate error
-                                    NSPoint tagPosition = NSMakePoint(robot.carrying.x, robot.carrying.y);
+                                    NSPoint tagPosition = NSMakePoint([foundTag x], [foundTag y]);
                                     NSPoint perturbedTagPosition = perturbTagPosition(realWorldError, tagPosition, gridSize);
                                     
                                     //Add (perturbed) tag position to global pheromone array if using centralized pheromones
                                     //Use of *decentralized pheromones* guarantees that the pheromones array will always be empty, which means robots will only be recruited from the nest when using *centralized pheromones*
-                                    if(!decentralizedPheromones && (randomFloat(1.) < exponentialCDF(robot.neighbors + 1, team.pheromoneLayingRate))) {
+                                    if(!decentralizedPheromones &&
+                                       (randomFloat(1.) < exponentialCDF([[robot discoveredTags] count], [team pheromoneLayingRate]))) {
                                         Pheromone* p = [[Pheromone alloc] init];
-                                        p.x = perturbedTagPosition.x;
-                                        p.y = perturbedTagPosition.y;
-                                        p.n = 1.;
-                                        p.updated = tick;
+                                        [p setX:perturbedTagPosition.x];
+                                        [p setY:perturbedTagPosition.y];
+                                        [p setN:1.];
+                                        [p setUpdated:tick];
                                         [pheromones addObject:p];
                                     }
                                     
                                     //If no pheromones exist, pheromone will be (-1, -1)
                                     NSPoint pheromone = [self getPheromone:pheromones atTick:tick withDecayRate:team.pheromoneDecayRate];
-
+                                    
                                     if(!NSEqualPoints(pheromone, NSNullPoint) &&
-                                        (randomFloat(1.) < exponentialCDF(9 - robot.neighbors, team.pheromoneFollowingRate)) &&
-                                        (randomFloat(1.) > exponentialCDF(robot.neighbors + 1, team.siteFidelityRate))) {
+                                       (randomFloat(1.) < exponentialCDF(10 - [[robot discoveredTags] count], [team pheromoneFollowingRate])) &&
+                                       (randomFloat(1.) > exponentialCDF([[robot discoveredTags] count], [team siteFidelityRate]))) {
                                         robot.target = perturbTargetPosition(realWorldError, pheromone, gridSize);
                                         robot.informed = ROBOT_INFORMED_PHEROMONE;
                                     }
-                                    else if((randomFloat(1.) < exponentialCDF(robot.neighbors + 1, team.siteFidelityRate)) &&
-                                             (randomFloat(1.) > exponentialCDF(9 - robot.neighbors, team.pheromoneFollowingRate))) {
+                                    else if((randomFloat(1.) < exponentialCDF([[robot discoveredTags] count], [team siteFidelityRate])) &&
+                                            (randomFloat(1.) > exponentialCDF(10 - [[robot discoveredTags] count], [team pheromoneFollowingRate]))) {
                                         robot.target = perturbTargetPosition(realWorldError, perturbedTagPosition, gridSize);
                                         robot.informed = ROBOT_INFORMED_MEMORY;
                                         //Decide whether to broadcast pheromones locally
-                                        if(decentralizedPheromones && (randomFloat(1.) < exponentialCDF(robot.neighbors + 1, team.pheromoneLayingRate))) {
+                                        if(decentralizedPheromones &&
+                                           (randomFloat(1.) < exponentialCDF([[robot discoveredTags] count], [team pheromoneLayingRate]))) {
                                             robot.recruitmentTarget = perturbedTagPosition;
                                         }
                                         else {
@@ -393,8 +407,9 @@ using namespace cv;
                                         robot.informed = ROBOT_INFORMED_NONE;
                                     }
                                     
-                                    robot.carrying = nil;
+                                    [robot setDiscoveredTags:nil];
                                 }
+                                
                                 else {
                                     //If no pheromones exist, pheromone will be (-1, -1)
                                     NSPoint pheromone = [self getPheromone:pheromones atTick:tick withDecayRate:team.pheromoneDecayRate];
@@ -460,9 +475,6 @@ using namespace cv;
                                 if(detectTag(realWorldError) && ![t isKindOfClass:[NSNull class]]) { //Note we use shortcircuiting here.
                                     [[robot discoveredTags] addObject:t];
                                     [t setDiscovered:YES];
-                                    
-                            
-                                    
                                 }
                             }
                             //[robot setInformed:ROBOT_INFORMED_PHEROMONE];

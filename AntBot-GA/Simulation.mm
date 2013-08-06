@@ -18,7 +18,7 @@ using namespace cv;
 @synthesize distributionRandom, distributionPowerlaw, distributionClustered;
 @synthesize averageTeam, bestTeam;
 @synthesize pileRadius;
-@synthesize crossoverRate, mutationRate, elitism;
+@synthesize crossoverRate, mutationRate, crossoverOperator, mutationOperator, elitism;
 @synthesize gridSize, nest;
 @synthesize realWorldError;
 @synthesize variableStepSize, uniformDirection, adaptiveWalk;
@@ -43,9 +43,11 @@ using namespace cv;
         
         pileRadius = 2;
         
-        crossoverRate = 1;
+        crossoverRate = 1.0;
         mutationRate = 0.1;
-        elitism = false;
+        crossoverOperator = UniformPointCrossId;
+        mutationOperator = FixedVarMutId;
+        elitism = true;
         
         gridSize = NSMakeSize(125, 125);
         nest = NSMakePoint(62, 62);
@@ -83,7 +85,7 @@ using namespace cv;
     }
     
     //Allocate GA
-    ga = [[GA alloc] initWithElitism:elitism crossover:crossoverRate andMutation:mutationRate];
+    ga = [[GA alloc] initWithElitism:elitism crossover:crossoverRate andMutation:mutationRate :mutationOperator :crossoverOperator];
     
     //Set evaluation count to 1 if using GUI
     evaluationCount = (viewDelegate != nil) ? 1 : evaluationCount;

@@ -2,11 +2,13 @@
 
 @implementation GA
 
--(id) initWithElitism:(BOOL)_elitism crossover:(float)_crossoverRate andMutation:(float)_mutationRate {
+-(id) initWithElitism:(BOOL)_elitism crossover:(float)_crossoverRate andMutation:(float)_mutationRate :(int)mutationOp :(int)crossoverOp{
     if (self = ([super init])) {
         elitism = _elitism;
         crossoverRate = _crossoverRate;
         mutationRate = _mutationRate;
+        mutationOperator = mutationOp;
+        crossoverOperator = crossoverOp;
     }
     return self;
 }
@@ -220,10 +222,20 @@
         
         //Crossover
         if(randomFloat(1.0) < crossoverRate) {
-            [self independentAssortmentCrossoverFromParents:parents toChild:child withFirstParentBias:0.9];
-            //[self uniformCrossoverFromParents:parents toChild:child];
-            //[self onePointCrossoverFromParents:parents toChild:child];
-            //[self twoPointCrossoverFromParents:parents toChild:child];
+            switch (crossoverOperator){
+                case IndependentAssortmentCrossId:
+                    [self independentAssortmentCrossoverFromParents:parents toChild:child withFirstParentBias:0.9];
+                    break;
+                case UniformPointCrossId:
+                    [self uniformCrossoverFromParents:parents toChild:child];
+                    break;
+                case OnePointCrossId:
+                    [self onePointCrossoverFromParents:parents toChild:child];
+                    break;
+                case TwoPointCross:
+                    [self twoPointCrossoverFromParents:parents toChild:child];
+                    break;
+            }
         }
         else {
             //Otherwise the child will just be a copy of one of the parents
@@ -235,14 +247,23 @@
         for(NSString* key in [parameters allKeys]) {
             if(randomFloat(1.0) < mutationRate){
                 NSNumber* parameter = [parameters objectForKey:key];
-                [self valueDependentVarianceMutationForParameter:&parameter atGeneration:generation];
                 
-                //float maxVariance = 0.1;
-                //float minVariance = 0.005;
-                //[self decreasingVarianceMutationForParameter:&parameter atGeneration:generation:maxGenerations:maxVariance:minVariance];
-
-                //float sigma = 0.05;
-                //[self fixedVarianceMutationForParameter:&parameter :sigma];
+                switch (mutationOperator){
+                    case ValueDependentVarMutId:
+                        [self valueDependentVarianceMutationForParameter:&parameter atGeneration:generation];
+                        break;
+                    case DecreasingVarMutId: {
+                        float maxVariance = 0.1;
+                        float minVariance = 0.005;
+                        [self decreasingVarianceMutationForParameter:&parameter atGeneration:generation:maxGenerations:maxVariance:minVariance];
+                        }
+                        break;
+                    case FixedVarMutId: {
+                        float sigma = 0.05;
+                        [self fixedVarianceMutationForParameter:&parameter :sigma];
+                        }
+                        break;
+                }
 
                 [parameters setObject:parameter forKey:key];
             }

@@ -53,6 +53,8 @@
 
 @property (nonatomic) float crossoverRate;
 @property (nonatomic) float mutationRate;
+@property (nonatomic) int mutationOperator;
+@property (nonatomic) int crossoverOperator;
 @property (nonatomic) bool elitism;
 
 @property (nonatomic) NSSize gridSize;

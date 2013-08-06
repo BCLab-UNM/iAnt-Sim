@@ -6,9 +6,11 @@
     BOOL elitism;
     float crossoverRate;
     float mutationRate;
+    int mutationOperator;
+    int crossoverOperator;
 }
 
--(id) initWithElitism:(BOOL)_elitism crossover:(float)_crossoverRate andMutation:(float)_mutationRate;
+-(id) initWithElitism:(BOOL)_elitism crossover:(float)_crossoverRate andMutation:(float)_mutationRate :(int)mutationOp :(int)crossoverOp;
 
 -(void) breedTeams:(NSMutableArray *)teams AtGeneration:(int)generation :(int)maxGenerations;
 

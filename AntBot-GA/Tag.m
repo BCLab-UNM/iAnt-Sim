@@ -2,16 +2,16 @@
 
 @implementation Tag
 
-@synthesize x,y;
+@synthesize position;
 @synthesize pickedUp, discovered;
 
 -(id) initWithX:(int)_x andY:(int)_y {
     if(self = [super init]) {
-        x = _x;
-        y = _y;
+        position = NSMakePoint(_x, _y);
         pickedUp = NO;
         discovered = NO;
     }
     return self;
 }
+
 @end

@@ -4,8 +4,8 @@
 @implementation Team
 
 @synthesize travelGiveUpProbability, searchGiveUpProbability;
-@synthesize uninformedSearchCorrelation, informedSearchCorrelationDecayRate, stepSizeVariation;
-@synthesize pheromoneDecayRate, pheromoneLayingRate, siteFidelityRate, pheromoneFollowingRate;
+@synthesize uninformedSearchCorrelation, informedSearchCorrelation, informedGiveUpProbability, neighborSearchGiveUpProbability, stepSizeVariation;
+@synthesize pheromoneDecayRate, pheromoneLayingRate, siteFidelityRate;
 @synthesize tagsCollected, explorePhase;
 
 -(id) initRandom {
@@ -16,12 +16,13 @@
         searchGiveUpProbability = randomFloat(1.0);
         
         uninformedSearchCorrelation = randomFloat(2 * M_2PI);
-        informedSearchCorrelationDecayRate = randomExponential(5.0);
+        informedSearchCorrelation = randomFloat(2 * M_2PI);
+        informedGiveUpProbability = randomFloat(1.0);
+        neighborSearchGiveUpProbability = randomFloat(1.0);
         stepSizeVariation = randomExponential(1.0);
         
-        pheromoneLayingRate = randomExponential(1.0);
-        siteFidelityRate = randomExponential(1.0);
-        pheromoneFollowingRate = randomExponential(1.0);
+        pheromoneLayingRate = randomFloat(20.);
+        siteFidelityRate = randomFloat(20.);
     }
     return self;
 }
@@ -35,7 +36,7 @@
         }
         else {
             NSArray *parameters = [paramterString componentsSeparatedByString:@","];
-            if ([parameters count] == 9) {
+            if ([parameters count] == 10) {
                 NSEnumerator *parametersEnumerator = [parameters objectEnumerator];
                 pheromoneDecayRate = [[parametersEnumerator nextObject] floatValue];
                 
@@ -43,12 +44,13 @@
                 searchGiveUpProbability = [[parametersEnumerator nextObject] floatValue];
                 
                 uninformedSearchCorrelation = [[parametersEnumerator nextObject] floatValue];
-                informedSearchCorrelationDecayRate = [[parametersEnumerator nextObject] floatValue];
+                informedSearchCorrelation = [[parametersEnumerator nextObject] floatValue];
+                informedGiveUpProbability = [[parametersEnumerator nextObject] floatValue];
+                neighborSearchGiveUpProbability = [[parametersEnumerator nextObject] floatValue];
                 stepSizeVariation = [[parametersEnumerator nextObject] floatValue];
                 
                 pheromoneLayingRate = [[parametersEnumerator nextObject] floatValue];
                 siteFidelityRate = [[parametersEnumerator nextObject] floatValue];
-                pheromoneFollowingRate = [[parametersEnumerator nextObject] floatValue];
             }
         }
     }
@@ -62,21 +64,23 @@
              [NSNumber numberWithFloat:travelGiveUpProbability],
              [NSNumber numberWithFloat:searchGiveUpProbability],
              [NSNumber numberWithFloat:uninformedSearchCorrelation],
-             [NSNumber numberWithFloat:informedSearchCorrelationDecayRate],
+             [NSNumber numberWithFloat:informedSearchCorrelation],
+             [NSNumber numberWithFloat:informedGiveUpProbability],
+             [NSNumber numberWithFloat:neighborSearchGiveUpProbability],
              [NSNumber numberWithFloat:stepSizeVariation],
              [NSNumber numberWithFloat:pheromoneLayingRate],
-             [NSNumber numberWithFloat:siteFidelityRate],
-             [NSNumber numberWithFloat:pheromoneFollowingRate], nil] forKeys:
+             [NSNumber numberWithFloat:siteFidelityRate], nil] forKeys:
             [NSArray arrayWithObjects:
              @"pheromoneDecayRate",
              @"travelGiveUpProbability",
              @"searchGiveUpProbability",
              @"uninformedSearchCorrelation",
-             @"informedSearchCorrelationDecayRate",
+             @"informedSearchCorrelation",
+             @"informedGiveUpProbability",
+             @"neighborSearchGiveUpProbability",
              @"stepSizeVariation",
              @"pheromoneLayingRate",
-             @"siteFidelityRate",
-             @"pheromoneFollowingRate", nil]];
+             @"siteFidelityRate", nil]];
 }
 
 -(void) setParameters:(NSMutableDictionary *)parameters {
@@ -86,12 +90,13 @@
     searchGiveUpProbability = [[parameters objectForKey:@"searchGiveUpProbability"] floatValue];
     
     uninformedSearchCorrelation = [[parameters objectForKey:@"uninformedSearchCorrelation"] floatValue];
-    informedSearchCorrelationDecayRate = [[parameters objectForKey:@"informedSearchCorrelationDecayRate"] floatValue];
+    informedSearchCorrelation = [[parameters objectForKey:@"informedSearchCorrelation"] floatValue];
+    informedGiveUpProbability = [[parameters objectForKey:@"informedGiveUpProbability"] floatValue];
+    neighborSearchGiveUpProbability = [[parameters objectForKey:@"neighborSearchGiveUpProbability"] floatValue];
     stepSizeVariation = [[parameters objectForKey:@"stepSizeVariation"] floatValue];
     
     pheromoneLayingRate = [[parameters objectForKey:@"pheromoneLayingRate"] floatValue];
     siteFidelityRate = [[parameters objectForKey:@"siteFidelityRate"] floatValue];
-    pheromoneFollowingRate = [[parameters objectForKey:@"pheromoneFollowingRate"] floatValue];
 }
 
 @end

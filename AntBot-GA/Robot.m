@@ -5,7 +5,7 @@
 
 @synthesize status, informed;
 @synthesize position, target, recruitmentTarget;
-@synthesize direction, searchTime, lastMoved, lastTurned, delay;
+@synthesize direction, lastMoved, lastTurned, delay;
 @synthesize discoveredTags;
 @synthesize localPheromone;
 
@@ -18,7 +18,6 @@
     recruitmentTarget = NSNullPoint;
     
     direction = randomFloat(M_2PI);
-    searchTime = -1;
     lastMoved = 0;
     lastTurned = 0;
     
@@ -80,12 +79,11 @@
         direction = newDirection;
     }
     else {
-        if(searchTime >= 0) {
-            float informedSearchCorrelation = exponentialDecay(2 * M_2PI - params.uninformedSearchCorrelation, searchTime++, params.informedSearchCorrelationDecayRate);
-            dTheta = clip(randomNormal(0, informedSearchCorrelation + params.uninformedSearchCorrelation), -M_PI, M_PI);
+        if(informed) {
+            dTheta = clip(randomNormal(0, [params informedSearchCorrelation]), -M_PI, M_PI);
         }
         else {
-            dTheta = clip(randomNormal(0, params.uninformedSearchCorrelation), -M_PI, M_PI);
+            dTheta = clip(randomNormal(0, [params uninformedSearchCorrelation]), -M_PI, M_PI);
         }
         direction = pmod(direction + dTheta, M_2PI);
     }
@@ -100,8 +98,8 @@
  */
 -(void) broadcastPheromone:(NSPoint)location toRobots:(NSMutableArray *)robots atRange:(int)distance {
     for(Robot* robot in robots) {
-        if((robot != self) && (pointDistance(self.position.x, self.position.y, robot.position.x, robot.position.y) < distance)) {
-            robot.localPheromone = location;
+        if((robot != self) && (pointDistance(position.x, position.y, [robot position].x, [robot position].y) < distance)) {
+            [robot setLocalPheromone:location];
         }
     }
 }

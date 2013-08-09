@@ -4,8 +4,7 @@
 
 -(id) initWithX:(int)_x andY:(int)_y;
 
-@property (nonatomic) int x;
-@property (nonatomic) int y;
+@property (nonatomic) NSPoint position;
 @property (nonatomic) BOOL pickedUp;
 @property (nonatomic) BOOL discovered;
 

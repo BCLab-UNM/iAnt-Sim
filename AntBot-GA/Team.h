@@ -14,14 +14,15 @@
 
 //Random walk parameters:
 @property (nonatomic) float uninformedSearchCorrelation;
-@property (nonatomic) float informedSearchCorrelationDecayRate;
+@property (nonatomic) float informedSearchCorrelation;
+@property (nonatomic) float informedGiveUpProbability;
+@property (nonatomic) float neighborSearchGiveUpProbability;
 @property (nonatomic) float stepSizeVariation;
 
-//Pheromone parameters:
+//Information parameters:
 @property (nonatomic) float pheromoneDecayRate;
 @property (nonatomic) float pheromoneLayingRate;
 @property (nonatomic) float siteFidelityRate;
-@property (nonatomic) float pheromoneFollowingRate;
 
 //Non-evolved variables:
 @property (nonatomic) float tagsCollected;

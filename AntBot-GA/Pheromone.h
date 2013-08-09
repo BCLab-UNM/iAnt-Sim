@@ -2,8 +2,9 @@
 
 @interface Pheromone : NSObject {}
 
-@property (nonatomic) int x;
-@property (nonatomic) int y;
+-(id) initWithPosition:(NSPoint)_position weight:(float)_n andUpdatedTick:(int)_updated;
+
+@property (nonatomic) NSPoint position;
 @property (nonatomic) float n;
 @property (nonatomic) int updated;
 

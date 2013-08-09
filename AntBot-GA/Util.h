@@ -80,7 +80,9 @@ static inline float randomExponential(float lambda) {
 static inline float pmod(float dividend, float divisor)
 {
     float temp = fmod(dividend, divisor);
-    while(temp < 0){temp += divisor;}
+    while(temp < 0) {
+        temp += divisor;
+    }
     return temp;
 }
 

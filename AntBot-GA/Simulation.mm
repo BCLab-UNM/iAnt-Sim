@@ -14,7 +14,7 @@ using namespace cv;
 
 @implementation Simulation
 
-@synthesize teamCount, generationCount, robotCount, tagCount, evaluationCount, tickCount, exploreTime;
+@synthesize teamCount, generationCount, robotCount, tagCount, evaluationCount, evaluationLimit, tickCount, exploreTime;
 @synthesize distributionRandom, distributionPowerlaw, distributionClustered;
 @synthesize averageTeam, bestTeam;
 @synthesize pileRadius;
@@ -34,6 +34,7 @@ using namespace cv;
         robotCount = 6;
         tagCount = 256;
         evaluationCount = 8;
+        evaluationLimit = -1;
         tickCount = 3600;
         exploreTime = 0;
         
@@ -84,14 +85,28 @@ using namespace cv;
         }
     }
     
+    //If evaluationLimit is -1, make sure it does not factor into these calculations.
+    if(evaluationLimit == -1){
+        //Times 2 to make this so large that it will not be a limiting factor on this run.
+        evaluationLimit = teamCount * generationCount * evaluationCount*2;
+    }
+    //If generationCount is -1, make sure it does not factor into these calculations.
+    if(generationCount == -1){
+        //At least one evaluation will take place per generation, so this ensures that generationCount will not be a limiting factor on this run.
+        generationCount = evaluationLimit;
+    }
+    
     //Allocate GA
     ga = [[GA alloc] initWithElitism:elitism crossover:crossoverRate andMutation:mutationRate :mutationOperator :crossoverOperator];
     
     //Set evaluation count to 1 if using GUI
     evaluationCount = (viewDelegate != nil) ? 1 : evaluationCount;
     
+    //Not the number of evaluations to perform on each individual, but a count of the total number of evaluations performed so far during this run.
+    int evalCount = 0;
+    
     //Main loop
-    for(int generation = 0; generation < generationCount; generation++) {
+    for(int generation = 0; generation < generationCount && evalCount < evaluationLimit; generation++) {
         
         for(Team* team in teams) {
             [team setTagsCollected:0.];
@@ -107,6 +122,9 @@ using namespace cv;
         dispatch_apply(evaluationCount, queue, ^(size_t idx) {
             [self evaluateTeams:teams];
         });
+        
+        //Number of evaluations performed is the number of teams times the number of evaluations per team.
+        evalCount = evalCount + teamCount*evaluationCount;
         
         //Set average and best teams
         [self setAverageTeamFrom:teams];

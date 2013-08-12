@@ -324,9 +324,8 @@ using namespace cv;
                                 break;
                             }
                             
-                            //Calculate end point based on step size
-                            int stepsRemaining = [robot stepSize] - (tick - [robot lastTurned]);
-                            [robot setTarget:NSMakePoint(roundf([robot position].x + (cos(robot.direction) * stepsRemaining)), roundf([robot position].y + (sin([robot direction]) * stepsRemaining)))];
+                            //Calculate target
+                            [robot setTarget:NSMakePoint(roundf([robot position].x + cos(robot.direction)), roundf([robot position].y + sin([robot direction])))];
                             
                             //If our current direction takes us outside the world, frantically spin around until this isn't the case.
                             while([robot target].x < 0 || [robot target].y < 0 || [robot target].x >= gridSize.width || [robot target].y >= gridSize.height) {

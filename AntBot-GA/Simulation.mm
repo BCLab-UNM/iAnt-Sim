@@ -159,7 +159,7 @@ using namespace cv;
             for(int tick = 0; tick < tickCount; tick++) {
                 for(Robot* robot in robots) {
                     
-                    switch(robot.status) {
+                    switch([robot status]) {
                             
                         /*
                          * The robot hasn't been initialized yet.
@@ -303,6 +303,10 @@ using namespace cv;
                                 [robot setStatus:ROBOT_STATUS_RETURNING];
                                 break;
                             }
+                            
+                            //Calculate end point based on step size
+                            int stepsRemaining = [robot stepSize] - (tick - [robot lastTurned]);
+                            [robot setTarget:NSMakePoint(roundf([robot position].x + (cos(robot.direction) * stepsRemaining)), roundf([robot position].y + (sin([robot direction]) * stepsRemaining)))];
                             
                             //If our current direction takes us outside the world, frantically spin around until this isn't the case.
                             while([robot target].x < 0 || [robot target].y < 0 || [robot target].x >= gridSize.width || [robot target].y >= gridSize.height) {

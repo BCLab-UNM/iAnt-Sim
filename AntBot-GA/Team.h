@@ -6,7 +6,7 @@
 -(id) initWithFile:(NSString*)filePath;
 
 -(NSMutableDictionary*) getParameters;
--(void) setParameters:(NSMutableDictionary*)parameters;
+-(void) setParameters:(NSDictionary*)parameters;
 
 //Behavior parameters:
 @property (nonatomic) float travelGiveUpProbability;

@@ -29,29 +29,12 @@
 
 -(id) initWithFile:(NSString *)filePath {
     if (self = [super init]) {
-        NSError* error;
-        NSString *paramterString = [NSString stringWithContentsOfFile:filePath encoding:NSUTF8StringEncoding error:&error];
-        if (!paramterString) {
+        NSDictionary *parameters = [[NSDictionary alloc] initWithContentsOfFile:filePath];
+        if (!parameters) {
             NSLog(@"Error reading file.");
         }
         else {
-            NSArray *parameters = [paramterString componentsSeparatedByString:@","];
-            if ([parameters count] == 10) {
-                NSEnumerator *parametersEnumerator = [parameters objectEnumerator];
-                pheromoneDecayRate = [[parametersEnumerator nextObject] floatValue];
-                
-                travelGiveUpProbability = [[parametersEnumerator nextObject] floatValue];
-                searchGiveUpProbability = [[parametersEnumerator nextObject] floatValue];
-                
-                uninformedSearchCorrelation = [[parametersEnumerator nextObject] floatValue];
-                informedSearchCorrelation = [[parametersEnumerator nextObject] floatValue];
-                informedGiveUpProbability = [[parametersEnumerator nextObject] floatValue];
-                neighborSearchGiveUpProbability = [[parametersEnumerator nextObject] floatValue];
-                stepSizeVariation = [[parametersEnumerator nextObject] floatValue];
-                
-                pheromoneLayingRate = [[parametersEnumerator nextObject] floatValue];
-                siteFidelityRate = [[parametersEnumerator nextObject] floatValue];
-            }
+            [self setParameters:parameters];
         }
     }
     return self;
@@ -83,7 +66,7 @@
              @"siteFidelityRate", nil]];
 }
 
--(void) setParameters:(NSMutableDictionary *)parameters {
+-(void) setParameters:(NSDictionary *)parameters {
     pheromoneDecayRate = [[parameters objectForKey:@"pheromoneDecayRate"] floatValue];
     
     travelGiveUpProbability = [[parameters objectForKey:@"travelGiveUpProbability"] floatValue];

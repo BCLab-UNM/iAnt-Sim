@@ -14,7 +14,7 @@ using namespace cv;
 
 @implementation Simulation
 
-@synthesize teamCount, generationCount, robotCount, tagCount, evaluationCount, evaluationLimit, tickCount, exploreTime;
+@synthesize teamCount, generationCount, robotCount, tagCount, evaluationCount, evaluationLimit, evalCount, tickCount, exploreTime;
 @synthesize distributionRandom, distributionPowerlaw, distributionClustered;
 @synthesize averageTeam, bestTeam;
 @synthesize pileRadius;
@@ -35,6 +35,7 @@ using namespace cv;
         tagCount = 256;
         evaluationCount = 8;
         evaluationLimit = -1;
+        evalCount = 0;
         tickCount = 3600;
         exploreTime = 0;
         
@@ -103,7 +104,7 @@ using namespace cv;
     evaluationCount = (viewDelegate != nil) ? 1 : evaluationCount;
     
     //Not the number of evaluations to perform on each individual, but a count of the total number of evaluations performed so far during this run.
-    int evalCount = 0;
+    evalCount = 0;
     
     //Main loop
     for(int generation = 0; generation < generationCount && evalCount < evaluationLimit; generation++) {

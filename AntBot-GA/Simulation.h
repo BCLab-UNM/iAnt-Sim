@@ -43,6 +43,7 @@
 @property (nonatomic) int tagCount;
 @property (nonatomic) int evaluationCount;
 @property (nonatomic) int evaluationLimit;
+@property (nonatomic) int evalCount;
 @property (nonatomic) int tickCount;
 @property (nonatomic) int exploreTime;
 

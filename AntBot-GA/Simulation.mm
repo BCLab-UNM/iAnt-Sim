@@ -252,11 +252,6 @@ using namespace cv;
                                 break;
                             }
                             
-                            //Probabilistically give up informed (local) search if using it
-                            if([robot informed] && randomFloat(1.) < [team informedGiveUpProbability]) {
-                                [robot setInformed:ROBOT_INFORMED_NONE];
-                            }
-                            
                             //Broadcast decentralized pheromones if using them
                             if(decentralizedPheromones && ([robot informed] == ROBOT_INFORMED_MEMORY) && [robot recruitmentTarget].x > 0) {
                                 [robot broadcastPheromone:[robot recruitmentTarget] toRobots:robots atRange:wirelessRange];
@@ -299,65 +294,40 @@ using namespace cv;
                                     [foundTag setPosition:perturbedTagPosition];
                                     [foundTag setDiscovered:NO];
                                     [foundTag setPickedUp:YES];
-                                    
                                     [robot setDiscoveredTags:[[NSMutableArray alloc] initWithObjects:foundTag, nil]];
-                                    [robot setStatus:ROBOT_STATUS_NEIGHBOR_SEARCH];
-                                }
-                            }
-                           
-                            [robot setLastMoved:tick];
-                            break;
-                        }
-                            
-                        case ROBOT_STATUS_NEIGHBOR_SEARCH: {
-                            //Delay to emulate physical robot
-                            if(tick - [robot lastMoved] <= [robot delay]) {
-                                break;
-                            }
-                            [robot setDelay:0];
-                            
-                            //Probabilistically give up neighbor search and return to the nest
-                            if (randomFloat(1.) < [team neighborSearchGiveUpProbability]) {
-                                [robot setTarget:nest];
-                                [robot setLocalPheromone:NSNullPoint];
-                                [robot setRecruitmentTarget:NSNullPoint];
-                                [robot setStatus:ROBOT_STATUS_RETURNING];
-                                break;
-                            }
-                            
-                            //Calculate target
-                            [robot setTarget:NSMakePoint(roundf([robot position].x + cos(robot.direction)), roundf([robot position].y + sin([robot direction])))];
-                            
-                            //If our current direction takes us outside the world, frantically spin around until this isn't the case.
-                            while([robot target].x < 0 || [robot target].y < 0 || [robot target].x >= gridSize.width || [robot target].y >= gridSize.height) {
-                                [robot setDirection:randomFloat(M_2PI)];
-                                [robot setTarget:NSMakePoint(roundf([robot position].x + cos([robot direction])), roundf([robot position].y + sin([robot direction])))];
-                            }
-                            
-                            //Move one cell
-                            [robot moveWithin:gridSize];
-                            
-                            //Turn uniform randomly to emulate Brownian motion
-                            [robot turn:TRUE withParameters:team];
-
-                            //Check one square ahead for a tag.
-                            NSPoint target = NSMakePoint(roundf([robot position].x + cos([robot direction])), roundf([robot position].y + sin([robot direction]))); 
-                            //If target square is legal
-                            if(target.x >= 0 && target.y >= 0 && target.x < gridSize.width && target.y < gridSize.height) {
-                                //Look up tag in tags array
-                                id neighboringTag = [tags objectAtRow:target.y col:target.x];
-                                
-                                //If tag exists and is detectable
-                                if ((neighboringTag != [NSNull null]) && !([neighboringTag pickedUp]) && detectTag(realWorldError)) {
-                                    //Add it to discoveredTags array
-                                    [[robot discoveredTags] addObject:neighboringTag];
+                                    
+                                    [robot setStatus:ROBOT_STATUS_RETURNING];
+                                    [robot setDelay:9];
+                                    [robot setTarget:nest];
+                                    [robot setLocalPheromone:NSNullPoint];
+                                    [robot setRecruitmentTarget:NSNullPoint];
+                                    
+                                    //Sum up all non-picked-up seeds in the moore neighbor.
+                                    for(int dx = -1; dx <= 1; dx++) {
+                                        for(int dy = -1; dy <= 1; dy++) {
+                                            
+                                            //If neighboring cell is legal
+                                            if(([foundTag position].x + dx >= 0 && [foundTag position].x + dx < gridSize.width) &&
+                                               ([foundTag position].y + dy >= 0 && [foundTag position].y + dy < gridSize.height))
+                                            {
+                                                //Look up tag in tags array
+                                                id neighboringTag = [tags objectAtRow:[foundTag position].y + dy col:[foundTag position].x + dx];
+                                                
+                                                //If tag exists and is detectable
+                                                if ((neighboringTag != [NSNull null]) && !([neighboringTag pickedUp]) && detectTag(realWorldError)) {
+                                                    //Add it to discoveredTags array
+                                                    [[robot discoveredTags] addObject:neighboringTag];
+                                                }
+                                            }
+                                        }
+                                    }
                                 }
                             }
                             
                             [robot setLastMoved:tick];
                             break;
                         }
-                    
+                            
                         /*
                          * The robot is on its way back to the nest.
                          * It is either carrying food, or it gave up on its search and is returning to base for further instruction.
@@ -465,7 +435,7 @@ using namespace cv;
                                     }
                                     
                                     [robot setDiscoveredTags:nil];
-                                    
+                                    [robot setSearchTime:0];
                                     [robot setStatus:ROBOT_STATUS_DEPARTING];
                                 }
                             }

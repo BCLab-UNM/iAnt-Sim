@@ -19,8 +19,8 @@
         informedSearchCorrelationDecayRate = randomExponential(5.0);
         stepSizeVariation = randomExponential(1.0);
         
-        pheromoneLayingRate = randomFloat(1.);
-        siteFidelityRate = randomFloat(1.);
+        pheromoneLayingRate = randomFloat(20.);
+        siteFidelityRate = randomFloat(20.);
     }
     return self;
 }

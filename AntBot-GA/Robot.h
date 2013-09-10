@@ -4,10 +4,9 @@
 #define ROBOT_STATUS_INACTIVE 0
 #define ROBOT_STATUS_DEPARTING 1
 #define ROBOT_STATUS_SEARCHING 2
-#define ROBOT_STATUS_NEIGHBOR_SEARCH 3
-#define ROBOT_STATUS_RETURNING 4
-#define ROBOT_STATUS_EXPLORING 5
-#define ROBOT_STATUS_WAITING 6
+#define ROBOT_STATUS_RETURNING 3
+#define ROBOT_STATUS_EXPLORING 4
+#define ROBOT_STATUS_WAITING 5
 
 #define ROBOT_INFORMED_NONE 0
 #define ROBOT_INFORMED_MEMORY 1
@@ -31,6 +30,7 @@
 @property (nonatomic) NSPoint recruitmentTarget; //Where the robot is recruiting other robots to via local pheromones
 
 @property (nonatomic) float direction; //Direction robot is moving (used in random walk).
+@property (nonatomic) int searchTime; //Amount of ticks the robot has been performing a random walk.
 @property (nonatomic) int lastMoved; //tick at which the robot last moved (used in random walk).
 @property (nonatomic) int lastTurned; //tick at which the robot last turned (used in random walk).
 @property (nonatomic) int delay; //Number of ticks the robot is penalized to emulate physical robots (used in random walk).

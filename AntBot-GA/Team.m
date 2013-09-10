@@ -4,7 +4,7 @@
 @implementation Team
 
 @synthesize travelGiveUpProbability, searchGiveUpProbability;
-@synthesize uninformedSearchCorrelation, informedSearchCorrelation, informedGiveUpProbability, neighborSearchGiveUpProbability, stepSizeVariation;
+@synthesize uninformedSearchCorrelation, informedSearchCorrelationDecayRate, stepSizeVariation;
 @synthesize pheromoneDecayRate, pheromoneLayingRate, siteFidelityRate;
 @synthesize tagsCollected, explorePhase;
 
@@ -16,13 +16,11 @@
         searchGiveUpProbability = randomFloat(1.0);
         
         uninformedSearchCorrelation = randomFloat(2 * M_2PI);
-        informedSearchCorrelation = randomFloat(2 * M_2PI);
-        informedGiveUpProbability = randomFloat(1.0);
-        neighborSearchGiveUpProbability = randomFloat(1.0);
+        informedSearchCorrelationDecayRate = randomExponential(5.0);
         stepSizeVariation = randomExponential(1.0);
         
-        pheromoneLayingRate = randomFloat(20.);
-        siteFidelityRate = randomFloat(20.);
+        pheromoneLayingRate = randomFloat(1.);
+        siteFidelityRate = randomFloat(1.);
     }
     return self;
 }
@@ -47,9 +45,7 @@
              [NSNumber numberWithFloat:travelGiveUpProbability],
              [NSNumber numberWithFloat:searchGiveUpProbability],
              [NSNumber numberWithFloat:uninformedSearchCorrelation],
-             [NSNumber numberWithFloat:informedSearchCorrelation],
-             [NSNumber numberWithFloat:informedGiveUpProbability],
-             [NSNumber numberWithFloat:neighborSearchGiveUpProbability],
+             [NSNumber numberWithFloat:informedSearchCorrelationDecayRate],
              [NSNumber numberWithFloat:stepSizeVariation],
              [NSNumber numberWithFloat:pheromoneLayingRate],
              [NSNumber numberWithFloat:siteFidelityRate], nil] forKeys:
@@ -58,9 +54,7 @@
              @"travelGiveUpProbability",
              @"searchGiveUpProbability",
              @"uninformedSearchCorrelation",
-             @"informedSearchCorrelation",
-             @"informedGiveUpProbability",
-             @"neighborSearchGiveUpProbability",
+             @"informedSearchCorrelationDecayRate",
              @"stepSizeVariation",
              @"pheromoneLayingRate",
              @"siteFidelityRate", nil]];
@@ -73,9 +67,7 @@
     searchGiveUpProbability = [[parameters objectForKey:@"searchGiveUpProbability"] floatValue];
     
     uninformedSearchCorrelation = [[parameters objectForKey:@"uninformedSearchCorrelation"] floatValue];
-    informedSearchCorrelation = [[parameters objectForKey:@"informedSearchCorrelation"] floatValue];
-    informedGiveUpProbability = [[parameters objectForKey:@"informedGiveUpProbability"] floatValue];
-    neighborSearchGiveUpProbability = [[parameters objectForKey:@"neighborSearchGiveUpProbability"] floatValue];
+    informedSearchCorrelationDecayRate = [[parameters objectForKey:@"informedSearchCorrelationDecayRate"] floatValue];
     stepSizeVariation = [[parameters objectForKey:@"stepSizeVariation"] floatValue];
     
     pheromoneLayingRate = [[parameters objectForKey:@"pheromoneLayingRate"] floatValue];

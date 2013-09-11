@@ -21,7 +21,7 @@
     lastMoved = 0;
     lastTurned = 0;
     
-    discoveredTags = nil;
+    discoveredTags = [[NSMutableArray alloc] init];
     
     localPheromone = NSNullPoint;
 }

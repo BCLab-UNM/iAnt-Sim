@@ -295,7 +295,6 @@ using namespace cv;
                                     [tagCopy setPosition:perturbedTagPosition];
                                     
                                     [robot setDiscoveredTags:[[NSMutableArray alloc] initWithObjects:tagCopy, nil]];
-                                    [foundTag setDiscovered:NO];
                                     [foundTag setPickedUp:YES];
 
                                     //Sum up all non-picked-up seeds in the moore neighbor.

@@ -1,6 +1,6 @@
 #import <Foundation/Foundation.h>
 
-@interface Tag : NSObject {}
+@interface Tag : NSObject <NSCopying> {}
 
 -(id) initWithX:(int)_x andY:(int)_y;
 

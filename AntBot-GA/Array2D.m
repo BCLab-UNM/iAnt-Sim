@@ -46,7 +46,9 @@
 -(id) copyWithZone:(NSZone *)zone {
     Array2D *arrayCopy = [[[self class] allocWithZone:zone] init];
     if(arrayCopy) {
-        arrayCopy = self;
+        arrayCopy->numberOfRows = numberOfRows;
+        arrayCopy->numberOfColumns = numberOfColumns;
+        arrayCopy->backingStore = backingStore;
     }
     return arrayCopy;
 }

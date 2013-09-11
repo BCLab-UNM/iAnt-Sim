@@ -14,4 +14,16 @@
     return self;
 }
 
+#pragma NSCopying methods
+
+-(id) copyWithZone:(NSZone *)zone {
+    Tag *tagCopy = [[[self class] allocWithZone:zone] init];
+    if(tagCopy) {
+        [tagCopy setPosition:position];
+        [tagCopy setPickedUp:pickedUp];
+        [tagCopy setDiscovered:discovered];
+    }
+    return tagCopy;
+}
+
 @end

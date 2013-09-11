@@ -291,17 +291,13 @@ using namespace cv;
                                     
                                     //Perturb found tag position to simulate error
                                     NSPoint perturbedTagPosition = perturbTagPosition(realWorldError, [foundTag position], gridSize);
-                                    [foundTag setPosition:perturbedTagPosition];
+                                    Tag* tagCopy = [foundTag copy];
+                                    [tagCopy setPosition:perturbedTagPosition];
+                                    
+                                    [robot setDiscoveredTags:[[NSMutableArray alloc] initWithObjects:tagCopy, nil]];
                                     [foundTag setDiscovered:NO];
                                     [foundTag setPickedUp:YES];
-                                    [robot setDiscoveredTags:[[NSMutableArray alloc] initWithObjects:foundTag, nil]];
-                                    
-                                    [robot setStatus:ROBOT_STATUS_RETURNING];
-                                    [robot setDelay:9];
-                                    [robot setTarget:nest];
-                                    [robot setLocalPheromone:NSNullPoint];
-                                    [robot setRecruitmentTarget:NSNullPoint];
-                                    
+
                                     //Sum up all non-picked-up seeds in the moore neighbor.
                                     for(int dx = -1; dx <= 1; dx++) {
                                         for(int dy = -1; dy <= 1; dy++) {
@@ -321,6 +317,12 @@ using namespace cv;
                                             }
                                         }
                                     }
+                                    
+                                    [robot setStatus:ROBOT_STATUS_RETURNING];
+                                    [robot setDelay:9];
+                                    [robot setTarget:nest];
+                                    [robot setLocalPheromone:NSNullPoint];
+                                    [robot setRecruitmentTarget:NSNullPoint];
                                 }
                             }
                             

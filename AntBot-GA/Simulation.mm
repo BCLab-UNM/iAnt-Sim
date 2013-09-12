@@ -36,7 +36,7 @@ using namespace cv;
         evaluationCount = 8;
         evaluationLimit = -1;
         evalCount = 0;
-        tickCount = 3600;
+        tickCount = 7200;
         exploreTime = 0;
         
         distributionClustered = 0.;
@@ -54,7 +54,7 @@ using namespace cv;
         gridSize = NSMakeSize(125, 125);
         nest = NSMakePoint(62, 62);
         
-        realWorldError = NO;
+        realWorldError = YES;
         
         variableStepSize = NO;
         uniformDirection = NO;

@@ -154,8 +154,8 @@ static inline NSPoint perturbTagPosition(bool realWorldError, NSPoint position, 
  */
 static inline NSPoint perturbTargetPosition(bool realWorldError, NSPoint position, NSSize size) {
     if(realWorldError) {
-        position.x = roundf(clip(randomNormal(position.x + (1.59 / 8), (44.6 / 8)), 0, size.width - 1));
-        position.y = roundf(clip(randomNormal(position.y + (64.4 / 8), (111. / 8)), 0, size.height - 1));
+        position.x = roundf(clip(randomNormal(position.x + (1.59 * ((size.width * size.height) / 15625) / 8), (44.6 * ((size.width * size.height) / 15625) / 8)), 0, size.width - 1));
+        position.y = roundf(clip(randomNormal(position.y + (64.4 * ((size.width * size.height) / 15625) / 8), (111. * ((size.width * size.height) / 15625) / 8)), 0, size.height - 1));
     }
     return position;
 }

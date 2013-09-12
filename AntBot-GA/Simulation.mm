@@ -39,8 +39,8 @@ using namespace cv;
         tickCount = 7200;
         exploreTime = 0;
         
-        distributionClustered = 0.;
-        distributionPowerlaw = 1.;
+        distributionClustered = 1.;
+        distributionPowerlaw = 0.;
         distributionRandom = 0.;
         
         pileRadius = 2;

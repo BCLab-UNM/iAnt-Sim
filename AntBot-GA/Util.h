@@ -143,8 +143,8 @@ static inline float exponentialDecay(float quantity, float time, float lambda) {
  */
 static inline NSPoint perturbTagPosition(bool realWorldError, NSPoint position, NSSize size) {
     if(realWorldError) {
-        position.x = roundf(clip(randomNormal(position.x - (17.6 * ((size.width * size.height) / 15625) / 8), (78.9 * ((size.width * size.height) / 15625) / 8)), 0, size.width - 1));
-        position.y = roundf(clip(randomNormal(position.y - (14.6 * ((size.width * size.height) / 15625) / 8), (46.7 * ((size.width * size.height) / 15625) / 8)), 0, size.height - 1));
+        position.x = roundf(clip(randomNormal(position.x - (17.6 * (size.width / 125) / 8), (78.9 * (size.width / 125) / 8)), 0, size.width - 1));
+        position.y = roundf(clip(randomNormal(position.y - (14.6 * (size.width / 125) / 8), (46.7 * (size.width / 125) / 8)), 0, size.height - 1));
     }
     return position;
 }
@@ -154,8 +154,8 @@ static inline NSPoint perturbTagPosition(bool realWorldError, NSPoint position, 
  */
 static inline NSPoint perturbTargetPosition(bool realWorldError, NSPoint position, NSSize size) {
     if(realWorldError) {
-        position.x = roundf(clip(randomNormal(position.x + (1.59 * ((size.width * size.height) / 15625) / 8), (44.6 * ((size.width * size.height) / 15625) / 8)), 0, size.width - 1));
-        position.y = roundf(clip(randomNormal(position.y + (64.4 * ((size.width * size.height) / 15625) / 8), (111. * ((size.width * size.height) / 15625) / 8)), 0, size.height - 1));
+        position.x = roundf(clip(randomNormal(position.x + (1.59 * (size.width / 125) / 8), (44.6 * (size.width / 125) / 8)), 0, size.width - 1));
+        position.y = roundf(clip(randomNormal(position.y + (64.4 * (size.width / 125) / 8), (111. * (size.width / 125) / 8)), 0, size.height - 1));
     }
     return position;
 }

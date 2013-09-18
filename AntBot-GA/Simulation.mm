@@ -86,6 +86,10 @@ using namespace cv;
         }
     }
     
+    //Initialize average and best teams
+    [self setAverageTeamFrom:teams];
+    [self setBestTeamFrom:teams];
+    
     //If evaluationLimit is -1, make sure it does not factor into these calculations.
     if(evaluationLimit == -1){
         //Times 2 to make this so large that it will not be a limiting factor on this run.

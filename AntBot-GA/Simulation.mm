@@ -599,7 +599,7 @@ using namespace cv;
     int pileCount = 0;
     NSPoint pilePoints[64]; //64 piles as a loose upper bound on number of piles.
     
-    for(int size = 1; size < 65; size++) { //For each distinct size of pile.
+    for(int size = 1; size <= (tagCount / 4); size++) { //For each distinct size of pile.
         if (size >= tagCount) {
             break;
         }

@@ -194,94 +194,96 @@
 -(void) breedTeams:(NSMutableArray*)teams AtGeneration:(int)generation :(int)maxGenerations{
     int teamCount = (int)[teams count];
     
-    //Elitism
-    //Allocate a whole new individual.
-    Team* bestIndividual = [[Team alloc] init];
-    if(elitism) {
-        //Get the best individual in the population and make sure it is preserved in the next generation.
-        int mostTags = -1;
-        for(Team *t in teams) {
-            //If this individual is better than the best so far, then update the elite individual.
-            if([t tagsCollected] > mostTags) {
-                mostTags = [t tagsCollected];
-                //Copy the best individual's parameters.
-                [bestIndividual setParameters:[t getParameters]];
+    if (teamCount) {
+        //Elitism
+        //Allocate a whole new individual.
+        Team* bestIndividual = [[Team alloc] init];
+        if(elitism) {
+            //Get the best individual in the population and make sure it is preserved in the next generation.
+            int mostTags = -1;
+            for(Team *t in teams) {
+                //If this individual is better than the best so far, then update the elite individual.
+                if([t tagsCollected] > mostTags) {
+                    mostTags = [t tagsCollected];
+                    //Copy the best individual's parameters.
+                    [bestIndividual setParameters:[t getParameters]];
+                }
             }
         }
-    }
-    
-    //Create new population of children
-    Team* children[teamCount];
-    
-    for(int i = 0; i < teamCount; i++) {
-        children[i] = [[Team alloc] init];
-        Team* child = children[i];
         
-        //Selection
-        NSMutableArray* parents = [self tournamentSelectionOn:teams];
+        //Create new population of children
+        Team* children[teamCount];
         
-        //Crossover
-        if(randomFloat(1.0) < crossoverRate) {
-            switch (crossoverOperator){
-                case IndependentAssortmentCrossId:
-                    [self independentAssortmentCrossoverFromParents:parents toChild:child withFirstParentBias:0.9];
-                    break;
-                case UniformPointCrossId:
-                    [self uniformCrossoverFromParents:parents toChild:child];
-                    break;
-                case OnePointCrossId:
-                    [self onePointCrossoverFromParents:parents toChild:child];
-                    break;
-                case TwoPointCross:
-                    [self twoPointCrossoverFromParents:parents toChild:child];
-                    break;
-            }
-        }
-        else {
-            //Otherwise the child will just be a copy of one of the parents
-            [child setParameters:[[parents objectAtIndex:0] getParameters]];
-        }
-        
-        //Random mutations
-        NSMutableDictionary* parameters = [child getParameters];
-        for(NSString* key in [parameters allKeys]) {
-            if(randomFloat(1.0) < mutationRate){
-                NSNumber* parameter = [parameters objectForKey:key];
-                
-                switch (mutationOperator){
-                    case ValueDependentVarMutId:
-                        [self valueDependentVarianceMutationForParameter:&parameter atGeneration:generation];
+        for(int i = 0; i < teamCount; i++) {
+            children[i] = [[Team alloc] init];
+            Team* child = children[i];
+            
+            //Selection
+            NSMutableArray* parents = [self tournamentSelectionOn:teams];
+            
+            //Crossover
+            if(randomFloat(1.0) < crossoverRate) {
+                switch (crossoverOperator){
+                    case IndependentAssortmentCrossId:
+                        [self independentAssortmentCrossoverFromParents:parents toChild:child withFirstParentBias:0.9];
                         break;
-                    case DecreasingVarMutId: {
-                        float maxVariance = 0.1;
-                        float minVariance = 0.005;
-                        [self decreasingVarianceMutationForParameter:&parameter atGeneration:generation:maxGenerations:maxVariance:minVariance];
-                        }
+                    case UniformPointCrossId:
+                        [self uniformCrossoverFromParents:parents toChild:child];
                         break;
-                    case FixedVarMutId: {
-                        float sigma = 0.05;
-                        [self fixedVarianceMutationForParameter:&parameter :sigma];
-                        }
+                    case OnePointCrossId:
+                        [self onePointCrossoverFromParents:parents toChild:child];
+                        break;
+                    case TwoPointCross:
+                        [self twoPointCrossoverFromParents:parents toChild:child];
                         break;
                 }
-
-                [parameters setObject:parameter forKey:key];
             }
+            else {
+                //Otherwise the child will just be a copy of one of the parents
+                [child setParameters:[[parents objectAtIndex:0] getParameters]];
+            }
+            
+            //Random mutations
+            NSMutableDictionary* parameters = [child getParameters];
+            for(NSString* key in [parameters allKeys]) {
+                if(randomFloat(1.0) < mutationRate){
+                    NSNumber* parameter = [parameters objectForKey:key];
+                    
+                    switch (mutationOperator){
+                        case ValueDependentVarMutId:
+                            [self valueDependentVarianceMutationForParameter:&parameter atGeneration:generation];
+                            break;
+                        case DecreasingVarMutId: {
+                            float maxVariance = 0.1;
+                            float minVariance = 0.005;
+                            [self decreasingVarianceMutationForParameter:&parameter atGeneration:generation:maxGenerations:maxVariance:minVariance];
+                            }
+                            break;
+                        case FixedVarMutId: {
+                            float sigma = 0.05;
+                            [self fixedVarianceMutationForParameter:&parameter :sigma];
+                            }
+                            break;
+                    }
+
+                    [parameters setObject:parameter forKey:key];
+                }
+            }
+            
+            [children[i] setParameters:parameters];
         }
         
-        [children[i] setParameters:parameters];
-    }
-    
-    //Set the children to be the new set of teams for the next generation.
-    for(int i = 0; i < teamCount; i++) {
-        Team* team = [teams objectAtIndex:i];
-        [team setParameters:[children[i] getParameters]];
-    }
-    
-    //If we are using elitism then the first child is replaced by the best individual from the previous generation.
-    if(elitism) {
-        Team* team = [teams objectAtIndex:0];
-        [team setParameters:[bestIndividual getParameters]];
+        //Set the children to be the new set of teams for the next generation.
+        for(int i = 0; i < teamCount; i++) {
+            Team* team = [teams objectAtIndex:i];
+            [team setParameters:[children[i] getParameters]];
+        }
+        
+        //If we are using elitism then the first child is replaced by the best individual from the previous generation.
+        if(elitism) {
+            Team* team = [teams objectAtIndex:0];
+            [team setParameters:[bestIndividual getParameters]];
+        }
     }
 }
 

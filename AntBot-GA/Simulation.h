@@ -5,7 +5,9 @@
 #import "Team.h"
 #import "Robot.h"
 #import "Tag.h"
+#import "QuadTree.h"
 #include "Util.h"
+
 
 @class Team;
 @class Tag;

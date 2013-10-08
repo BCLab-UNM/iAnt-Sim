@@ -433,7 +433,7 @@ using namespace cv;
                                         origin.y = 0;
                                         QuadTree* tree = [[QuadTree alloc] initWithHeight:gridSize.height width:gridSize.width origin:origin andCells:cells];
                                         [regions addObject:tree];
-                                        [self runDecomposition:regions];
+                                        [unexploredRegions addObjectsFromArray:[self runDecomposition:regions]];
                                     }
                                 }
                                 
@@ -655,6 +655,7 @@ using namespace cv;
         [unclusteredRegions removeAllObjects];
         [self runDecomposition:children];
     }
+    
     return unclusteredRegions;
 }
 

@@ -37,7 +37,7 @@ using namespace cv;
         evaluationLimit = -1;
         evalCount = 0;
         tickCount = 7200;
-        exploreTime = 0;
+        exploreTime = 3600;
         
         distributionClustered = 1.;
         distributionPowerlaw = 0.;
@@ -159,7 +159,10 @@ using namespace cv;
         
         NSMutableArray* robots = [[NSMutableArray alloc] initWithCapacity:robotCount];
         NSMutableArray* pheromones = [[NSMutableArray alloc] init];
+        NSMutableArray* regions = [[NSMutableArray alloc] init];
+        Array2D* cells = [[Array2D alloc] initWithRows:gridSize.width cols:gridSize.height];
         for(int i = 0; i < robotCount; i++){[robots addObject:[[Robot alloc] init]];}
+
         
         for(Team* team in teams) {
             for(int i = 0; i < gridSize.height; i++) {
@@ -176,6 +179,15 @@ using namespace cv;
                 [robot setStepSize:(variableStepSize ? (int)floor(randomLogNormal(0, [team stepSizeVariation])) + 1 : 1)];
             }
             [pheromones removeAllObjects];
+            
+           // NSNumber *isExplored = [NSNumber numberWithBool:NO];
+            NSNumber *clusterStatus = [NSNumber numberWithInt:CELL_NOT_IN_CLUSTER];
+            for(int i = 0; i < gridSize.height; i++) {
+                for(int j = 0; j < gridSize.width; j++) {
+                 //   [exploredSpace setObjectAtRow:i col:j to:isExplored];
+                    [cells setObjectAtRow:i col:j to:clusterStatus];
+                }
+            }
             
             for(int tick = 0; tick < tickCount; tick++) {
                 for(Robot* robot in robots) {
@@ -363,6 +375,21 @@ using namespace cv;
                                         Mat means = em.get<Mat>("means");
                                         vector<Mat> covs = em.get<vector<Mat>>("covs");
                                         
+//                                        cv::Size meansSize = means.size();
+//                                        for(int i = 0; i < meansSize.height; i++) {
+//                                            NSPoint p;
+//                                            double height, width;
+//                                            p.x = means.at<double>(i,0);
+//                                            p.y = means.at<double>(i,1);
+//                                            height = covs[i].at<double>(0,0) * 2;
+//                                            width = covs[i].at<double>(1,1) * 2;
+//                                            for(int j = p.y - height/2; j < p.y; j++) {
+//                                                for(int k = p.x - width/2; k < p.x; k++) {
+//                                                    [cells setObjectAtRow:j col:k to:[NSNumber numberWithInt:CELL_IN_CLUSTER]];
+//                                                }
+//                                            }
+//                                        }
+                                        
                                         //Calculate determinants of covs
                                         //Store results in covDeterminants
                                         double determinantSum = 0;
@@ -375,8 +402,7 @@ using namespace cv;
                                         //Iterate through clusters
                                         for(int i = 0; i < em.get<int>("nclusters"); i++) {
                                             //Create pheromone at centroid location
-                                            Pheromone* p = [[Pheromone alloc] initWithPosition:NSMakePoint(means.at<double>(i,0), means.at<double>(i,1))
-                                                                                        weight:1 - covDeterminants[i]/determinantSum andUpdatedTick:tick];
+                                            Pheromone* p = [[Pheromone alloc] initWithPosition:NSMakePoint(means.at<double>(i,0), means.at<double>(i,1)) weight:1 - covDeterminants[i]/determinantSum andUpdatedTick:tick];
                                             [pheromones addObject:p];
                                         }
                                         
@@ -385,6 +411,13 @@ using namespace cv;
                                         }
                                         
                                         [team setExplorePhase:NO];
+//                                        
+//                                        NSPoint origin;
+//                                        origin.x = 0;
+//                                        origin.y = 0;
+//                                        QuadTree* tree = [[QuadTree alloc] initWithHeight:gridSize.height width:gridSize.width origin:origin andCells:cells];
+//                                        [regions addObject:tree];
+//                                        [self runDecomposition:regions];
                                     }
                                 }
                                 
@@ -505,6 +538,133 @@ using namespace cv;
         }
     }
 }
+
+-(BOOL) isHomogeneous:(NSMutableDictionary*)explorationSpace {
+    NSArray *exploredStatuses = [explorationSpace allValues];
+    id isExplored = [exploredStatuses objectAtIndex:0];
+    for(id key in explorationSpace) {
+        if([explorationSpace objectForKey:key] != isExplored) {
+            return FALSE;
+        }
+    }
+    return TRUE;
+}
+
+-(NSMutableArray*) runDecomposition:(NSMutableArray*)regions {
+    BOOL decompComplete = NO;
+    int width1, width2, height1, height2;
+    NSMutableArray *parents = [[NSMutableArray alloc] init];
+    NSMutableArray *children = [[NSMutableArray alloc] init];
+    NSMutableArray *unclusteredRegions = [[NSMutableArray alloc] init];
+    [parents addObjectsFromArray:regions];
+    
+    for(QuadTree* parent in parents) {
+        if([parent width] % 2 == 0) {
+            width1 = width2 = [parent width] / 2;
+        }
+        else {
+            width1 = [parent width] / 2;
+            width2 = ([parent width] / 2) + 1;
+        }
+        if([parent height] % 2 == 0) {
+            height1 = height2 = [parent height] / 2;
+        }
+        else {
+            height1 = [parent height] / 2;
+            height2 = ([parent height] / 2) + 1;
+        }
+        
+        NSPoint nwOrigin, neOrigin, swOrigin, seOrigin;
+        nwOrigin = [parent origin];
+        neOrigin.x = parent.origin.x + width1;
+        neOrigin.y = parent.origin.y;
+        swOrigin.x = parent.origin.x;
+        swOrigin.y = parent.origin.y + height1;
+        seOrigin.x = parent.origin.x + width1;
+        seOrigin.y = parent.origin.y + height1;
+        
+        Array2D* nwCells = [[Array2D alloc] initWithRows:height1 cols:width1];
+        Array2D* neCells = [[Array2D alloc] initWithRows:height1 cols:width2];
+        Array2D* swCells = [[Array2D alloc] initWithRows:height2 cols:width1];
+        Array2D* seCells = [[Array2D alloc] initWithRows:height2 cols:width2];
+        int x, y;
+        x = y = 0;
+        for(int i = 0; i < width1; i++) {
+            for(int j = 0; j < height1; j++) {
+                [nwCells setObjectAtRow:x col:y to:[[parent cells] objectAtRow:i col:j]];
+                y++;
+            }
+            x++;
+            y = 0;
+        }
+        x = y = 0;
+        for(int i = width1; i < width2; i++) {
+            for(int j = 0; j < height1; j++) {
+                [neCells setObjectAtRow:x col:y to:[[parent cells] objectAtRow:i col:j]];
+                y++;
+            }
+            x++;
+            y = 0;
+        }
+        x = y = 0;
+        for(int i = 0; i < width1; i++) {
+            for(int j = height1; j < height2; j++) {
+                [swCells setObjectAtRow:x col:y to:[[parent cells] objectAtRow:i col:j]];
+                y++;
+            }
+            x++;
+            y = 0;
+        }
+        x = y = 0;
+        for(int i = width1; i < width2; i++) {
+            for(int j = height1; j < height2; j++) {
+                [seCells setObjectAtRow:x col:y to:[[parent cells] objectAtRow:i col:j]];
+                y++;
+            }
+            x++;
+            y = 0;
+        }
+        
+        QuadTree *northWest = [[QuadTree alloc] initWithHeight:height1 width:width1 origin:nwOrigin andCells:nwCells];
+        QuadTree *northEast = [[QuadTree alloc] initWithHeight:height1 width:width2 origin:neOrigin andCells:neCells];
+        QuadTree *southWest = [[QuadTree alloc] initWithHeight:height2 width:width1 origin:swOrigin andCells:swCells];
+        QuadTree *southEast = [[QuadTree alloc] initWithHeight:height2 width:width2 origin:seOrigin andCells:seCells];
+        
+        [children addObject:northWest];
+        [children addObject:northEast];
+        [children addObject:southWest];
+        [children addObject:southEast];
+    }
+    
+    for(QuadTree* child in children) {
+        if([self isFullyUnclustered:child]) {
+            decompComplete = YES;
+            NSPoint center;
+            center.x = child.origin.x + ([child width] / 2);
+            center.y = child.origin.y + ([child height] / 2);
+            [unclusteredRegions addObject:[NSValue valueWithPoint:center]];
+        }
+    }
+    
+    if(!decompComplete) {
+        [unclusteredRegions removeAllObjects];
+        [self runDecomposition:children];
+    }
+    return unclusteredRegions;
+}
+
+
+-(BOOL) isFullyUnclustered:(QuadTree*)region {
+    for(int i = 0; i < [region height]; i++) {
+        for(int j = 0; j < [region width]; j++) {
+            if([[region cells] objectAtRow:i col:j] != [NSNumber numberWithInt:CELL_IN_CLUSTER]) {
+                return FALSE;
+            }
+        }
+    }
+    return TRUE;
+}
+
 
 /*
  * Run 100 post evaluations of the average team from the final generation (i.e. generationCount)

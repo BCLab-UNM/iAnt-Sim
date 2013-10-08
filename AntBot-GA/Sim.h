@@ -8,3 +8,4 @@
 #import <AntBot-GA/Robot.h>
 #import <AntBot-GA/Team.h>
 #import <AntBot-GA/Tag.h>
+#import <AntBot-GA/QuadTree.h>

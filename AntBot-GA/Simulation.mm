@@ -37,7 +37,7 @@ using namespace cv;
         evaluationLimit = -1;
         evalCount = 0;
         tickCount = 7200;
-        exploreTime = 3600;
+        exploreTime = 0;
         
         distributionClustered = 1.;
         distributionPowerlaw = 0.;
@@ -380,19 +380,8 @@ using namespace cv;
                                         Mat means = em.get<Mat>("means");
                                         vector<Mat> covs = em.get<vector<Mat>>("covs");
                                         
-                                        
-                                        print(means);
-                                        printf("\n");
                                         cv::Size meansSize = means.size();
-                                        for(int i = 0; i < covs.size(); i++) {
-                                            printf("\nMatrix %d:\n", i);
-                                            for(int j = 0; j < 2; j++) {
-                                                for(int k = 0; k < 2; k++) {
-                                                    printf("%f ", covs[i].at<double>(j,k));
-                                                }
-                                                printf("\n");
-                                            }
-                                        }
+                                        
                                         for(int i = 0; i < meansSize.height; i++) {
                                             NSPoint p;
                                             double height, width;
@@ -401,12 +390,9 @@ using namespace cv;
                                             height = covs[i].at<double>(0,0) * 2;
                                             width = covs[i].at<double>(1,1) * 2;
                                             for(int j = p.y - height/2; j < p.y; j++) {
-                                                printf("row: %d\n", j);
                                                 for(int k = p.x - width/2; k < p.x; k++) {
                                                     [cells setObjectAtRow:j col:k to:[NSNumber numberWithInt:CELL_IN_CLUSTER]];
-                                                    printf("%d ", [[cells objectAtRow:j col:k] intValue]);
                                                 }
-                                                printf("\n");
                                             }
                                         }
                                         

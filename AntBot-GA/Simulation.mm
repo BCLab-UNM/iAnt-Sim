@@ -160,6 +160,7 @@ using namespace cv;
         NSMutableArray* robots = [[NSMutableArray alloc] initWithCapacity:robotCount];
         NSMutableArray* pheromones = [[NSMutableArray alloc] init];
         NSMutableArray* regions = [[NSMutableArray alloc] init];
+        NSMutableArray* unexploredRegions = [[NSMutableArray alloc] init];
         Array2D* cells = [[Array2D alloc] initWithRows:gridSize.width cols:gridSize.height];
         for(int i = 0; i < robotCount; i++){[robots addObject:[[Robot alloc] init]];}
 
@@ -375,20 +376,35 @@ using namespace cv;
                                         Mat means = em.get<Mat>("means");
                                         vector<Mat> covs = em.get<vector<Mat>>("covs");
                                         
-//                                        cv::Size meansSize = means.size();
-//                                        for(int i = 0; i < meansSize.height; i++) {
-//                                            NSPoint p;
-//                                            double height, width;
-//                                            p.x = means.at<double>(i,0);
-//                                            p.y = means.at<double>(i,1);
-//                                            height = covs[i].at<double>(0,0) * 2;
-//                                            width = covs[i].at<double>(1,1) * 2;
-//                                            for(int j = p.y - height/2; j < p.y; j++) {
-//                                                for(int k = p.x - width/2; k < p.x; k++) {
-//                                                    [cells setObjectAtRow:j col:k to:[NSNumber numberWithInt:CELL_IN_CLUSTER]];
-//                                                }
-//                                            }
-//                                        }
+                                        
+                                        print(means);
+                                        printf("\n");
+                                        cv::Size meansSize = means.size();
+                                        for(int i = 0; i < covs.size(); i++) {
+                                            printf("\nMatrix %d:\n", i);
+                                            for(int j = 0; j < 2; j++) {
+                                                for(int k = 0; k < 2; k++) {
+                                                    printf("%f ", covs[i].at<double>(j,k));
+                                                }
+                                                printf("\n");
+                                            }
+                                        }
+                                        for(int i = 0; i < meansSize.height; i++) {
+                                            NSPoint p;
+                                            double height, width;
+                                            p.x = means.at<double>(i,0);
+                                            p.y = means.at<double>(i,1);
+                                            height = covs[i].at<double>(0,0) * 2;
+                                            width = covs[i].at<double>(1,1) * 2;
+                                            for(int j = p.y - height/2; j < p.y; j++) {
+                                                printf("row: %d\n", j);
+                                                for(int k = p.x - width/2; k < p.x; k++) {
+                                                    [cells setObjectAtRow:j col:k to:[NSNumber numberWithInt:CELL_IN_CLUSTER]];
+                                                    printf("%d ", [[cells objectAtRow:j col:k] intValue]);
+                                                }
+                                                printf("\n");
+                                            }
+                                        }
                                         
                                         //Calculate determinants of covs
                                         //Store results in covDeterminants
@@ -411,13 +427,13 @@ using namespace cv;
                                         }
                                         
                                         [team setExplorePhase:NO];
-//                                        
-//                                        NSPoint origin;
-//                                        origin.x = 0;
-//                                        origin.y = 0;
-//                                        QuadTree* tree = [[QuadTree alloc] initWithHeight:gridSize.height width:gridSize.width origin:origin andCells:cells];
-//                                        [regions addObject:tree];
-//                                        [self runDecomposition:regions];
+                                        
+                                        NSPoint origin;
+                                        origin.x = 0;
+                                        origin.y = 0;
+                                        QuadTree* tree = [[QuadTree alloc] initWithHeight:gridSize.height width:gridSize.width origin:origin andCells:cells];
+                                        [regions addObject:tree];
+                                        [self runDecomposition:regions];
                                     }
                                 }
                                 
@@ -539,17 +555,6 @@ using namespace cv;
     }
 }
 
--(BOOL) isHomogeneous:(NSMutableDictionary*)explorationSpace {
-    NSArray *exploredStatuses = [explorationSpace allValues];
-    id isExplored = [exploredStatuses objectAtIndex:0];
-    for(id key in explorationSpace) {
-        if([explorationSpace objectForKey:key] != isExplored) {
-            return FALSE;
-        }
-    }
-    return TRUE;
-}
-
 -(NSMutableArray*) runDecomposition:(NSMutableArray*)regions {
     BOOL decompComplete = NO;
     int width1, width2, height1, height2;
@@ -657,7 +662,7 @@ using namespace cv;
 -(BOOL) isFullyUnclustered:(QuadTree*)region {
     for(int i = 0; i < [region height]; i++) {
         for(int j = 0; j < [region width]; j++) {
-            if([[region cells] objectAtRow:i col:j] != [NSNumber numberWithInt:CELL_IN_CLUSTER]) {
+            if([[region cells] objectAtRow:i col:j] == [NSNumber numberWithInt:CELL_IN_CLUSTER]) {
                 return FALSE;
             }
         }

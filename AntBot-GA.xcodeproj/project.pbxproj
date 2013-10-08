@@ -60,6 +60,8 @@
 		42EA180E17E0E912001103A9 /* background_segm.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 42EA180D17E0E912001103A9 /* background_segm.hpp */; };
 		42EA181017E0E968001103A9 /* libopencv_core.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 42EA180F17E0E968001103A9 /* libopencv_core.a */; };
 		42EA181217E0E990001103A9 /* libzlib.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 42EA181117E0E990001103A9 /* libzlib.a */; };
+		D01FF18417F9F7B10010C1BC /* QuadTree.h in Headers */ = {isa = PBXBuildFile; fileRef = D01FF18217F9F7B10010C1BC /* QuadTree.h */; };
+		D01FF18517F9F7B10010C1BC /* QuadTree.m in Sources */ = {isa = PBXBuildFile; fileRef = D01FF18317F9F7B10010C1BC /* QuadTree.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -124,6 +126,8 @@
 		42EA180D17E0E912001103A9 /* background_segm.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = background_segm.hpp; sourceTree = "<group>"; };
 		42EA180F17E0E968001103A9 /* libopencv_core.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libopencv_core.a; sourceTree = "<group>"; };
 		42EA181117E0E990001103A9 /* libzlib.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libzlib.a; sourceTree = "<group>"; };
+		D01FF18217F9F7B10010C1BC /* QuadTree.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = QuadTree.h; sourceTree = "<group>"; };
+		D01FF18317F9F7B10010C1BC /* QuadTree.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = QuadTree.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -195,6 +199,8 @@
 				40ED660E16DABE50006F8494 /* Team.m */,
 				40ED660F16DABE50006F8494 /* Simulation.h */,
 				40ED661016DABE50006F8494 /* Simulation.mm */,
+				D01FF18217F9F7B10010C1BC /* QuadTree.h */,
+				D01FF18317F9F7B10010C1BC /* QuadTree.m */,
 				40ED661316DABE50006F8494 /* Tag.h */,
 				40ED661416DABE50006F8494 /* Tag.m */,
 				42A6366D176405C500F44BD3 /* OpenCV */,
@@ -369,6 +375,7 @@
 				42EA180617E0E862001103A9 /* matx.hpp in Headers */,
 				42EA180817E0E877001103A9 /* mat.inl.hpp in Headers */,
 				42EA180E17E0E912001103A9 /* background_segm.hpp in Headers */,
+				D01FF18417F9F7B10010C1BC /* QuadTree.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -430,6 +437,7 @@
 				423C12D71725B9BA00297C18 /* Array2D.m in Sources */,
 				42E1C8A21731AB40000D102A /* Pheromone.m in Sources */,
 				42307A5D176D262A005BB34B /* GA.m in Sources */,
+				D01FF18517F9F7B10010C1BC /* QuadTree.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

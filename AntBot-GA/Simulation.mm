@@ -844,7 +844,7 @@ using namespace cv;
  */
 -(void) setAverageTeamFrom:(NSMutableArray*)teams {
     averageTeam = [[Team alloc] init];
-    NSMutableDictionary* parameterSums = [[NSMutableDictionary alloc] initWithCapacity:9];
+    NSMutableDictionary* parameterSums = [[NSMutableDictionary alloc] init];
     float tagSum = 0.f;
     
     for(Team* team in teams) {

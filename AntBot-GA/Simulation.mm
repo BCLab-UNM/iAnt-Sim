@@ -158,41 +158,38 @@ using namespace cv;
  */
 -(void) evaluateTeams:(NSMutableArray*)teams {
     @autoreleasepool {
-        Array2D* tags = [[Array2D alloc] initWithRows:gridSize.width cols:gridSize.height];
-        [self initDistributionForArray:tags];
+        Array2D* tagsMaster = [[Array2D alloc] initWithRows:gridSize.width cols:gridSize.height];
+        [self initDistributionForArray:tagsMaster];
         
-        NSMutableArray* robots = [[NSMutableArray alloc] initWithCapacity:robotCount];
         NSMutableArray* pheromones = [[NSMutableArray alloc] init];
         NSMutableArray* regions = [[NSMutableArray alloc] init];
         NSMutableArray* unexploredRegions = [[NSMutableArray alloc] init];
-        Array2D* cells = [[Array2D alloc] initWithRows:gridSize.width cols:gridSize.height];
-        for(int i = 0; i < robotCount; i++){[robots addObject:[[Robot alloc] init]];}
-
+        
+        Array2D* cellsMaster = [[Array2D alloc] initWithRows:gridSize.width cols:gridSize.height];
+        NSNumber *clusterStatus = [NSNumber numberWithInt:CELL_NOT_IN_CLUSTER];
+        for(int i = 0; i < gridSize.height; i++) {
+            for(int j = 0; j < gridSize.width; j++) {
+                [cellsMaster setObjectAtRow:i col:j to:clusterStatus];
+            }
+        }
+        
+        NSMutableArray* robots = [[NSMutableArray alloc] initWithCapacity:robotCount];
+        for(int i = 0; i < robotCount; i++) {
+            [robots addObject:[[Robot alloc] init]];
+        }
         
         for(Team* team in teams) {
-            for(int i = 0; i < gridSize.height; i++) {
-                for(int j = 0; j < gridSize.width; j++) {
-                    if([tags objectAtRow:i col:j] != [NSNull null]){
-                        [[tags objectAtRow:i col:j] setPickedUp:NO];
-                        [[tags objectAtRow:i col:j] setDiscovered:NO];
-                    }
-                }
-            }
+            
+            Array2D* tags = [[Array2D alloc] initWithRows:gridSize.width cols:gridSize.height];
+            tags = [tagsMaster mutableCopy];
+            Array2D* cells = [cellsMaster mutableCopy];
 
             for(Robot* robot in robots) {
                 [robot reset];
                 [robot setStepSize:(variableStepSize ? (int)floor(randomLogNormal(0, [team stepSizeVariation])) + 1 : 1)];
             }
-            [pheromones removeAllObjects];
             
-           // NSNumber *isExplored = [NSNumber numberWithBool:NO];
-            NSNumber *clusterStatus = [NSNumber numberWithInt:CELL_NOT_IN_CLUSTER];
-            for(int i = 0; i < gridSize.height; i++) {
-                for(int j = 0; j < gridSize.width; j++) {
-                 //   [exploredSpace setObjectAtRow:i col:j to:isExplored];
-                    [cells setObjectAtRow:i col:j to:clusterStatus];
-                }
-            }
+            [pheromones removeAllObjects];
             
             for(int tick = 0; tick < tickCount; tick++) {
                 for(Robot* robot in robots) {

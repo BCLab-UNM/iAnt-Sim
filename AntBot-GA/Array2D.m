@@ -48,17 +48,7 @@
     if(arrayCopy) {
         arrayCopy->numberOfRows = numberOfRows;
         arrayCopy->numberOfColumns = numberOfColumns;
-        arrayCopy->backingStore = [[NSMutableArray alloc] initWithArray:backingStore copyItems:YES];
-    }
-    return arrayCopy;
-}
-
--(id) mutableCopyWithZone:(NSZone *)zone {
-    Array2D *arrayCopy = [[[self class] allocWithZone:zone] init];
-    if(arrayCopy) {
-        arrayCopy->numberOfRows = numberOfRows;
-        arrayCopy->numberOfColumns = numberOfColumns;
-        arrayCopy->backingStore = [[NSMutableArray alloc] initWithArray:backingStore copyItems:YES];
+        arrayCopy->backingStore = backingStore;
     }
     return arrayCopy;
 }

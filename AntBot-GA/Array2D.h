@@ -1,6 +1,6 @@
 #import <Foundation/Foundation.h>
 
-@interface Array2D : NSObject <NSFastEnumeration, NSCopying, NSMutableCopying> {
+@interface Array2D : NSObject <NSFastEnumeration, NSCopying> {
     NSMutableArray* backingStore;
     size_t numberOfRows;
     size_t numberOfColumns;

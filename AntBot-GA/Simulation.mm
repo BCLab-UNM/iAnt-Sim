@@ -165,6 +165,10 @@ using namespace cv;
         NSMutableArray* pheromones = [[NSMutableArray alloc] init];
         NSMutableArray* regions = [[NSMutableArray alloc] init];
         NSMutableArray* unexploredRegions = [[NSMutableArray alloc] init];
+        NSMutableArray* clusters = [[NSMutableArray alloc] init];
+//        int scheduledClusterings = 2;
+//        int numberOfClusterings = 0;
+//        int reclusteringInterval = tickCount / scheduledClusterings;
         Array2D* cells = [[Array2D alloc] initWithRows:gridSize.width cols:gridSize.height];
         for(int i = 0; i < robotCount; i++){[robots addObject:[[Robot alloc] init]];}
 
@@ -184,13 +188,15 @@ using namespace cv;
                 [robot setStepSize:(variableStepSize ? (int)floor(randomLogNormal(0, [team stepSizeVariation])) + 1 : 1)];
             }
             [pheromones removeAllObjects];
+            [unexploredRegions removeAllObjects];
+            [clusters removeAllObjects];
             
            // NSNumber *isExplored = [NSNumber numberWithBool:NO];
-            NSNumber *clusterStatus = [NSNumber numberWithInt:CELL_NOT_IN_CLUSTER];
+            NSNumber *notClustered = [NSNumber numberWithInt:CELL_NOT_IN_CLUSTER];
             for(int i = 0; i < gridSize.height; i++) {
                 for(int j = 0; j < gridSize.width; j++) {
                  //   [exploredSpace setObjectAtRow:i col:j to:isExplored];
-                    [cells setObjectAtRow:i col:j to:clusterStatus];
+                    [cells setObjectAtRow:i col:j to:notClustered];
                 }
             }
             
@@ -224,6 +230,14 @@ using namespace cv;
                             if (tick >= exploreTime && [team explorePhase]) {
                                 [robot setStatus:ROBOT_STATUS_RETURNING];
                                 [robot setTarget:nest];
+                                break;
+                            }
+                            if([robot informed] == ROBOT_INFORMED_DECOMPOSITION && (NSEqualPoints([robot position], [robot target]))) {
+                                [robot setStatus:ROBOT_STATUS_SEARCHING];
+                                [robot setInformed:ROBOT_INFORMED_NONE];
+                                [robot turn:uniformDirection withParameters:team];
+                                [robot setLastTurned:(tick + [robot delay] + 1)];
+                                [robot setLastMoved:tick];
                                 break;
                             }
                             if((![robot informed] && (randomFloat(1.) < team.travelGiveUpProbability)) || (NSEqualPoints([robot position], [robot target]))) {
@@ -355,6 +369,9 @@ using namespace cv;
                             if(tick - [robot lastMoved] <= [robot delay]) {
                                 break;
                             }
+//                            if(tick >= reclusteringInterval && numberOfClusterings < scheduledClusterings) {
+//                                [team setExplorePhase:YES];
+//                            }
                             [robot setDelay:0];
                             [robot moveWithin:gridSize];
                             
@@ -380,33 +397,17 @@ using namespace cv;
                                         Mat means = em.get<Mat>("means");
                                         vector<Mat> covs = em.get<vector<Mat>>("covs");
                                         
-                                        
-                                        print(means);
-                                        printf("\n");
                                         cv::Size meansSize = means.size();
-                                        for(int i = 0; i < covs.size(); i++) {
-                                            printf("\nMatrix %d:\n", i);
-                                            for(int j = 0; j < 2; j++) {
-                                                for(int k = 0; k < 2; k++) {
-                                                    printf("%f ", covs[i].at<double>(j,k));
-                                                }
-                                                printf("\n");
-                                            }
-                                        }
                                         for(int i = 0; i < meansSize.height; i++) {
-                                            NSPoint p;
-                                            double height, width;
-                                            p.x = means.at<double>(i,0);
-                                            p.y = means.at<double>(i,1);
-                                            height = covs[i].at<double>(0,0) * 2;
-                                            width = covs[i].at<double>(1,1) * 2;
-                                            for(int j = p.y - height/2; j < p.y; j++) {
-                                                printf("row: %d\n", j);
-                                                for(int k = p.x - width/2; k < p.x; k++) {
+                                            NSPoint p = NSMakePoint(round(means.at<double>(i,0)), round(means.at<double>(i,1)));
+                                            double height = ceil(covs[i].at<double>(0,0) * 2);
+                                            double width = ceil(covs[i].at<double>(1,1) * 2);
+                                            Cluster* c = [[Cluster alloc] initWithCenter:p width:width andHeight:height];
+                                            [clusters addObject:c];
+                                            for(int j = p.x - ceil(width/2); j < p.x; j++) {
+                                                for(int k = p.y - ceil(height/2); k < p.y; k++) {
                                                     [cells setObjectAtRow:j col:k to:[NSNumber numberWithInt:CELL_IN_CLUSTER]];
-                                                    printf("%d ", [[cells objectAtRow:j col:k] intValue]);
                                                 }
-                                                printf("\n");
                                             }
                                         }
                                         
@@ -431,6 +432,8 @@ using namespace cv;
                                         }
                                         
                                         [team setExplorePhase:NO];
+                                        
+//                                        numberOfClusterings++;
                                         
                                         NSPoint origin;
                                         origin.x = 0;
@@ -482,7 +485,18 @@ using namespace cv;
                                         [robot setInformed:ROBOT_INFORMED_PHEROMONE];
                                     }
                                     
-                                    //If no pheromones and no tag, go to a random location
+                                    else if([unexploredRegions count] > 0) {
+                                        int regionChoice = arc4random() % [unexploredRegions count];
+                                        QuadTree* tree = [unexploredRegions objectAtIndex:regionChoice];
+                                        NSPoint target;
+                                        target.x = [tree origin].x + [tree width] / 2;
+                                        target.y = [tree origin].y + [tree height] / 2;
+                                        [robot setTarget:perturbTargetPosition(realWorldError, target , gridSize)];
+                                        [robot setInformed:ROBOT_INFORMED_DECOMPOSITION];
+                                    }
+                                    
+                                    
+                                    //If no pheromones and no tag and no partitioning knowledge, go to a random location
                                     else {
                                         [robot setTarget:edge(gridSize)];
                                         [robot setInformed:ROBOT_INFORMED_NONE];
@@ -549,9 +563,9 @@ using namespace cv;
             
                 if(tickRate != 0.f){[NSThread sleepForTimeInterval:tickRate];}
                 if(viewDelegate != nil) {
-                    if([viewDelegate respondsToSelector:@selector(updateDisplayWindowWithRobots:team:tags:pheromones:)]) {
+                    if([viewDelegate respondsToSelector:@selector(updateDisplayWindowWithRobots:team:tags:pheromones:regions:clusters:)]) {
                         [self getPheromone:pheromones atTick:tick withDecayRate:team.pheromoneDecayRate];
-                        [viewDelegate updateDisplayWindowWithRobots:[robots copy] team:team tags:[tags copy] pheromones:[pheromones copy]];
+                        [viewDelegate updateDisplayWindowWithRobots:[robots copy] team:team tags:[tags copy] pheromones:[pheromones copy] regions:[unexploredRegions copy] clusters:[clusters copy]];
                     }
                 }
             }
@@ -596,6 +610,7 @@ using namespace cv;
         Array2D* neCells = [[Array2D alloc] initWithRows:height1 cols:width2];
         Array2D* swCells = [[Array2D alloc] initWithRows:height2 cols:width1];
         Array2D* seCells = [[Array2D alloc] initWithRows:height2 cols:width2];
+        
         int x, y;
         x = y = 0;
         for(int i = 0; i < width1; i++) {
@@ -606,6 +621,7 @@ using namespace cv;
             x++;
             y = 0;
         }
+        
         x = y = 0;
         for(int i = width1; i < width2; i++) {
             for(int j = 0; j < height1; j++) {
@@ -615,6 +631,7 @@ using namespace cv;
             x++;
             y = 0;
         }
+        
         x = y = 0;
         for(int i = 0; i < width1; i++) {
             for(int j = height1; j < height2; j++) {
@@ -624,6 +641,7 @@ using namespace cv;
             x++;
             y = 0;
         }
+        
         x = y = 0;
         for(int i = width1; i < width2; i++) {
             for(int j = height1; j < height2; j++) {
@@ -648,10 +666,7 @@ using namespace cv;
     for(QuadTree* child in children) {
         if([self isFullyUnclustered:child]) {
             decompComplete = YES;
-            NSPoint center;
-            center.x = child.origin.x + ([child width] / 2);
-            center.y = child.origin.y + ([child height] / 2);
-            [unclusteredRegions addObject:[NSValue valueWithPoint:center]];
+            [unclusteredRegions addObject:child];
         }
     }
     

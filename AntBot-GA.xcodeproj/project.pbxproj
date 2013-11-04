@@ -62,6 +62,8 @@
 		42EA181217E0E990001103A9 /* libzlib.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 42EA181117E0E990001103A9 /* libzlib.a */; };
 		D01FF18417F9F7B10010C1BC /* QuadTree.h in Headers */ = {isa = PBXBuildFile; fileRef = D01FF18217F9F7B10010C1BC /* QuadTree.h */; };
 		D01FF18517F9F7B10010C1BC /* QuadTree.m in Sources */ = {isa = PBXBuildFile; fileRef = D01FF18317F9F7B10010C1BC /* QuadTree.m */; };
+		D024DB6D1823006200FF83E3 /* Cluster.h in Headers */ = {isa = PBXBuildFile; fileRef = D024DB6B1823006200FF83E3 /* Cluster.h */; };
+		D024DB6E1823006200FF83E3 /* Cluster.m in Sources */ = {isa = PBXBuildFile; fileRef = D024DB6C1823006200FF83E3 /* Cluster.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -128,6 +130,8 @@
 		42EA181117E0E990001103A9 /* libzlib.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libzlib.a; sourceTree = "<group>"; };
 		D01FF18217F9F7B10010C1BC /* QuadTree.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = QuadTree.h; sourceTree = "<group>"; };
 		D01FF18317F9F7B10010C1BC /* QuadTree.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = QuadTree.m; sourceTree = "<group>"; };
+		D024DB6B1823006200FF83E3 /* Cluster.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Cluster.h; sourceTree = "<group>"; };
+		D024DB6C1823006200FF83E3 /* Cluster.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Cluster.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -203,6 +207,8 @@
 				D01FF18317F9F7B10010C1BC /* QuadTree.m */,
 				40ED661316DABE50006F8494 /* Tag.h */,
 				40ED661416DABE50006F8494 /* Tag.m */,
+				D024DB6B1823006200FF83E3 /* Cluster.h */,
+				D024DB6C1823006200FF83E3 /* Cluster.m */,
 				42A6366D176405C500F44BD3 /* OpenCV */,
 				40ED65C016DABD31006F8494 /* Supporting Files */,
 			);
@@ -358,6 +364,7 @@
 				4290E24217E0E2A60023CF98 /* photo.hpp in Headers */,
 				4290E24817E0E3140023CF98 /* objdetect.hpp in Headers */,
 				4290E24A17E0E34C0023CF98 /* video.hpp in Headers */,
+				D024DB6D1823006200FF83E3 /* Cluster.h in Headers */,
 				4290E27A17E0E40E0023CF98 /* defines.h in Headers */,
 				4290E27C17E0E41B0023CF98 /* config.h in Headers */,
 				42EA17EE17E0E728001103A9 /* retina.hpp in Headers */,
@@ -437,6 +444,7 @@
 				423C12D71725B9BA00297C18 /* Array2D.m in Sources */,
 				42E1C8A21731AB40000D102A /* Pheromone.m in Sources */,
 				42307A5D176D262A005BB34B /* GA.m in Sources */,
+				D024DB6E1823006200FF83E3 /* Cluster.m in Sources */,
 				D01FF18517F9F7B10010C1BC /* QuadTree.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

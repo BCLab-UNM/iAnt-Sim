@@ -1,5 +1,6 @@
 #import <Foundation/Foundation.h>
 #import "Array2D.h"
+#import "Cell.h"
 #import "GA.h"
 #import "Pheromone.h"
 #import "Team.h"
@@ -28,9 +29,9 @@
 }
 
 -(NSMutableArray*) run;
--(void) evaluateTeams:(NSMutableArray*)teams;
--(NSMutableArray*) evaluateTeam:(Team*)team;
--(void) initDistributionForArray:(Array2D*)tags;
+-(void) evaluateTeams:(NSMutableArray*)teams onGrid:(Array2D*)grid;
+-(NSMutableArray*) evaluateTeam:(Team*)team onGrid:(Array2D*)grid;
+-(void) initDistributionForArray:(Array2D*)grid;
 -(NSPoint) getPheromone:(NSMutableArray*)pheromones atTick:(int)tick withDecayRate:(float)decayRate;
 
 -(NSMutableDictionary*) getParameters;

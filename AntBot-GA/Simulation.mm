@@ -400,8 +400,8 @@ using namespace cv;
                                         cv::Size meansSize = means.size();
                                         for(int i = 0; i < meansSize.height; i++) {
                                             NSPoint p = NSMakePoint(round(means.at<double>(i,0)), round(means.at<double>(i,1)));
-                                            double height = ceil(covs[i].at<double>(0,0) * 2);
-                                            double width = ceil(covs[i].at<double>(1,1) * 2);
+                                            double width = ceil(covs[i].at<double>(0,0) * 2);
+                                            double height = ceil(covs[i].at<double>(1,1) * 2);
                                             Cluster* c = [[Cluster alloc] initWithCenter:p width:width andHeight:height];
                                             [clusters addObject:c];
                                             for(int j = p.x - ceil(width/2); j < p.x; j++) {

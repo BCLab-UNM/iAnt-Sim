@@ -603,10 +603,10 @@ using namespace cv;
         seOrigin.x = parent.origin.x + width1;
         seOrigin.y = parent.origin.y + height1;
         
-        Array2D* nwCells = [[Array2D alloc] initWithRows:height1 cols:width1];
-        Array2D* neCells = [[Array2D alloc] initWithRows:height1 cols:width2];
-        Array2D* swCells = [[Array2D alloc] initWithRows:height2 cols:width1];
-        Array2D* seCells = [[Array2D alloc] initWithRows:height2 cols:width2];
+        Array2D* nwCells = [[Array2D alloc] initWithRows:width1 cols:height1];
+        Array2D* neCells = [[Array2D alloc] initWithRows:width2 cols:height1];
+        Array2D* swCells = [[Array2D alloc] initWithRows:width1 cols:height2];
+        Array2D* seCells = [[Array2D alloc] initWithRows:width2 cols:height2];
         
         int x, y;
         x = y = 0;
@@ -620,7 +620,7 @@ using namespace cv;
         }
         
         x = y = 0;
-        for(int i = width1; i < width2; i++) {
+        for(int i = width1; i < [parent width]; i++) {
             for(int j = 0; j < height1; j++) {
                 [neCells setObjectAtRow:x col:y to:[[parent cells] objectAtRow:i col:j]];
                 y++;
@@ -631,7 +631,7 @@ using namespace cv;
         
         x = y = 0;
         for(int i = 0; i < width1; i++) {
-            for(int j = height1; j < height2; j++) {
+            for(int j = height1; j < [parent height]; j++) {
                 [swCells setObjectAtRow:x col:y to:[[parent cells] objectAtRow:i col:j]];
                 y++;
             }
@@ -640,8 +640,8 @@ using namespace cv;
         }
         
         x = y = 0;
-        for(int i = width1; i < width2; i++) {
-            for(int j = height1; j < height2; j++) {
+        for(int i = width1; i < [parent width]; i++) {
+            for(int j = height1; j < [parent height]; j++) {
                 [seCells setObjectAtRow:x col:y to:[[parent cells] objectAtRow:i col:j]];
                 y++;
             }
@@ -677,9 +677,9 @@ using namespace cv;
 
 
 -(BOOL) isFullyUnclustered:(QuadTree*)region {
-    for(int i = 0; i < [region height]; i++) {
-        for(int j = 0; j < [region width]; j++) {
-            if([[region cells] objectAtRow:i col:j] == [NSNumber numberWithInt:CELL_IN_CLUSTER]) {
+    for(int i = 0; i < [region width]; i++) {
+        for(int j = 0; j < [region height]; j++) {
+            if([(Cell*)[[region cells] objectAtRow:i col:j] isClustered]) {
                 return FALSE;
             }
         }

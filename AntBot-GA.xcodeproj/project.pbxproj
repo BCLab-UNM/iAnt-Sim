@@ -40,6 +40,8 @@
 		4290E24A17E0E34C0023CF98 /* video.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 4290E24917E0E34C0023CF98 /* video.hpp */; };
 		4290E27A17E0E40E0023CF98 /* defines.h in Headers */ = {isa = PBXBuildFile; fileRef = 4290E27917E0E40E0023CF98 /* defines.h */; };
 		4290E27C17E0E41B0023CF98 /* config.h in Headers */ = {isa = PBXBuildFile; fileRef = 4290E27B17E0E41B0023CF98 /* config.h */; };
+		42A63E131826A49200DA3751 /* Cell.h in Headers */ = {isa = PBXBuildFile; fileRef = 42A63E111826A49200DA3751 /* Cell.h */; };
+		42A63E141826A49200DA3751 /* Cell.m in Sources */ = {isa = PBXBuildFile; fileRef = 42A63E121826A49200DA3751 /* Cell.m */; };
 		42E1C8A11731AB40000D102A /* Pheromone.h in Headers */ = {isa = PBXBuildFile; fileRef = 42E1C89F1731AB40000D102A /* Pheromone.h */; };
 		42E1C8A21731AB40000D102A /* Pheromone.m in Sources */ = {isa = PBXBuildFile; fileRef = 42E1C8A01731AB40000D102A /* Pheromone.m */; };
 		42EA17E817E0E640001103A9 /* libopencv_ml.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 42EA17E717E0E640001103A9 /* libopencv_ml.a */; };
@@ -107,6 +109,8 @@
 		4290E26F17E0E3ED0023CF98 /* miniflann.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = miniflann.hpp; sourceTree = "<group>"; };
 		4290E27917E0E40E0023CF98 /* defines.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = defines.h; sourceTree = "<group>"; };
 		4290E27B17E0E41B0023CF98 /* config.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = config.h; sourceTree = "<group>"; };
+		42A63E111826A49200DA3751 /* Cell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Cell.h; sourceTree = "<group>"; };
+		42A63E121826A49200DA3751 /* Cell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Cell.m; sourceTree = "<group>"; };
 		42E1C89F1731AB40000D102A /* Pheromone.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Pheromone.h; sourceTree = "<group>"; };
 		42E1C8A01731AB40000D102A /* Pheromone.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Pheromone.m; sourceTree = "<group>"; };
 		42EA17E717E0E640001103A9 /* libopencv_ml.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libopencv_ml.a; sourceTree = "<group>"; };
@@ -192,6 +196,8 @@
 				40ED661516DABE50006F8494 /* Util.h */,
 				423C12D41725B9BA00297C18 /* Array2D.h */,
 				423C12D51725B9BA00297C18 /* Array2D.m */,
+				42A63E111826A49200DA3751 /* Cell.h */,
+				42A63E121826A49200DA3751 /* Cell.m */,
 				423C12C71724DFAD00297C18 /* Constants.h */,
 				42307A5A176D262A005BB34B /* GA.h */,
 				42307A5B176D262A005BB34B /* GA.m */,
@@ -355,6 +361,7 @@
 				4239EA1E1767B7A4007F35EE /* types_c.h in Headers */,
 				4239EA1F1767B7A4007F35EE /* utility.hpp in Headers */,
 				4239EA221767B7A4007F35EE /* core.hpp in Headers */,
+				42A63E131826A49200DA3751 /* Cell.h in Headers */,
 				4239EA241767B7A4007F35EE /* features2d.hpp in Headers */,
 				4239EA571767B7A5007F35EE /* highgui.hpp in Headers */,
 				4239EA5B1767B7A5007F35EE /* imgproc.hpp in Headers */,
@@ -446,6 +453,7 @@
 				42307A5D176D262A005BB34B /* GA.m in Sources */,
 				D024DB6E1823006200FF83E3 /* Cluster.m in Sources */,
 				D01FF18517F9F7B10010C1BC /* QuadTree.m in Sources */,
+				42A63E141826A49200DA3751 /* Cell.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

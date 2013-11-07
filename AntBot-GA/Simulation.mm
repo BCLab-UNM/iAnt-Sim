@@ -130,10 +130,15 @@ using namespace cv;
             }
         }
         
-        dispatch_queue_t queue = dispatch_get_global_queue(0, 0);
-        dispatch_apply(evaluationCount, queue, ^(size_t iteration) {
-            [self evaluateTeams:teams onGrid:[grids objectAtIndex:iteration]];
-        });
+        if (evaluationCount > 1) {
+            dispatch_queue_t queue = dispatch_get_global_queue(0, 0);
+            dispatch_apply(evaluationCount, queue, ^(size_t iteration) {
+                [self evaluateTeams:teams onGrid:[grids objectAtIndex:iteration]];
+            });
+        }
+        else {
+            [self evaluateTeams:teams onGrid:[grids objectAtIndex:0]];
+        }
         
         //Number of evaluations performed is the number of teams times the number of evaluations per team.
         evalCount = evalCount + teamCount*evaluationCount;
@@ -195,6 +200,7 @@ using namespace cv;
             [pheromones removeAllObjects];
             [unexploredRegions removeAllObjects];
             [clusters removeAllObjects];
+            [regions removeAllObjects];
             
             for(int tick = 0; tick < tickCount; tick++) {
                 for(Robot* robot in robots) {
@@ -401,8 +407,8 @@ using namespace cv;
                                             double height = ceil(covs[i].at<double>(1,1) * 2);
                                             Cluster* c = [[Cluster alloc] initWithCenter:p width:width andHeight:height];
                                             [clusters addObject:c];
-                                            for(int j = p.x - ceil(width/2); j < p.x; j++) {
-                                                for(int k = p.y - ceil(height/2); k < p.y; k++) {
+                                            for(int j = clip(p.x - ceil(width/2),0,gridSize.width); j < clip(p.x + ceil(width/2),0,gridSize.width); j++) {
+                                                for(int k= clip(p.y-ceil(height/2),0,gridSize.height); k<clip(p.y + ceil(height/2),0,gridSize.height); k++) {
                                                     [(Cell*)[grid objectAtRow:j col:k] setIsClustered:YES];
                                                 }
                                             }

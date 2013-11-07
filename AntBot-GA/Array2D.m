@@ -2,16 +2,20 @@
 
 @implementation Array2D
 
--(id)initWithRows:(size_t)rows cols:(size_t)cols {
+-(id)initWithRows:(size_t)rows cols:(size_t)cols objClass:(Class)objClass {
     if(self = [super init]) {
         numberOfRows = rows;
         numberOfColumns = cols;
         backingStore = [NSMutableArray arrayWithCapacity:numberOfRows * numberOfColumns];
         for(int i = 0; i < numberOfRows * numberOfColumns; i++) {
-            [backingStore addObject:[NSNull null]];
+            [backingStore addObject:[[objClass alloc] init]];
         }
     }
     return self;
+}
+
+-(id)initWithRows:(size_t)rows cols:(size_t)cols {
+    return [self initWithRows:rows cols:cols objClass:[NSNull class]];
 }
 
 -(id) objectAtRow:(size_t)x col:(size_t)y {

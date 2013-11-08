@@ -675,7 +675,7 @@ using namespace cv;
     
     if(!decompComplete) {
         [unclusteredRegions removeAllObjects];
-        [self runDecomposition:children];
+        unclusteredRegions = [self runDecomposition:children];
     }
     
     return unclusteredRegions;

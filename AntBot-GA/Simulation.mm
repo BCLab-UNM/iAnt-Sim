@@ -323,7 +323,7 @@ using namespace cv;
                                 if(detectTag(realWorldError) && foundTag && ![foundTag pickedUp]) {
                                     
                                     //Perturb found tag position to simulate error
-                                    NSPoint perturbedTagPosition = perturbTagPosition(realWorldError, [foundTag position], gridSize);
+                                    NSPoint perturbedTagPosition = perturbTagPosition(realWorldError, [foundTag position], gridSize, nest);
                                     Tag* tagCopy = [foundTag copy];
                                     [tagCopy setPosition:perturbedTagPosition];
                                     
@@ -470,7 +470,7 @@ using namespace cv;
                                     
                                     //If a tag was found, decide whether to return to its location
                                     if(foundTag && siteFidelityFlag) {
-                                        [robot setTarget:perturbTargetPosition(realWorldError, [foundTag position], gridSize)];
+                                        [robot setTarget:perturbTargetPosition(realWorldError, [foundTag position], gridSize, nest)];
                                         [robot setInformed:ROBOT_INFORMED_MEMORY];
                                         //Decide whether to broadcast pheromones locally
                                         if(decentralizedPheromones &&
@@ -484,7 +484,7 @@ using namespace cv;
                                     
                                     //If no pheromones exist, pheromone will be (-1, -1)
                                     else if(!NSEqualPoints(pheromone, NSNullPoint) && !siteFidelityFlag) {
-                                        [robot setTarget:perturbTargetPosition(realWorldError, pheromone, gridSize)];
+                                        [robot setTarget:perturbTargetPosition(realWorldError, pheromone, gridSize, nest)];
                                         [robot setInformed:ROBOT_INFORMED_PHEROMONE];
                                     }
                                     
@@ -494,7 +494,7 @@ using namespace cv;
                                         NSPoint target;
                                         target.x = [tree origin].x + [tree width] / 2;
                                         target.y = [tree origin].y + [tree height] / 2;
-                                        [robot setTarget:perturbTargetPosition(realWorldError, target , gridSize)];
+                                        [robot setTarget:perturbTargetPosition(realWorldError, target , gridSize, nest)];
                                         [robot setInformed:ROBOT_INFORMED_DECOMPOSITION];
                                     }
                                     

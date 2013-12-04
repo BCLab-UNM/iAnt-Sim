@@ -1,13 +1,15 @@
 #import <Foundation/Foundation.h>
 #import "Array2D.h"
 #import "Cell.h"
+#import "Cluster.h"
+#import "Decomposition.h"
 #import "GA.h"
 #import "Pheromone.h"
+#import "QuadTree.h"
 #import "Team.h"
 #import "Robot.h"
 #import "Tag.h"
-#import "QuadTree.h"
-#import "Cluster.h"
+
 #include "Util.h"
 
 

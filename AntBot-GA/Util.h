@@ -143,8 +143,8 @@ static inline float exponentialDecay(float quantity, float time, float lambda) {
  */
 static inline NSPoint perturbTagPosition(bool realWorldError, NSPoint position, NSSize size, NSPoint center) {
     if(realWorldError) {
-        float distanceFromCenter = pointDistance(position.x, position.y, center.x, center.y) * 8; //scale by 8 because grid cell is 8 cm wide
-        NSPoint standardDeviation = NSMakePoint(MIN(0.164 * distanceFromCenter - 15.3, 0), MIN(0.166 * distanceFromCenter - 16.1, 0)); //bound at 0
+        float distanceFromCenter = pointDistance(position.x, position.y, center.x, center.y);
+        NSPoint standardDeviation = NSMakePoint(MAX(0.164 * distanceFromCenter - (15.3 / 8), 0), MAX(0.166 * distanceFromCenter - (16.1 / 8), 0));
         position.x = roundf(clip(randomNormal(position.x, standardDeviation.x), 0, size.width - 1));
         position.y = roundf(clip(randomNormal(position.y, standardDeviation.y), 0, size.height - 1));
     }
@@ -156,8 +156,8 @@ static inline NSPoint perturbTagPosition(bool realWorldError, NSPoint position, 
  */
 static inline NSPoint perturbTargetPosition(bool realWorldError, NSPoint position, NSSize size, NSPoint center) {
     if(realWorldError) {
-        float distanceFromCenter = pointDistance(position.x, position.y, center.x, center.y) * 8; //scale by 8 because grid cell is 8 cm wide
-        NSPoint standardDeviation = NSMakePoint(MIN(0.045 * distanceFromCenter + 9.32, 0), MIN(0.173 * distanceFromCenter - 13.9, 0)); //bound at 0
+        float distanceFromCenter = pointDistance(position.x, position.y, center.x, center.y);
+        NSPoint standardDeviation = NSMakePoint(MAX(0.045 * distanceFromCenter + (9.32 / 8.), 0), MAX(0.173 * distanceFromCenter - (13.9 / 8.), 0));
         position.x = roundf(clip(randomNormal(position.x, standardDeviation.x), 0, size.width - 1));
         position.y = roundf(clip(randomNormal(position.y, standardDeviation.y), 0, size.height - 1));
     }

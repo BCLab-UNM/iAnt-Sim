@@ -14,16 +14,16 @@ using namespace cv;
 
 @implementation Simulation
 
-@synthesize teamCount, generationCount, robotCount, tagCount, evaluationCount, evaluationLimit, evalCount, tickCount, exploreTime;
+@synthesize teamCount, generationCount, robotCount, tagCount, evaluationCount, evaluationLimit, tickCount, exploreTime;
 @synthesize distributionRandom, distributionPowerlaw, distributionClustered;
 @synthesize averageTeam, bestTeam;
 @synthesize pileRadius;
 @synthesize crossoverRate, mutationRate, crossoverOperator, mutationOperator, elitism;
 @synthesize gridSize, nest;
-@synthesize realWorldError;
 @synthesize variableStepSize, uniformDirection, adaptiveWalk;
 @synthesize decentralizedPheromones, wirelessRange;
 @synthesize parameterFile;
+@synthesize error;
 @synthesize delegate, viewDelegate;
 @synthesize tickRate;
 
@@ -35,7 +35,6 @@ using namespace cv;
         tagCount = 256;
         evaluationCount = 8;
         evaluationLimit = -1;
-        evalCount = 0;
         tickCount = 7200;
         exploreTime = 0;
         
@@ -54,8 +53,6 @@ using namespace cv;
         gridSize = NSMakeSize(125, 125);
         nest = NSMakePoint(62, 62);
         
-        realWorldError = YES;
-        
         variableStepSize = NO;
         uniformDirection = NO;
         adaptiveWalk = YES;
@@ -64,6 +61,14 @@ using namespace cv;
         wirelessRange = 10;
         
         parameterFile = nil;
+        
+        error = [[SensorError alloc] init];
+        [error setLocalizationSlope:NSMakePoint(0.164, 0.166)];
+        [error setLocalizationIntercept:NSMakePoint(15.3, 16.1)];
+        [error setTravelingSlope:NSMakePoint(0.045, 0.173)];
+        [error setTravelingIntercept:NSMakePoint(9.32, 13.9)];
+        [error setTagDetectionProbability:0.55];
+        [error setNeighborDetectionProbability:0.43];
     }
     return self;
 }
@@ -101,19 +106,19 @@ using namespace cv;
         generationCount = evaluationLimit;
     }
     
-    //Allocate GA
-    ga = [[GA alloc] initWithElitism:elitism crossover:crossoverRate andMutation:mutationRate :mutationOperator :crossoverOperator];
+    //Set up GA
+    ga = [[GA alloc] initWithElitism:elitism crossoverRate:crossoverRate crossoverOperator:crossoverOperator mutationRate:mutationRate andMutationOperator:mutationOperator];
     
     //Set evaluation count to 1 if using GUI
     evaluationCount = (viewDelegate != nil) ? 1 : evaluationCount;
     
     //Not the number of evaluations to perform on each individual, but a count of the total number of evaluations performed so far during this run.
-    evalCount = 0;
+    int evalCount = 0;
     
     //Allocate and initialize cellular grids
     NSMutableArray* grids = [[NSMutableArray alloc] initWithCapacity:evaluationCount];
     for (int i = 0; i < evaluationCount; i++) {
-        Array2D* grid = [[Array2D alloc] initWithRows:gridSize.width cols:gridSize.height objClass:[Cell class]];
+        Array2D* grid = [[Array2D alloc] initWithRows:gridSize.height cols:gridSize.width objClass:[Cell class]];
         [grids addObject:grid];
     }
     
@@ -121,7 +126,7 @@ using namespace cv;
     for(int generation = 0; generation < generationCount && evalCount < evaluationLimit; generation++) {
         
         for(Team* team in teams) {
-            [team setTagsCollected:0.];
+            [team setFitness:0.];
             if (exploreTime > 0) {
                 [team setExplorePhase:YES];
             }
@@ -147,7 +152,7 @@ using namespace cv;
         [self setAverageTeamFrom:teams];
         [self setBestTeamFrom:teams];
         
-        [ga breedTeams:teams AtGeneration:generation:generationCount];
+        [ga breedPopulation:teams AtGeneration:generation andMaxGeneration:generationCount];
         
         if(delegate) {
             
@@ -194,7 +199,9 @@ using namespace cv;
             
             for(Robot* robot in robots) {
                 [robot reset];
-                [robot setStepSize:(variableStepSize ? (int)floor(randomLogNormal(0, [team stepSizeVariation])) + 1 : 1)];
+                if (variableStepSize) {
+                    [robot setStepSize:(int)floor(randomLogNormal(0, [team stepSizeVariation])) + 1];
+                }
             }
             
             [pheromones removeAllObjects];
@@ -203,366 +210,8 @@ using namespace cv;
             [regions removeAllObjects];
             
             for(int tick = 0; tick < tickCount; tick++) {
-                for(Robot* robot in robots) {
-                    
-                    switch([robot status]) {
-                            
-                        /*
-                         * The robot hasn't been initialized yet.
-                         * Give it some basic starting values and then fall-through to the next state.
-                         */
-                        case ROBOT_STATUS_INACTIVE: {
-                            [robot setStatus:ROBOT_STATUS_DEPARTING];
-                            [robot setPosition:nest];
-                            [robot setTarget:edge(gridSize)];
-                            //Fallthrough to ROBOT_STATUS_DEPARTING.
-                        }
-                            
-                        /*
-                         * The robot is either:
-                         *  -Moving in a random direction away from the nest (not site-fidelity-ing or pheromone-ing).
-                         *  -Moving towards a specific point where a tag was last found (site-fidelity-ing).
-                         *  -Moving towards a specific point due to pheromones.
-                         *
-                         * For each of the cases, we have to ultimately decide on a direction for the robot to travel in,
-                         * then decide which 'cell' best accomplishes traveling in this direction.  We then move the robot,
-                         * and may change the robot/world state based on certain criteria (i.e. it reaches its destination).
-                         */
-                        case ROBOT_STATUS_DEPARTING: {
-                            if (tick >= exploreTime && [team explorePhase]) {
-                                [robot setStatus:ROBOT_STATUS_RETURNING];
-                                [robot setTarget:nest];
-                                break;
-                            }
-                            if([robot informed] == ROBOT_INFORMED_DECOMPOSITION && (NSEqualPoints([robot position], [robot target]))) {
-                                [robot setStatus:ROBOT_STATUS_SEARCHING];
-                                [robot setInformed:ROBOT_INFORMED_NONE];
-                                [robot turn:uniformDirection withParameters:team];
-                                [robot setLastTurned:(tick + [robot delay] + 1)];
-                                [robot setLastMoved:tick];
-                                break;
-                            }
-                            if((![robot informed] && (randomFloat(1.) < team.travelGiveUpProbability)) || (NSEqualPoints([robot position], [robot target]))) {
-                                [robot setStatus:([team explorePhase] ? ROBOT_STATUS_EXPLORING : ROBOT_STATUS_SEARCHING)];
-                                [robot turn:uniformDirection withParameters:team];
-                                [robot setLastTurned:(tick + [robot delay] + 1)];
-                                [robot setLastMoved:tick];
-                                break;
-
-                            }
                 
-                            [robot moveWithin:gridSize];
-                            break;
-                        }
-                            
-                        /*
-                         * The robot is performing a random walk.
-                         * It will randomly change its direction based on how long it has been searching and move in this direction.
-                         * If it finds a tag, its state changes to ROBOT_STATUS_RETURNING (it brings the tag back to the nest.
-                         * All site fidelity and pheromone work, however, is taken care of once the robot actually arrives at the nest.
-                         */
-                        case ROBOT_STATUS_SEARCHING: {
-                            
-                            //Delay to emulate physical robot
-                            if(tick - [robot lastMoved] <= [robot delay]) {
-                                break;
-                            }
-                            [robot setDelay:0];
-                            
-                            //Probabilistically give up searching and return to the nest
-                            if(randomFloat(1.) < [team searchGiveUpProbability]) {
-                                if(decentralizedPheromones && !NSEqualPoints([robot localPheromone], NSNullPoint)) {
-                                    [robot setTarget:[robot localPheromone]];
-                                    [robot setInformed:ROBOT_INFORMED_PHEROMONE];
-                                    [robot setStatus:ROBOT_STATUS_DEPARTING];
-                                }
-                                else {
-                                    [robot setTarget:nest];
-                                    [robot setStatus:ROBOT_STATUS_RETURNING];
-                                }
-                                [robot setLocalPheromone:NSNullPoint];
-                                [robot setRecruitmentTarget:NSNullPoint];
-                                break;
-                            }
-                            
-                            //Broadcast decentralized pheromones if using them
-                            if(decentralizedPheromones && ([robot informed] == ROBOT_INFORMED_MEMORY) && [robot recruitmentTarget].x > 0) {
-                                [robot broadcastPheromone:[robot recruitmentTarget] toRobots:robots atRange:wirelessRange];
-                            }
-                            
-                            //Calculate end point based on step size
-                            int stepsRemaining = [robot stepSize] - (tick - [robot lastTurned]);
-                            [robot setTarget:NSMakePoint(roundf([robot position].x + (cos(robot.direction) * stepsRemaining)), roundf([robot position].y + (sin([robot direction]) * stepsRemaining)))];
-                            
-                            //If our current direction takes us outside the world, frantically spin around until this isn't the case.
-                            while([robot target].x < 0 || [robot target].y < 0 || [robot target].x >= gridSize.width || [robot target].y >= gridSize.height) {
-                                [robot setDirection:randomFloat(M_2PI)];
-                                [robot setTarget:NSMakePoint(roundf([robot position].x + cos([robot direction])), roundf([robot position].y + sin([robot direction])))];
-                            }
-                            
-                            //Move one cell
-                            [robot moveWithin:gridSize];
-                            
-                            //Turn
-                            if(stepsRemaining <= 1) {
-                                if (variableStepSize) {
-                                    [robot setStepSize:(int)round(randomLogNormal(0, [team stepSizeVariation]))];
-                                }
-                                
-                                [robot turn:uniformDirection withParameters:team];
-                                [robot setLastTurned:(tick + [robot delay] + 1)];
-                            }
-                            
-                            //After we've moved 1 square ahead, check one square ahead for a tag.
-                            //Reusing robot.target here (without consequence, it just gets overwritten when moving).
-                            [robot setTarget:NSMakePoint(roundf([robot position].x + cos([robot direction])), roundf([robot position].y + sin([robot direction])))];
-                            if([robot target].x >= 0 && [robot target].y >= 0 && [robot target].x < gridSize.width && [robot target].y < gridSize.height) {
-                                Tag* foundTag = [(Cell*)[grid objectAtRow:[robot target].y col:[robot target].x] tag];
-                                
-                                //Note we use shortcircuiting here.
-                                if(detectTag(realWorldError) && foundTag && ![foundTag pickedUp]) {
-                                    
-                                    //Perturb found tag position to simulate error
-                                    NSPoint perturbedTagPosition = perturbTagPosition(realWorldError, [foundTag position], gridSize, nest);
-                                    Tag* tagCopy = [foundTag copy];
-                                    [tagCopy setPosition:perturbedTagPosition];
-                                    
-                                    [robot setDiscoveredTags:[[NSMutableArray alloc] initWithObjects:tagCopy, nil]];
-                                    [foundTag setPickedUp:YES];
-
-                                    //Sum up all non-picked-up seeds in the moore neighbor.
-                                    for(int dx = -1; dx <= 1; dx++) {
-                                        for(int dy = -1; dy <= 1; dy++) {
-                                            
-                                            //If neighboring cell is legal
-                                            if(([foundTag position].x + dx >= 0 && [foundTag position].x + dx < gridSize.width) &&
-                                               ([foundTag position].y + dy >= 0 && [foundTag position].y + dy < gridSize.height))
-                                            {
-                                                //Look up tag in tags array
-                                                Cell* cell = [grid objectAtRow:[foundTag position].y + dy col:[foundTag position].x + dx];
-                                                
-                                                //If tag exists and is detectable
-                                                if (([cell tag]) && !([[cell tag] pickedUp]) && detectTag(realWorldError)) {
-                                                    //Add it to discoveredTags array
-                                                    [[robot discoveredTags] addObject:[cell tag]];
-                                                }
-                                            }
-                                        }
-                                    }
-                                    
-                                    [robot setStatus:ROBOT_STATUS_RETURNING];
-                                    [robot setDelay:9];
-                                    [robot setTarget:nest];
-                                    [robot setLocalPheromone:NSNullPoint];
-                                    [robot setRecruitmentTarget:NSNullPoint];
-                                }
-                            }
-                            
-                            [robot setLastMoved:tick];
-                            break;
-                        }
-                            
-                        /*
-                         * The robot is on its way back to the nest.
-                         * It is either carrying food, or it gave up on its search and is returning to base for further instruction.
-                         * Stuff like laying/assigning of pheromones is handled here.
-                         */
-                        case ROBOT_STATUS_RETURNING: {
-                            if(tick - [robot lastMoved] <= [robot delay]) {
-                                break;
-                            }
-//                            if(tick >= reclusteringInterval && numberOfClusterings < scheduledClusterings) {
-//                                [team setExplorePhase:YES];
-//                            }
-                            [robot setDelay:0];
-                            [robot moveWithin:gridSize];
-                            
-                            if(NSEqualPoints(robot.position, nest)) {
-                                if ([team explorePhase]){
-                                    
-                                    BOOL allHome = YES;
-                                    for(Robot* r in robots) {
-                                        if(!NSEqualPoints(r.position, nest)) {
-                                            allHome = NO;
-                                        }
-                                    }
-                                    
-                                    EM em;
-                                    em = [self clusterTags:[robot discoveredTags] ifAllRobotsHome:allHome];
-                                    
-                                    if(allHome == NO) {
-                                        [robot setStatus:ROBOT_STATUS_WAITING];
-                                        break;
-                                    }
-                                    else {
-                                        //Extract means and covariance matrices
-                                        Mat means = em.get<Mat>("means");
-                                        vector<Mat> covs = em.get<vector<Mat>>("covs");
-                                        
-                                        cv::Size meansSize = means.size();
-                                        
-                                        for(int i = 0; i < meansSize.height; i++) {
-                                            NSPoint p = NSMakePoint(round(means.at<double>(i,0)), round(means.at<double>(i,1)));
-                                            double width = ceil(covs[i].at<double>(0,0) * 2);
-                                            double height = ceil(covs[i].at<double>(1,1) * 2);
-                                            Cluster* c = [[Cluster alloc] initWithCenter:p width:width andHeight:height];
-                                            [clusters addObject:c];
-                                            for(int j = clip(p.x - ceil(width/2),0,gridSize.width); j < clip(p.x + ceil(width/2),0,gridSize.width); j++) {
-                                                for(int k= clip(p.y-ceil(height/2),0,gridSize.height); k<clip(p.y + ceil(height/2),0,gridSize.height); k++) {
-                                                    [(Cell*)[grid objectAtRow:j col:k] setIsClustered:YES];
-                                                }
-                                            }
-                                        }
-                                        
-                                        //Calculate determinants of covs
-                                        //Store results in covDeterminants
-                                        double determinantSum = 0;
-                                        vector<double> covDeterminants;
-                                        for(Mat cov : covs) {
-                                            covDeterminants.push_back(determinant(cov));
-                                            determinantSum += covDeterminants.back();
-                                        }
-
-                                        //Iterate through clusters
-                                        for(int i = 0; i < em.get<int>("nclusters"); i++) {
-                                            //Create pheromone at centroid location
-                                            Pheromone* p = [[Pheromone alloc] initWithPosition:NSMakePoint(means.at<double>(i,0), means.at<double>(i,1)) weight:1 - covDeterminants[i]/determinantSum andUpdatedTick:tick];
-                                            [pheromones addObject:p];
-                                        }
-                                        
-                                        for (Robot* r in robots) {
-                                            [r setStatus:ROBOT_STATUS_RETURNING];
-                                        }
-                                        
-                                        [team setExplorePhase:NO];
-                                        
-//                                        numberOfClusterings++;
-                                        
-                                        NSPoint origin;
-                                        origin.x = 0;
-                                        origin.y = 0;
-                                        QuadTree* tree = [[QuadTree alloc] initWithHeight:gridSize.height width:gridSize.width origin:origin andCells:grid];
-                                        [regions addObject:tree];
-                                        [unexploredRegions addObjectsFromArray:[Decomposition runDecomposition:regions]];
-                                    }
-                                }
-                                
-                                else {
-                                    //Retrieve collected tag from discoveredTags array (if available)
-                                    Tag* foundTag = nil;
-                                    if ([[robot discoveredTags] count] > 0) {
-                                        foundTag = [[robot discoveredTags] objectAtIndex:0];
-                                        [team setTagsCollected:[team tagsCollected] + 1];
-                                    }
-                                    
-                                    //Add (perturbed) tag position to global pheromone array if using centralized pheromones
-                                    //Use of *decentralized pheromones* guarantees that the pheromones array will always be empty, which means robots will only be recruited from the nest when using *centralized pheromones*
-                                    if (foundTag && !decentralizedPheromones &&
-                                        (randomFloat(1.) < poissonCDF([[robot discoveredTags] count], [team pheromoneLayingRate]))) {
-                                        Pheromone* p = [[Pheromone alloc] initWithPosition:[foundTag position] weight:1. andUpdatedTick:tick];
-                                        [pheromones addObject:p];
-                                    }
-
-                                    
-                                    //Set required local variables
-                                    BOOL siteFidelityFlag = randomFloat(1.) < poissonCDF([[robot discoveredTags] count], [team siteFidelityRate]);
-                                    NSPoint pheromone = [self getPheromone:pheromones atTick:tick withDecayRate:[team pheromoneDecayRate]];
-                                    
-                                    //If a tag was found, decide whether to return to its location
-                                    if(foundTag && siteFidelityFlag) {
-                                        [robot setTarget:perturbTargetPosition(realWorldError, [foundTag position], gridSize, nest)];
-                                        [robot setInformed:ROBOT_INFORMED_MEMORY];
-                                        //Decide whether to broadcast pheromones locally
-                                        if(decentralizedPheromones &&
-                                           (randomFloat(1.) < exponentialCDF([[robot discoveredTags] count], [team pheromoneLayingRate]))) {
-                                            [robot setRecruitmentTarget:[foundTag position]];
-                                        }
-                                        else {
-                                            [robot setRecruitmentTarget:NSNullPoint];
-                                        }
-                                    }
-                                    
-                                    //If no pheromones exist, pheromone will be (-1, -1)
-                                    else if(!NSEqualPoints(pheromone, NSNullPoint) && !siteFidelityFlag) {
-                                        [robot setTarget:perturbTargetPosition(realWorldError, pheromone, gridSize, nest)];
-                                        [robot setInformed:ROBOT_INFORMED_PHEROMONE];
-                                    }
-                                    
-                                    else if([unexploredRegions count] > 0) {
-                                        int regionChoice = arc4random() % [unexploredRegions count];
-                                        QuadTree* tree = [unexploredRegions objectAtIndex:regionChoice];
-                                        NSPoint target;
-                                        target.x = [tree origin].x + [tree width] / 2;
-                                        target.y = [tree origin].y + [tree height] / 2;
-                                        [robot setTarget:perturbTargetPosition(realWorldError, target , gridSize, nest)];
-                                        [robot setInformed:ROBOT_INFORMED_DECOMPOSITION];
-                                    }
-                                    
-                                    
-                                    //If no pheromones and no tag and no partitioning knowledge, go to a random location
-                                    else {
-                                        [robot setTarget:edge(gridSize)];
-                                        [robot setInformed:ROBOT_INFORMED_NONE];
-                                    }
-                                    
-                                    [robot setDiscoveredTags:nil];
-                                    [robot setSearchTime:0];
-                                    [robot setStatus:ROBOT_STATUS_DEPARTING];
-                                }
-                            }
-                            break;
-                        }
-                    
-                        case ROBOT_STATUS_EXPLORING: {
-                            if (tick >= exploreTime) {
-                                robot.status = ROBOT_STATUS_RETURNING;
-                                [robot setTarget:nest];
-                                break;
-                            }
-                            
-                            if(tick - [robot lastMoved] <= [robot delay]) {
-                                break;
-                            }
-                            [robot setDelay:0];
-                            
-                            int stepsRemaining = [robot stepSize] - (tick - [robot lastTurned]);
-                            [robot setTarget:NSMakePoint(roundf([robot position].x+(cos(robot.direction)*stepsRemaining)),roundf([robot position].y+(sin([robot direction])*stepsRemaining)))];
-                    
-                            //If our current direction takes us outside the world, frantically spin around until this isn't the case.
-                            while([robot target].x < 0 || [robot target].y < 0 || [robot target].x >= gridSize.width || [robot target].y >= gridSize.height) {
-                                [robot setDirection:randomFloat(M_2PI)];
-                                [robot setTarget:NSMakePoint(roundf([robot position].x+cos([robot direction])),roundf([robot position].y+sin([robot direction])))];
-                            }
-                    
-                            [robot moveWithin:gridSize];
-                    
-                            if(stepsRemaining <= 1) {
-                                [robot setStepSize:(int)round(randomLogNormal(0, team.stepSizeVariation))];
-                                [robot turn:TRUE withParameters:team];
-                                [robot setLastTurned:(tick + robot.delay + 1)];
-                            }
-                    
-                            //After we've moved 1 square ahead, check one square ahead for a tag.
-                            //Reusing robot.target here (without consequence, it just gets overwritten when moving).
-                            [robot setTarget:NSMakePoint(roundf([robot position].x+cos([robot direction])),roundf([robot position].y+sin([robot direction])))];
-                            if([robot target].x >= 0 && [robot target].y >= 0 && [robot target].x < gridSize.width && [robot target].y < gridSize.height) {
-                                Tag* t = [(Cell*)[grid objectAtRow:(int)[robot target].y col:(int)[robot target].x] tag];
-                                if(detectTag(realWorldError) && t) { //Note we use shortcircuiting here.
-                                    [[robot discoveredTags] addObject:t];
-                                    [t setDiscovered:YES];
-                                }
-                            }
-
-                            [robot setLastMoved:tick];
-                            break;
-                        }
-                    
-                        //This makes the robots hold their current position (i.e. NO-OP)
-                        case ROBOT_STATUS_WAITING:{
-                            break;
-                        }
-                    }
-                }
+                [self stateTransition:robots inTeam:team atTick:tick onGrid:grid withPheromones:pheromones clusters:clusters regions:regions unexploredRegions:unexploredRegions];
             
                 if(tickRate != 0.f){[NSThread sleepForTimeInterval:tickRate];}
                 if(viewDelegate != nil) {
@@ -577,16 +226,384 @@ using namespace cv;
 }
 
 /*
+ * State transition case statement for robots using central-place foraging algorithm
+ */
+-(void) stateTransition:(NSMutableArray*)robots inTeam:(Team*)team atTick:(int)tick onGrid:(Array2D*)grid
+         withPheromones:(NSMutableArray*)pheromones
+               clusters:(NSMutableArray*)clusters
+                regions:(NSMutableArray*)regions
+      unexploredRegions:(NSMutableArray*)unexploredRegions {
+    
+    for (Robot* robot in robots) {
+        switch([robot status]) {
+                
+                /*
+                 * The robot hasn't been initialized yet.
+                 * Give it some basic starting values and then fall-through to the next state.
+                 */
+            case ROBOT_STATUS_INACTIVE: {
+                [robot setStatus:ROBOT_STATUS_DEPARTING];
+                [robot setPosition:nest];
+                [robot setTarget:edge(gridSize)];
+                //Fallthrough to ROBOT_STATUS_DEPARTING.
+            }
+                
+                /*
+                 * The robot is either:
+                 *  -Moving in a random direction away from the nest (not site-fidelity-ing or pheromone-ing).
+                 *  -Moving towards a specific point where a tag was last found (site-fidelity-ing).
+                 *  -Moving towards a specific point due to pheromones.
+                 *
+                 * For each of the cases, we have to ultimately decide on a direction for the robot to travel in,
+                 * then decide which 'cell' best accomplishes traveling in this direction.  We then move the robot,
+                 * and may change the robot/world state based on certain criteria (i.e. it reaches its destination).
+                 */
+            case ROBOT_STATUS_DEPARTING: {
+                if (tick >= exploreTime && [team explorePhase]) {
+                    [robot setStatus:ROBOT_STATUS_RETURNING];
+                    [robot setTarget:nest];
+                    break;
+                }
+                if([robot informed] == ROBOT_INFORMED_DECOMPOSITION && (NSEqualPoints([robot position], [robot target]))) {
+                    [robot setStatus:ROBOT_STATUS_SEARCHING];
+                    [robot setInformed:ROBOT_INFORMED_NONE];
+                    [robot turn:uniformDirection withParameters:team];
+                    [robot setLastTurned:(tick + [robot delay] + 1)];
+                    [robot setLastMoved:tick];
+                    break;
+                }
+                if((![robot informed] && (randomFloat(1.) < team.travelGiveUpProbability)) || (NSEqualPoints([robot position], [robot target]))) {
+                    [robot setStatus:([team explorePhase] ? ROBOT_STATUS_EXPLORING : ROBOT_STATUS_SEARCHING)];
+                    [robot turn:uniformDirection withParameters:team];
+                    [robot setLastTurned:(tick + [robot delay] + 1)];
+                    [robot setLastMoved:tick];
+                    break;
+                    
+                }
+                
+                [robot moveWithin:gridSize];
+                break;
+            }
+                
+                /*
+                 * The robot is performing a random walk.
+                 * It will randomly change its direction based on how long it has been searching and move in this direction.
+                 * If it finds a tag, its state changes to ROBOT_STATUS_RETURNING (it brings the tag back to the nest.
+                 * All site fidelity and pheromone work, however, is taken care of once the robot actually arrives at the nest.
+                 */
+            case ROBOT_STATUS_SEARCHING: {
+                
+                //Delay to emulate physical robot
+                if(tick - [robot lastMoved] <= [robot delay]) {
+                    break;
+                }
+                [robot setDelay:0];
+                
+                //Probabilistically give up searching and return to the nest
+                if(randomFloat(1.) < [team searchGiveUpProbability]) {
+                    if(decentralizedPheromones && !NSEqualPoints([robot localPheromone], NSNullPoint)) {
+                        [robot setTarget:[robot localPheromone]];
+                        [robot setInformed:ROBOT_INFORMED_PHEROMONE];
+                        [robot setStatus:ROBOT_STATUS_DEPARTING];
+                    }
+                    else {
+                        [robot setTarget:nest];
+                        [robot setStatus:ROBOT_STATUS_RETURNING];
+                    }
+                    [robot setLocalPheromone:NSNullPoint];
+                    [robot setRecruitmentTarget:NSNullPoint];
+                    break;
+                }
+                
+                //Broadcast decentralized pheromones if using them
+                if(decentralizedPheromones && ([robot informed] == ROBOT_INFORMED_MEMORY) && [robot recruitmentTarget].x > 0) {
+                    [robot broadcastPheromone:[robot recruitmentTarget] toRobots:robots atRange:wirelessRange];
+                }
+                
+                //Calculate end point based on step size
+                int stepsRemaining = [robot stepSize] - (tick - [robot lastTurned]);
+                [robot setTarget:NSMakePoint(roundf([robot position].x + (cos(robot.direction) * stepsRemaining)), roundf([robot position].y + (sin([robot direction]) * stepsRemaining)))];
+                
+                //If our current direction takes us outside the world, frantically spin around until this isn't the case.
+                while([robot target].x < 0 || [robot target].y < 0 || [robot target].x >= gridSize.width || [robot target].y >= gridSize.height) {
+                    [robot setDirection:randomFloat(M_2PI)];
+                    [robot setTarget:NSMakePoint(roundf([robot position].x + cos([robot direction])), roundf([robot position].y + sin([robot direction])))];
+                }
+                
+                //Move one cell
+                [robot moveWithin:gridSize];
+                
+                //Turn
+                if(stepsRemaining <= 1) {
+                    if (variableStepSize) {
+                        [robot setStepSize:(int)round(randomLogNormal(0, [team stepSizeVariation]))];
+                    }
+                    
+                    [robot turn:uniformDirection withParameters:team];
+                    [robot setLastTurned:(tick + [robot delay] + 1)];
+                }
+                
+                //After we've moved 1 square ahead, check one square ahead for a tag.
+                //Reusing robot.target here (without consequence, it just gets overwritten when moving).
+                [robot setTarget:NSMakePoint(roundf([robot position].x + cos([robot direction])), roundf([robot position].y + sin([robot direction])))];
+                if([robot target].x >= 0 && [robot target].y >= 0 && [robot target].x < gridSize.width && [robot target].y < gridSize.height) {
+                    Tag* foundTag = [(Cell*)[grid objectAtRow:[robot target].y col:[robot target].x] tag];
+                    //Note we use shortcircuiting here.
+                    if([error detectTag] && foundTag && ![foundTag pickedUp]) {
+                        //Perturb found tag position to simulate error
+                        NSPoint perturbedTagPosition = [error perturbTagPosition:[foundTag position] withGridSize:gridSize andGridCenter:nest];
+                        Tag* tagCopy = [foundTag copy];
+                        [tagCopy setPosition:perturbedTagPosition];
+                        
+                        [robot setDiscoveredTags:[[NSMutableArray alloc] initWithObjects:tagCopy, nil]];
+                        [foundTag setPickedUp:YES];
+                        
+                        //Sum up all non-picked-up seeds in the moore neighbor.
+                        for(int dx = -1; dx <= 1; dx++) {
+                            for(int dy = -1; dy <= 1; dy++) {
+                                
+                                //If neighboring cell is legal
+                                if(([foundTag position].x + dx >= 0 && [foundTag position].x + dx < gridSize.width) &&
+                                   ([foundTag position].y + dy >= 0 && [foundTag position].y + dy < gridSize.height))
+                                {
+                                    //Look up tag in tags array
+                                    Cell* cell = [grid objectAtRow:[foundTag position].y + dy col:[foundTag position].x + dx];
+                                    
+                                    //If tag exists and is detectable
+                                    if (([cell tag]) && !([[cell tag] pickedUp]) && [error detectTag]) {
+                                        //Add it to discoveredTags array
+                                        [[robot discoveredTags] addObject:[cell tag]];
+                                    }
+                                }
+                            }
+                        }
+                        
+                        [robot setStatus:ROBOT_STATUS_RETURNING];
+                        [robot setDelay:9];
+                        [robot setTarget:nest];
+                        [robot setLocalPheromone:NSNullPoint];
+                        [robot setRecruitmentTarget:NSNullPoint];
+                    }
+                }
+                
+                [robot setLastMoved:tick];
+                break;
+            }
+                
+                /*
+                 * The robot is on its way back to the nest.
+                 * It is either carrying food, or it gave up on its search and is returning to base for further instruction.
+                 * Stuff like laying/assigning of pheromones is handled here.
+                 */
+            case ROBOT_STATUS_RETURNING: {
+                if(tick - [robot lastMoved] <= [robot delay]) {
+                    break;
+                }
+                //                            if(tick >= reclusteringInterval && numberOfClusterings < scheduledClusterings) {
+                //                                [team setExplorePhase:YES];
+                //                            }
+                [robot setDelay:0];
+                [robot moveWithin:gridSize];
+                
+                if(NSEqualPoints(robot.position, nest)) {
+                    if ([team explorePhase]){
+                        
+                        BOOL allHome = YES;
+                        for(Robot* r in robots) {
+                            if(!NSEqualPoints(r.position, nest)) {
+                                allHome = NO;
+                            }
+                        }
+                        
+                        EM em;
+                        em = [self clusterTags:[robot discoveredTags] ifAllRobotsHome:allHome];
+                        
+                        if(allHome == NO) {
+                            [robot setStatus:ROBOT_STATUS_WAITING];
+                            break;
+                        }
+                        else {
+                            //Extract means and covariance matrices
+                            Mat means = em.get<Mat>("means");
+                            vector<Mat> covs = em.get<vector<Mat>>("covs");
+                            
+                            cv::Size meansSize = means.size();
+                            
+                            for(int i = 0; i < meansSize.height; i++) {
+                                NSPoint p = NSMakePoint(round(means.at<double>(i,0)), round(means.at<double>(i,1)));
+                                double width = ceil(covs[i].at<double>(0,0) * 2);
+                                double height = ceil(covs[i].at<double>(1,1) * 2);
+                                Cluster* c = [[Cluster alloc] initWithCenter:p width:width andHeight:height];
+                                [clusters addObject:c];
+                                for(int j = clip(p.x - ceil(width/2),0,gridSize.width); j < clip(p.x + ceil(width/2),0,gridSize.width); j++) {
+                                    for(int k= clip(p.y-ceil(height/2),0,gridSize.height); k<clip(p.y + ceil(height/2),0,gridSize.height); k++) {
+                                        [(Cell*)[grid objectAtRow:j col:k] setIsClustered:YES];
+                                    }
+                                }
+                            }
+                            
+                            //Calculate determinants of covs
+                            //Store results in covDeterminants
+                            double determinantSum = 0;
+                            vector<double> covDeterminants;
+                            for(Mat cov : covs) {
+                                covDeterminants.push_back(determinant(cov));
+                                determinantSum += covDeterminants.back();
+                            }
+                            
+                            //Iterate through clusters
+                            for(int i = 0; i < em.get<int>("nclusters"); i++) {
+                                //Create pheromone at centroid location
+                                Pheromone* p = [[Pheromone alloc] initWithPosition:NSMakePoint(means.at<double>(i,0), means.at<double>(i,1)) weight:1 - covDeterminants[i]/determinantSum andUpdatedTick:tick];
+                                [pheromones addObject:p];
+                            }
+                            
+                            for (Robot* r in robots) {
+                                [r setStatus:ROBOT_STATUS_RETURNING];
+                            }
+                            
+                            [team setExplorePhase:NO];
+                            
+                            //                                        numberOfClusterings++;
+                            
+                            NSPoint origin;
+                            origin.x = 0;
+                            origin.y = 0;
+                            QuadTree* tree = [[QuadTree alloc] initWithHeight:gridSize.height width:gridSize.width origin:origin andCells:grid];
+                            [regions addObject:tree];
+                            [unexploredRegions addObjectsFromArray:[Decomposition runDecomposition:regions]];
+                        }
+                    }
+                    
+                    else {
+                        //Retrieve collected tag from discoveredTags array (if available)
+                        Tag* foundTag = nil;
+                        if ([[robot discoveredTags] count] > 0) {
+                            foundTag = [[robot discoveredTags] objectAtIndex:0];
+                            [team setFitness:[team fitness] + 1];
+                        }
+                        
+                        //Add (perturbed) tag position to global pheromone array if using centralized pheromones
+                        //Use of *decentralized pheromones* guarantees that the pheromones array will always be empty, which means robots will only be recruited from the nest when using *centralized pheromones*
+                        if (foundTag && !decentralizedPheromones &&
+                            (randomFloat(1.) < poissonCDF([[robot discoveredTags] count], [team pheromoneLayingRate]))) {
+                            Pheromone* p = [[Pheromone alloc] initWithPosition:[foundTag position] weight:1. andUpdatedTick:tick];
+                            [pheromones addObject:p];
+                        }
+                        
+                        
+                        //Set required local variables
+                        BOOL siteFidelityFlag = randomFloat(1.) < poissonCDF([[robot discoveredTags] count], [team siteFidelityRate]);
+                        NSPoint pheromone = [self getPheromone:pheromones atTick:tick withDecayRate:[team pheromoneDecayRate]];
+                        
+                        //If a tag was found, decide whether to return to its location
+                        if(foundTag && siteFidelityFlag) {
+                            [robot setTarget:[error perturbTargetPosition:[foundTag position] withGridSize:gridSize andGridCenter:nest]];
+                            [robot setInformed:ROBOT_INFORMED_MEMORY];
+                            //Decide whether to broadcast pheromones locally
+                            if(decentralizedPheromones &&
+                               (randomFloat(1.) < exponentialCDF([[robot discoveredTags] count], [team pheromoneLayingRate]))) {
+                                [robot setRecruitmentTarget:[foundTag position]];
+                            }
+                            else {
+                                [robot setRecruitmentTarget:NSNullPoint];
+                            }
+                        }
+                        
+                        //If no pheromones exist, pheromone will be (-1, -1)
+                        else if(!NSEqualPoints(pheromone, NSNullPoint) && !siteFidelityFlag) {
+                            [robot setTarget:[error perturbTargetPosition:pheromone withGridSize:gridSize andGridCenter:nest]];
+                            [robot setInformed:ROBOT_INFORMED_PHEROMONE];
+                        }
+                        
+                        else if([unexploredRegions count] > 0) {
+                            int regionChoice = arc4random() % [unexploredRegions count];
+                            QuadTree* tree = [unexploredRegions objectAtIndex:regionChoice];
+                            NSPoint target;
+                            target.x = [tree origin].x + [tree width] / 2;
+                            target.y = [tree origin].y + [tree height] / 2;
+                            [robot setTarget:[error perturbTargetPosition:target withGridSize:gridSize andGridCenter:nest]];
+                            [robot setInformed:ROBOT_INFORMED_DECOMPOSITION];
+                        }
+                        
+                        
+                        //If no pheromones and no tag and no partitioning knowledge, go to a random location
+                        else {
+                            [robot setTarget:edge(gridSize)];
+                            [robot setInformed:ROBOT_INFORMED_NONE];
+                        }
+                        
+                        [robot setDiscoveredTags:nil];
+                        [robot setSearchTime:0];
+                        [robot setStatus:ROBOT_STATUS_DEPARTING];
+                    }
+                }
+                break;
+            }
+                
+            case ROBOT_STATUS_EXPLORING: {
+                if (tick >= exploreTime) {
+                    robot.status = ROBOT_STATUS_RETURNING;
+                    [robot setTarget:nest];
+                    break;
+                }
+                
+                if(tick - [robot lastMoved] <= [robot delay]) {
+                    break;
+                }
+                [robot setDelay:0];
+                
+                int stepsRemaining = [robot stepSize] - (tick - [robot lastTurned]);
+                [robot setTarget:NSMakePoint(roundf([robot position].x+(cos(robot.direction)*stepsRemaining)),roundf([robot position].y+(sin([robot direction])*stepsRemaining)))];
+                
+                //If our current direction takes us outside the world, frantically spin around until this isn't the case.
+                while([robot target].x < 0 || [robot target].y < 0 || [robot target].x >= gridSize.width || [robot target].y >= gridSize.height) {
+                    [robot setDirection:randomFloat(M_2PI)];
+                    [robot setTarget:NSMakePoint(roundf([robot position].x+cos([robot direction])),roundf([robot position].y+sin([robot direction])))];
+                }
+                
+                [robot moveWithin:gridSize];
+                
+                if(stepsRemaining <= 1) {
+                    [robot setStepSize:(int)round(randomLogNormal(0, team.stepSizeVariation))];
+                    [robot turn:TRUE withParameters:team];
+                    [robot setLastTurned:(tick + robot.delay + 1)];
+                }
+                
+                //After we've moved 1 square ahead, check one square ahead for a tag.
+                //Reusing robot.target here (without consequence, it just gets overwritten when moving).
+                [robot setTarget:NSMakePoint(roundf([robot position].x+cos([robot direction])),roundf([robot position].y+sin([robot direction])))];
+                if([robot target].x >= 0 && [robot target].y >= 0 && [robot target].x < gridSize.width && [robot target].y < gridSize.height) {
+                    Tag* t = [(Cell*)[grid objectAtRow:(int)[robot target].y col:(int)[robot target].x] tag];
+                    if([error detectTag] && t) { //Note we use shortcircuiting here.
+                        [[robot discoveredTags] addObject:t];
+                        [t setDiscovered:YES];
+                    }
+                }
+                
+                [robot setLastMoved:tick];
+                break;
+            }
+                
+                //This makes the robots hold their current position (i.e. NO-OP)
+            case ROBOT_STATUS_WAITING:{
+                break;
+            }
+        }
+    }
+}
+
+/*
  * Run 100 post evaluations of the average team from the final generation (i.e. generationCount)
  */
 -(NSMutableArray*) evaluateTeam:(Team*)team onGrid:(Array2D *)grid {
-    NSMutableArray* tagsCollected = [[NSMutableArray alloc] init];
+    NSMutableArray* fitness = [[NSMutableArray alloc] init];
     NSMutableArray* teams = [[NSMutableArray alloc] initWithObjects:averageTeam, nil];
     
     for (int i = 0; i < 100; i++) {
         
         //Reset
-        [averageTeam setTagsCollected:0.];
+        [averageTeam setFitness:0.];
         if (exploreTime > 0) {
             [team setExplorePhase:YES];
         }
@@ -596,10 +613,10 @@ using namespace cv;
         
         //Evaluate
         [self evaluateTeams:teams onGrid:grid];
-        [tagsCollected addObject:[NSNumber numberWithFloat:[averageTeam tagsCollected]]];
+        [fitness addObject:[NSNumber numberWithFloat:[averageTeam fitness]]];
     }
     
-    return tagsCollected;
+    return fitness;
 }
 
 /*
@@ -767,7 +784,7 @@ using namespace cv;
     
     for(Team* team in teams) {
         NSMutableDictionary* parameters = [team getParameters];
-        tagSum += team.tagsCollected;
+        tagSum += [team fitness];
         for(NSString* key in parameters) {
             float val = [[parameterSums objectForKey:key] floatValue] + [[parameters objectForKey:key] floatValue];
             [parameterSums setObject:[NSNumber numberWithFloat:val] forKey:key];
@@ -779,7 +796,7 @@ using namespace cv;
         [parameterSums setObject:[NSNumber numberWithFloat:val] forKey:key];
     }
     
-    [averageTeam setTagsCollected:(tagSum / teamCount) / evaluationCount];
+    [averageTeam setFitness:(tagSum / teamCount) / evaluationCount];
     [averageTeam setParameters:parameterSums];
 }
 
@@ -792,18 +809,20 @@ using namespace cv;
     float maxTags = -1.;
     
     for(Team* team in teams) {
-        if(team.tagsCollected > maxTags) {
-            maxTags = team.tagsCollected;
+        if([team fitness] > maxTags) {
+            maxTags = [team fitness];
             [bestTeam setParameters:[team getParameters]];
         }
     }
     
-    [bestTeam setTagsCollected:maxTags / evaluationCount];
+    [bestTeam setFitness:maxTags / evaluationCount];
 }
 
 
+#pragma Archivable methods
+
 /*
- * Custom getter for all @properties of Simulation
+ * Getter for all @properties of Simulation
  */
 -(NSMutableDictionary*) getParameters {
     NSMutableDictionary* parameters = [[NSMutableDictionary alloc] initWithObjects:
@@ -828,8 +847,6 @@ using namespace cv;
 
              NSStringFromSize(gridSize),
              NSStringFromPoint(nest),
-             
-             [NSNumber numberWithBool:realWorldError],
              
              [NSNumber numberWithBool:variableStepSize],
              [NSNumber numberWithBool:uniformDirection],
@@ -859,8 +876,6 @@ using namespace cv;
              @"gridSize",
              @"nest",
              
-             @"realWorldError",
-             
              @"variableStepSize",
              @"uniformDirection",
              @"adaptiveWalk",
@@ -872,7 +887,7 @@ using namespace cv;
 }
 
 /*
- * Custom setter for all @properties of Simulation
+ * Setter for all @properties of Simulation
  */
 -(void) setParameters:(NSMutableDictionary *)parameters {
     teamCount = [[parameters objectForKey:@"teamCount"] intValue];
@@ -895,8 +910,6 @@ using namespace cv;
     
     gridSize = NSSizeFromString([parameters objectForKey:@"gridSize"]);
     nest = NSPointFromString([parameters objectForKey:@"nest"]);
-    
-    realWorldError = [[parameters objectForKey:@"realWorldError"] boolValue];
     
     variableStepSize = [[parameters objectForKey:@"variableStepSize"] boolValue];
     uniformDirection = [[parameters objectForKey:@"uniformDirection"] boolValue];

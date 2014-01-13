@@ -1,8 +1,10 @@
 #import <Foundation/Foundation.h>
+#import "Archivable.h"
 #import "Array2D.h"
 #import "Cell.h"
 #import "Cluster.h"
 #import "Decomposition.h"
+#import "SensorError.h"
 #import "GA.h"
 #import "Pheromone.h"
 #import "QuadTree.h"
@@ -27,21 +29,25 @@
 @end
 
 
-@interface Simulation : NSObject {
+@interface Simulation : NSObject <Archivable> {
     GA* ga;
 }
 
 -(NSMutableArray*) run;
 -(void) evaluateTeams:(NSMutableArray*)teams onGrid:(Array2D*)grid;
+-(void) stateTransition:(NSMutableArray*)robots inTeam:(Team*)team atTick:(int)tick onGrid:(Array2D*)grid
+         withPheromones:(NSMutableArray*)pheromones
+               clusters:(NSMutableArray*)clusters
+                regions:(NSMutableArray*)regions
+      unexploredRegions:(NSMutableArray*)unexploredRegions;
 -(NSMutableArray*) evaluateTeam:(Team*)team onGrid:(Array2D*)grid;
 -(void) initDistributionForArray:(Array2D*)grid;
 -(NSPoint) getPheromone:(NSMutableArray*)pheromones atTick:(int)tick withDecayRate:(float)decayRate;
 
--(NSMutableDictionary*) getParameters;
--(void) setParameters:(NSMutableDictionary*)parameters;
-
 @property (readonly, nonatomic) Team* averageTeam;
 @property (readonly, nonatomic) Team* bestTeam;
+
+@property (nonatomic) SensorError* error;
 
 @property (nonatomic) int teamCount;
 @property (nonatomic) int generationCount;
@@ -49,7 +55,6 @@
 @property (nonatomic) int tagCount;
 @property (nonatomic) int evaluationCount;
 @property (nonatomic) int evaluationLimit;
-@property (nonatomic) int evalCount;
 @property (nonatomic) int tickCount;
 @property (nonatomic) int exploreTime;
 
@@ -67,8 +72,6 @@
 
 @property (nonatomic) NSSize gridSize;
 @property (nonatomic) NSPoint nest;
-
-@property (nonatomic) BOOL realWorldError;
 
 @property (nonatomic) BOOL variableStepSize;
 @property (nonatomic) BOOL uniformDirection;

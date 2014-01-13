@@ -10,23 +10,8 @@
     int crossoverOperator;
 }
 
--(id) initWithElitism:(BOOL)_elitism crossover:(float)_crossoverRate andMutation:(float)_mutationRate :(int)mutationOp :(int)crossoverOp;
+-(id)initWithElitism:(BOOL)_elitism crossoverRate:(float)_crossoverRate crossoverOperator:(int)crossoverOperator mutationRate:(float)_mutationRate andMutationOperator:(int)mutationOperator;
 
--(void) breedTeams:(NSMutableArray *)teams AtGeneration:(int)generation :(int)maxGenerations;
-
-//Selection
--(NSMutableArray*) tournamentSelectionOn:(NSMutableArray*)teams;
-
-//Crossover
--(void) independentAssortmentCrossoverFromParents:(NSMutableArray *)parents toChild:(Team *)child withFirstParentBias:(float)bias;
--(void) uniformCrossoverFromParents:(NSMutableArray *)parents toChild:(Team *)child;
--(void) onePointCrossoverFromParents:(NSMutableArray *)parents toChild:(Team *)child;
--(void) twoPointCrossoverFromParents:(NSMutableArray *)parents toChild:(Team *)child;
-
-//Mutation
--(void) valueDependentVarianceMutationForParameter:(NSNumber **)parameter atGeneration:(int)generation;
--(void) fixedVarianceMutationForParameter:(NSNumber **)parameter :(float)sigma;
--(void) decreasingVarianceMutationForParameter:(NSNumber **)parameter atGeneration:(int)generation :(int)maxGenerations :(float)maxVariance :(float)minVariance;
-
+-(void)breedPopulation:(NSMutableArray *)population AtGeneration:(int)generation andMaxGeneration:(int)maxGenerations;
 
 @end

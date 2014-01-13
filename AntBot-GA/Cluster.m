@@ -1,11 +1,3 @@
-//
-//  Cluster.m
-//  AntBot-GA
-//
-//  Created by Justin on 10/31/13.
-//  Copyright (c) 2013 AntBot. All rights reserved.
-//
-
 #import "Cluster.h"
 
 @implementation Cluster

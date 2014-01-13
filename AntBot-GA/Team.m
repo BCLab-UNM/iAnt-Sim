@@ -6,7 +6,7 @@
 @synthesize travelGiveUpProbability, searchGiveUpProbability;
 @synthesize uninformedSearchCorrelation, informedSearchCorrelationDecayRate, stepSizeVariation;
 @synthesize pheromoneDecayRate, pheromoneLayingRate, siteFidelityRate;
-@synthesize tagsCollected, explorePhase;
+@synthesize fitness, explorePhase;
 
 -(id) initRandom {
     if(self = [super init]) {
@@ -27,7 +27,7 @@
 
 -(id) initWithFile:(NSString *)filePath {
     if (self = [super init]) {
-        NSDictionary *parameters = [[NSDictionary alloc] initWithContentsOfFile:filePath];
+        NSMutableDictionary *parameters = [[NSMutableDictionary alloc] initWithContentsOfFile:filePath];
         if (!parameters) {
             NSLog(@"Error reading file.");
         }
@@ -37,6 +37,9 @@
     }
     return self;
 }
+
+
+#pragma Archivable methods
 
 -(NSMutableDictionary*) getParameters {
     return [[NSMutableDictionary alloc] initWithObjects:

@@ -138,45 +138,4 @@ static inline float exponentialDecay(float quantity, float time, float lambda) {
     return (quantity * exp(-lambda * time));
 }
 
-/*
- * Introduces error into recorded tag position - Simulates localization error in real robot
- */
-static inline NSPoint perturbTagPosition(bool realWorldError, NSPoint position, NSSize size, NSPoint center) {
-    if(realWorldError) {
-        float distanceFromCenter = pointDistance(position.x, position.y, center.x, center.y);
-        NSPoint standardDeviation = NSMakePoint(MAX(0.164 * distanceFromCenter - (15.3 / 8), 0), MAX(0.166 * distanceFromCenter - (16.1 / 8), 0));
-        position.x = roundf(clip(randomNormal(position.x, standardDeviation.x), 0, size.width - 1));
-        position.y = roundf(clip(randomNormal(position.y, standardDeviation.y), 0, size.height - 1));
-    }
-    return position;
-}
-
-/*
- * Introduces error into target position - Simulates traveling error in real robot
- */
-static inline NSPoint perturbTargetPosition(bool realWorldError, NSPoint position, NSSize size, NSPoint center) {
-    if(realWorldError) {
-        float distanceFromCenter = pointDistance(position.x, position.y, center.x, center.y);
-        NSPoint standardDeviation = NSMakePoint(MAX(0.045 * distanceFromCenter + (9.32 / 8.), 0), MAX(0.173 * distanceFromCenter - (13.9 / 8.), 0));
-        position.x = roundf(clip(randomNormal(position.x, standardDeviation.x), 0, size.width - 1));
-        position.y = roundf(clip(randomNormal(position.y, standardDeviation.y), 0, size.height - 1));
-    }
-    return position;
-}
-
-/*
- * Introduces error into tag reading - Simulates probability of missing tag
- */
-static inline bool detectTag(bool realWorldError) {
-    return (realWorldError ? (randomFloat(1.) <= 0.55) : TRUE);
-}
-
-/*
- * Introduces error into neighbor reading = Simulates probability of missing neighboring tags
- */
-static inline bool detectNeighbor(bool realWorldError) {
-    return (realWorldError ? randomFloat(1.) <= 0.43 : TRUE);
-}
-
-
 #endif

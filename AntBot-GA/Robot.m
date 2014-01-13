@@ -5,7 +5,7 @@
 
 @synthesize status, informed;
 @synthesize position, target, recruitmentTarget;
-@synthesize direction, searchTime, lastMoved, lastTurned, delay;
+@synthesize direction, searchTime, lastMoved, lastTurned, delay, stepSize;
 @synthesize discoveredTags;
 @synthesize localPheromone;
 
@@ -20,6 +20,8 @@
     direction = randomFloat(M_2PI);
     lastMoved = 0;
     lastTurned = 0;
+    delay = 0;
+    stepSize = 1;
     
     discoveredTags = [[NSMutableArray alloc] init];
     

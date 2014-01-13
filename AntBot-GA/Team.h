@@ -1,12 +1,10 @@
 #import <Foundation/Foundation.h>
+#import "Archivable.h"
 
-@interface Team : NSObject {}
+@interface Team : NSObject <Archivable> {}
 
 -(id) initRandom;
 -(id) initWithFile:(NSString*)filePath;
-
--(NSMutableDictionary*) getParameters;
--(void) setParameters:(NSDictionary*)parameters;
 
 //Behavior parameters:
 @property (nonatomic) float travelGiveUpProbability;
@@ -23,7 +21,7 @@
 @property (nonatomic) float siteFidelityRate;
 
 //Non-evolved variables:
-@property (nonatomic) float tagsCollected;
+@property (nonatomic) float fitness;
 @property (nonatomic) BOOL explorePhase; //Flag denoting whether robot team is currently exploring for tags instead of collecting them
 
 @end

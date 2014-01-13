@@ -1,11 +1,3 @@
-//
-//  QuadTree.h
-//  AntBot-GA
-//
-//  Created by Justin on 8/7/13.
-//  Copyright (c) 2013 AntBot. All rights reserved.
-//
-
 #import <Foundation/Foundation.h>
 #import "Array2D.h"
 

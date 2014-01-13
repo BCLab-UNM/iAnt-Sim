@@ -9,6 +9,13 @@
 @synthesize discoveredTags;
 @synthesize localPheromone;
 
+-(id) init {
+    if (self = [super init]) {
+        [self reset];
+    }
+    return self;
+}
+
 -(void) reset {
     status = ROBOT_STATUS_INACTIVE;
     informed = ROBOT_INFORMED_NONE;

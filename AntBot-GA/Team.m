@@ -77,4 +77,33 @@
     siteFidelityRate = [[parameters objectForKey:@"siteFidelityRate"] floatValue];
 }
 
+-(void) writeParameters:(NSMutableDictionary *)parameters toFile:(NSString *)file {
+    [Utilities appendText:[NSString stringWithFormat:@"%@,%@,%@,%@,%@,%@,%@,%@,%f\n",
+                           [parameters objectForKey:@"pheromoneDecayRate"],
+                           [parameters objectForKey:@"travelGiveUpProbability"],
+                           [parameters objectForKey:@"searchGiveUpProbability"],
+                           [parameters objectForKey:@"uninformedSearchCorrelation"],
+                           [parameters objectForKey:@"informedSearchCorrelationDecayRate"],
+                           [parameters objectForKey:@"stepSizeVariation"],
+                           [parameters objectForKey:@"pheromoneLayingRate"],
+                           [parameters objectForKey:@"siteFidelityRate"],
+                           [self fitness]]
+                   toFile:file];
+}
+
+
++(void) writeParameterNamesToFile:(NSString *)file {
+    NSString* headers = [NSString stringWithFormat:@"%@,%@,%@,%@,%@,%@,%@,%@,%@\n",
+                         @"pheromoneDecayRate",
+                         @"travelGiveUpProbability",
+                         @"searchGiveUpProbability",
+                         @"uninformedSearchCorrelation",
+                         @"informedSearchCorrelationDecayRate",
+                         @"stepSizeVariation",
+                         @"pheromoneLayingRate",
+                         @"siteFidelityRate",
+                         @"fitness"];
+    [Utilities appendText:headers toFile :file];
+}
+
 @end

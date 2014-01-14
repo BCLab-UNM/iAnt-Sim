@@ -92,25 +92,33 @@
     neighborDetectionProbability = [[parameters objectForKey:@"neighborDetectionProbability"] floatValue];
 }
 
--(void) writeParameters:(NSMutableDictionary *)parameters toFile:(NSString *)file {
-    [Utilities appendText:[NSString stringWithFormat:@"%@,%@,%@,%@,%@,%@,%f\n",
-                           [parameters objectForKey:@"localizationSlope"],
-                           [parameters objectForKey:@"localizationIntercept"],
-                           [parameters objectForKey:@"travelingSlope"],
-                           [parameters objectForKey:@"travelingIntercept"],
-                           [parameters objectForKey:@"tagDetectionProbability"],
-                           [parameters objectForKey:@"neighborDetectionProbability"],
+-(void) writeParametersToFile:(NSString *)file {
+    [Utilities appendText:[NSString stringWithFormat:@"%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f\n",
+                           [self localizationSlope].x,
+                           [self localizationSlope].y,
+                           [self localizationIntercept].x,
+                           [self localizationIntercept].y,
+                           [self travelingSlope].x,
+                           [self travelingSlope].y,
+                           [self travelingIntercept].x,
+                           [self travelingIntercept].y,
+                           [self tagDetectionProbability],
+                           [self neighborDetectionProbability],
                            [self fitness]]
                    toFile:file];
 }
 
 
 +(void) writeParameterNamesToFile:(NSString *)file {
-    NSString* headers = [NSString stringWithFormat:@"%@,%@,%@,%@,%@,%@,%@\n",
-                         @"localizationSlope",
-                         @"localizationIntercept",
-                         @"travelingSlope",
-                         @"travelingIntercept",
+    NSString* headers = [NSString stringWithFormat:@"%@,%@,%@,%@,%@,%@,%@,%@,%@,%@,%@\n",
+                         @"localizationSlope.x",
+                         @"localizationSlope.y",
+                         @"localizationIntercept.x",
+                         @"localizationIntercept.y",
+                         @"travelingSlope.x",
+                         @"travelingSlope.y",
+                         @"travelingIntercept.x",
+                         @"travelingIntercept.y",
                          @"tagDetectionProbability",
                          @"neighborDetectionProbability",
                          @"fitness"];

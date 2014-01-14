@@ -64,9 +64,9 @@ using namespace cv;
         
         error = [[SensorError alloc] init];
         [error setLocalizationSlope:NSMakePoint(0.164, 0.166)];
-        [error setLocalizationIntercept:NSMakePoint(15.3, 16.1)];
+        [error setLocalizationIntercept:NSMakePoint(-15.3, -16.1)];
         [error setTravelingSlope:NSMakePoint(0.045, 0.173)];
-        [error setTravelingIntercept:NSMakePoint(9.32, 13.9)];
+        [error setTravelingIntercept:NSMakePoint(9.32, -13.9)];
         [error setTagDetectionProbability:0.55];
         [error setNeighborDetectionProbability:0.43];
     }

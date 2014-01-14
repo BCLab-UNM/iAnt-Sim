@@ -1,5 +1,6 @@
 #import <Foundation/Foundation.h>
 #import "Archivable.h"
+#import "Utilities.h"
 
 @interface SensorError : NSObject <Archivable>
 

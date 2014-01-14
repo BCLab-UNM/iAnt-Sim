@@ -92,4 +92,29 @@
     neighborDetectionProbability = [[parameters objectForKey:@"neighborDetectionProbability"] floatValue];
 }
 
+-(void) writeParameters:(NSMutableDictionary *)parameters toFile:(NSString *)file {
+    [Utilities appendText:[NSString stringWithFormat:@"%@,%@,%@,%@,%@,%@,%f\n",
+                           [parameters objectForKey:@"localizationSlope"],
+                           [parameters objectForKey:@"localizationIntercept"],
+                           [parameters objectForKey:@"travelingSlope"],
+                           [parameters objectForKey:@"travelingIntercept"],
+                           [parameters objectForKey:@"tagDetectionProbability"],
+                           [parameters objectForKey:@"neighborDetectionProbability"],
+                           [self fitness]]
+                   toFile:file];
+}
+
+
++(void) writeParameterNamesToFile:(NSString *)file {
+    NSString* headers = [NSString stringWithFormat:@"%@,%@,%@,%@,%@,%@,%@\n",
+                         @"localizationSlope",
+                         @"localizationIntercept",
+                         @"travelingSlope",
+                         @"travelingIntercept",
+                         @"tagDetectionProbability",
+                         @"neighborDetectionProbability",
+                         @"fitness"];
+    [Utilities appendText:headers toFile :file];
+}
+
 @end

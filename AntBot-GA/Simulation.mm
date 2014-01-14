@@ -157,8 +157,8 @@ using namespace cv;
         if(delegate) {
             
             //Technically should pass in average and best teams here.
-            if([delegate respondsToSelector:@selector(finishedGeneration:)]) {
-                [delegate finishedGeneration:generation];
+            if([delegate respondsToSelector:@selector(finishedGeneration:atEvaluation:)]) {
+                [delegate finishedGeneration:generation atEvaluation:evalCount];
             }
         }
     }
@@ -917,6 +917,14 @@ using namespace cv;
     
     decentralizedPheromones = [[parameters objectForKey:@"decentralizedPheromones"] boolValue];
     wirelessRange = [[parameters objectForKey:@"wirelessRange"] boolValue];
+}
+
+-(void)writeParameters:(NSMutableDictionary *)parameters toFile:(NSString *)file {
+    //unused
+}
+
++(void)writeParameterNamesToFile:(NSString *)file {
+    //unused
 }
 
 

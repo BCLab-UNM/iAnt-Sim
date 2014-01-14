@@ -1,6 +1,6 @@
 #import <Foundation/Foundation.h>
-#import "Archivable.h"
 #import "Array2D.h"
+#import "Archivable.h"
 #import "Cell.h"
 #import "Cluster.h"
 #import "Decomposition.h"
@@ -11,8 +11,7 @@
 #import "Team.h"
 #import "Robot.h"
 #import "Tag.h"
-
-#include "Util.h"
+#import "Utilities.h"
 
 
 @class Team;
@@ -23,9 +22,7 @@
 @end
 
 @interface NSObject(SimulationNotifications)
--(void) finishedGeneration:(int)generation;
--(void) writeTeamToFile:(NSString*)file :(Team*)team;
--(void) writeHeadersToFile:(NSString*)file;
+-(void) finishedGeneration:(int)generation atEvaluation:(int)evaluation;
 @end
 
 

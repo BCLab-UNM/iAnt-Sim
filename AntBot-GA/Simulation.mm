@@ -919,7 +919,7 @@ using namespace cv;
     wirelessRange = [[parameters objectForKey:@"wirelessRange"] boolValue];
 }
 
--(void)writeParameters:(NSMutableDictionary *)parameters toFile:(NSString *)file {
+-(void)writeParametersToFile:(NSString *)file {
     //unused
 }
 

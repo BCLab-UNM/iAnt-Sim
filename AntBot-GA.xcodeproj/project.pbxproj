@@ -16,7 +16,6 @@
 		40ED661B16DABE50006F8494 /* Simulation.mm in Sources */ = {isa = PBXBuildFile; fileRef = 40ED661016DABE50006F8494 /* Simulation.mm */; };
 		40ED661E16DABE50006F8494 /* Tag.h in Headers */ = {isa = PBXBuildFile; fileRef = 40ED661316DABE50006F8494 /* Tag.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		40ED661F16DABE50006F8494 /* Tag.m in Sources */ = {isa = PBXBuildFile; fileRef = 40ED661416DABE50006F8494 /* Tag.m */; };
-		40ED662016DABE50006F8494 /* Util.h in Headers */ = {isa = PBXBuildFile; fileRef = 40ED661516DABE50006F8494 /* Util.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		40ED662116DABE8F006F8494 /* Sim.h in Headers */ = {isa = PBXBuildFile; fileRef = 40ED65C216DABD31006F8494 /* Sim.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		422F6EEA187FD099008486DD /* SensorError.h in Headers */ = {isa = PBXBuildFile; fileRef = 422F6EE8187FD099008486DD /* SensorError.h */; };
 		422F6EEB187FD099008486DD /* SensorError.m in Sources */ = {isa = PBXBuildFile; fileRef = 422F6EE9187FD099008486DD /* SensorError.m */; };
@@ -37,6 +36,8 @@
 		423C12C91724DFAD00297C18 /* Constants.h in Headers */ = {isa = PBXBuildFile; fileRef = 423C12C71724DFAD00297C18 /* Constants.h */; };
 		423C12D61725B9BA00297C18 /* Array2D.h in Headers */ = {isa = PBXBuildFile; fileRef = 423C12D41725B9BA00297C18 /* Array2D.h */; };
 		423C12D71725B9BA00297C18 /* Array2D.m in Sources */ = {isa = PBXBuildFile; fileRef = 423C12D51725B9BA00297C18 /* Array2D.m */; };
+		424C5E461884A3F100017F25 /* Utilities.h in Headers */ = {isa = PBXBuildFile; fileRef = 424C5E441884A3F100017F25 /* Utilities.h */; };
+		424C5E471884A3F100017F25 /* Utilities.m in Sources */ = {isa = PBXBuildFile; fileRef = 424C5E451884A3F100017F25 /* Utilities.m */; };
 		4290E24217E0E2A60023CF98 /* photo.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 4290E24117E0E2A60023CF98 /* photo.hpp */; };
 		4290E24817E0E3140023CF98 /* objdetect.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 4290E24717E0E3140023CF98 /* objdetect.hpp */; };
 		4290E24A17E0E34C0023CF98 /* video.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 4290E24917E0E34C0023CF98 /* video.hpp */; };
@@ -88,7 +89,6 @@
 		40ED661016DABE50006F8494 /* Simulation.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = Simulation.mm; sourceTree = "<group>"; };
 		40ED661316DABE50006F8494 /* Tag.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Tag.h; sourceTree = "<group>"; };
 		40ED661416DABE50006F8494 /* Tag.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Tag.m; sourceTree = "<group>"; };
-		40ED661516DABE50006F8494 /* Util.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Util.h; sourceTree = "<group>"; };
 		422F6EE8187FD099008486DD /* SensorError.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SensorError.h; sourceTree = "<group>"; };
 		422F6EE9187FD099008486DD /* SensorError.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SensorError.m; sourceTree = "<group>"; };
 		42307A5A176D262A005BB34B /* GA.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GA.h; sourceTree = "<group>"; };
@@ -108,6 +108,8 @@
 		423C12C71724DFAD00297C18 /* Constants.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Constants.h; sourceTree = "<group>"; };
 		423C12D41725B9BA00297C18 /* Array2D.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Array2D.h; sourceTree = "<group>"; };
 		423C12D51725B9BA00297C18 /* Array2D.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Array2D.m; sourceTree = "<group>"; };
+		424C5E441884A3F100017F25 /* Utilities.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Utilities.h; sourceTree = "<group>"; };
+		424C5E451884A3F100017F25 /* Utilities.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Utilities.m; sourceTree = "<group>"; };
 		4283EA7F1880BAD6000BD73F /* Archivable.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Archivable.h; sourceTree = "<group>"; };
 		4290E24117E0E2A60023CF98 /* photo.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = photo.hpp; sourceTree = "<group>"; };
 		4290E24717E0E3140023CF98 /* objdetect.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = objdetect.hpp; sourceTree = "<group>"; };
@@ -202,7 +204,6 @@
 			isa = PBXGroup;
 			children = (
 				40ED65C216DABD31006F8494 /* Sim.h */,
-				40ED661516DABE50006F8494 /* Util.h */,
 				423C12C71724DFAD00297C18 /* Constants.h */,
 				4283EA7F1880BAD6000BD73F /* Archivable.h */,
 				423C12D41725B9BA00297C18 /* Array2D.h */,
@@ -229,6 +230,8 @@
 				40ED661416DABE50006F8494 /* Tag.m */,
 				40ED660D16DABE50006F8494 /* Team.h */,
 				40ED660E16DABE50006F8494 /* Team.m */,
+				424C5E441884A3F100017F25 /* Utilities.h */,
+				424C5E451884A3F100017F25 /* Utilities.m */,
 				42A6366D176405C500F44BD3 /* OpenCV */,
 				40ED65C016DABD31006F8494 /* Supporting Files */,
 			);
@@ -363,7 +366,6 @@
 				40ED661816DABE50006F8494 /* Team.h in Headers */,
 				40ED661A16DABE50006F8494 /* Simulation.h in Headers */,
 				40ED661E16DABE50006F8494 /* Tag.h in Headers */,
-				40ED662016DABE50006F8494 /* Util.h in Headers */,
 				40ED662116DABE8F006F8494 /* Sim.h in Headers */,
 				423C12C91724DFAD00297C18 /* Constants.h in Headers */,
 				423C12D61725B9BA00297C18 /* Array2D.h in Headers */,
@@ -387,6 +389,7 @@
 				4290E24A17E0E34C0023CF98 /* video.hpp in Headers */,
 				D024DB6D1823006200FF83E3 /* Cluster.h in Headers */,
 				4290E27A17E0E40E0023CF98 /* defines.h in Headers */,
+				424C5E461884A3F100017F25 /* Utilities.h in Headers */,
 				4290E27C17E0E41B0023CF98 /* config.h in Headers */,
 				422F6EEA187FD099008486DD /* SensorError.h in Headers */,
 				42EA17EE17E0E728001103A9 /* retina.hpp in Headers */,
@@ -466,6 +469,7 @@
 				40ED661F16DABE50006F8494 /* Tag.m in Sources */,
 				423C12D71725B9BA00297C18 /* Array2D.m in Sources */,
 				42E1C8A21731AB40000D102A /* Pheromone.m in Sources */,
+				424C5E471884A3F100017F25 /* Utilities.m in Sources */,
 				42307A5D176D262A005BB34B /* GA.m in Sources */,
 				42E407D2184FD28D006F8761 /* Decomposition.m in Sources */,
 				422F6EEB187FD099008486DD /* SensorError.m in Sources */,

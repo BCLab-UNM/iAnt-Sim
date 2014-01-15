@@ -221,11 +221,11 @@
         }
         
         //Create new population of children
-        id children[populationSize];
+        NSMutableArray* children = [[NSMutableArray alloc] initWithCapacity:populationSize];
         
         for(int i = 0; i < populationSize; i++) {
-            children[i] = [[populationClass alloc] init];
-            id child = children[i];
+            id child = [[populationClass alloc] init];
+            [children addObject:child];
             
             //Selection
             NSMutableArray* parents = [self tournamentSelectionOn:population];
@@ -291,13 +291,13 @@
                 }
             }
             
-            [children[i] setParameters:parameters];
+            [child setParameters:parameters];
         }
         
         //Set the children to be the new population for the next generation.
         for(int i = 0; i < populationSize; i++) {
             id individual = [population objectAtIndex:i];
-            [individual setParameters:[children[i] getParameters]];
+            [individual setParameters:[[children objectAtIndex:i] getParameters]];
         }
         
         //If we are using elitism then the first child is replaced by the best individual from the previous generation.

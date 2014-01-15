@@ -48,7 +48,7 @@ using namespace cv;
         mutationRate = 0.1;
         crossoverOperator = UniformPointCrossId;
         mutationOperator = FixedVarMutId;
-        elitism = true;
+        elitism = YES;
         
         gridSize = NSMakeSize(125, 125);
         nest = NSMakePoint(62, 62);

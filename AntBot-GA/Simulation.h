@@ -63,6 +63,7 @@
 
 @property (nonatomic) float crossoverRate;
 @property (nonatomic) float mutationRate;
+@property (nonatomic) int selectionOperator;
 @property (nonatomic) int mutationOperator;
 @property (nonatomic) int crossoverOperator;
 @property (nonatomic) bool elitism;

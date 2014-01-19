@@ -18,7 +18,7 @@ using namespace cv;
 @synthesize distributionRandom, distributionPowerlaw, distributionClustered;
 @synthesize averageTeam, bestTeam;
 @synthesize pileRadius;
-@synthesize crossoverRate, mutationRate, crossoverOperator, mutationOperator, elitism;
+@synthesize crossoverRate, mutationRate, selectionOperator, crossoverOperator, mutationOperator, elitism;
 @synthesize gridSize, nest;
 @synthesize variableStepSize, uniformDirection, adaptiveWalk;
 @synthesize decentralizedPheromones, wirelessRange;
@@ -46,6 +46,7 @@ using namespace cv;
         
         crossoverRate = 1.0;
         mutationRate = 0.1;
+        selectionOperator  = TournamentSelectionId;
         crossoverOperator = UniformPointCrossId;
         mutationOperator = FixedVarMutId;
         elitism = YES;
@@ -98,7 +99,7 @@ using namespace cv;
     //If evaluationLimit is -1, make sure it does not factor into these calculations.
     if(evaluationLimit == -1){
         //Times 2 to make this so large that it will not be a limiting factor on this run.
-        evaluationLimit = teamCount * generationCount * evaluationCount*2;
+        evaluationLimit = teamCount * generationCount * evaluationCount * 2;
     }
     //If generationCount is -1, make sure it does not factor into these calculations.
     if(generationCount == -1){
@@ -107,7 +108,7 @@ using namespace cv;
     }
     
     //Set up GA
-    ga = [[GA alloc] initWithElitism:elitism crossoverRate:crossoverRate crossoverOperator:crossoverOperator mutationRate:mutationRate andMutationOperator:mutationOperator];
+    ga = [[GA alloc] initWithElitism:elitism selectionOperator:selectionOperator crossoverRate:crossoverRate crossoverOperator:crossoverOperator mutationRate:mutationRate andMutationOperator:mutationOperator];
     
     //Set evaluation count to 1 if using GUI
     evaluationCount = (viewDelegate != nil) ? 1 : evaluationCount;

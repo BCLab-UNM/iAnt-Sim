@@ -1,5 +1,5 @@
 #import "SensorError.h"
-#include "Util.h"
+#import "Utilities.h"
 
 @implementation SensorError
 
@@ -11,9 +11,9 @@
 -(id)initRandom {
     if (self = [super init]) {
         localizationSlope = NSMakePoint(randomFloatRange(-1, 1), randomFloatRange(-1, 1));
-        localizationIntercept = NSMakePoint(randomFloatRange(0, 500), randomFloatRange(0, 500));
+        localizationIntercept = NSMakePoint(randomFloat(500), randomFloat(500));
         travelingSlope = NSMakePoint(randomFloatRange(-1, 1), randomFloatRange(-1, 1));
-        travelingIntercept = NSMakePoint(randomFloatRange(0, 500), randomFloatRange(0, 500));
+        travelingIntercept = NSMakePoint(randomFloat(500), randomFloat(500));
         tagDetectionProbability = randomFloat(1);
         neighborDetectionProbability = randomFloat(1);
     }

@@ -3,7 +3,8 @@
 @interface GA()
 
 //Selection
--(NSMutableArray*) tournamentSelectionOn:(NSMutableArray*)teams;
+-(NSMutableArray*)tournamentSelectionOn:(NSMutableArray*)population;
+-(NSMutableArray*)rankBasedElististSelectionOn:(NSMutableArray*)population withCutoff:(float)cutoff;
 
 //Crossover
 -(void)independentAssortmentCrossoverFromParents:(NSMutableArray*)parents toChild:(Team *)child withFirstParentBias:(float)bias;
@@ -20,13 +21,18 @@
 
 @implementation GA
 
--(id)initWithElitism:(BOOL)_elitism crossoverRate:(float)_crossoverRate crossoverOperator:(int)_crossoverOperator mutationRate:(float)_mutationRate andMutationOperator:(int)_mutationOperator {
+@synthesize fixedVarianceSigma;
+
+-(id)initWithElitism:(BOOL)_elitism selectionOperator:(int)_selectionOperator crossoverRate:(float)_crossoverRate crossoverOperator:(int)_crossoverOperator mutationRate:(float)_mutationRate andMutationOperator:(int)_mutationOperator {
     if (self = ([super init])) {
         elitism = _elitism;
+        selectionOperator = _selectionOperator;
         crossoverRate = _crossoverRate;
         crossoverOperator = _crossoverOperator;
         mutationRate = _mutationRate;
         mutationOperator = _mutationOperator;
+        
+        fixedVarianceSigma = 0.05;
     }
     return self;
 }
@@ -55,6 +61,20 @@
             }
         }
     }
+    
+    return parents;
+}
+
+/*
+ * Rank-based elitist selection
+ */
+-(NSMutableArray*)rankBasedElististSelectionOn:(NSMutableArray*)population withCutoff:(float)cutoff {
+    NSMutableArray* parents = [[NSMutableArray alloc] init];
+    int populationSize = (int)[population count];
+    
+    int r = randomIntRange(trunc(cutoff * populationSize), populationSize);
+    id parent = [population objectAtIndex:r];
+    [parents addObject:parent];
     
     return parents;
 }
@@ -204,20 +224,17 @@
     Class populationClass = [[population objectAtIndex:0] class];
     
     if ((populationSize > 1) && [populationClass conformsToProtocol:@protocol(Archivable)]) {
+        //Sort array smallest to largest
+        population = (NSMutableArray*)[population sortedArrayUsingComparator:^NSComparisonResult(id objA, id objB) {
+            NSNumber* fitnessA = [NSNumber numberWithFloat:[objA fitness]];
+            NSNumber* fitnessB = [NSNumber numberWithFloat:[objB fitness]];
+            return [fitnessA compare:fitnessB];
+        }];
+        
         //Elitism
-        //Allocate a whole new individual.
-        id bestIndividual = [[populationClass alloc] init];
+        id bestIndividual;
         if(elitism) {
-            //Get the best individual in the population and make sure it is preserved in the next generation.
-            int mostTags = -1;
-            for(id individual in population) {
-                //If this individual is better than the best so far, then update the elite individual.
-                if([individual fitness] > mostTags) {
-                    mostTags = [individual fitness];
-                    //Copy the best individual's parameters.
-                    [bestIndividual setParameters:[individual getParameters]];
-                }
-            }
+            bestIndividual = [population objectAtIndex:(populationSize - 1)];
         }
         
         //Create new population of children
@@ -228,7 +245,17 @@
             [children addObject:child];
             
             //Selection
-            NSMutableArray* parents = [self tournamentSelectionOn:population];
+            NSMutableArray* parents;
+            switch (selectionOperator) {
+                case TournamentSelectionId:
+                    parents = [self tournamentSelectionOn:population];
+                    break;
+                case RankBasedElitistSelectionId:
+                    parents = [self rankBasedElististSelectionOn:population withCutoff:0.5];
+                    break;
+                default:
+                    break;
+            }
             
             //Crossover
             if(randomFloat(1.0) < crossoverRate) {
@@ -249,7 +276,8 @@
             }
             else {
                 //Otherwise the child will just be a copy of one of the parents
-                [child setParameters:[[parents objectAtIndex:0] getParameters]];
+                id parent = [parents objectAtIndex:randomInt((int)[parents count])];
+                [child setParameters:[parent getParameters]];
             }
             
             //Random mutations
@@ -269,8 +297,7 @@
                                 return [self decreasingVarianceMutationForParameter:value atGeneration:generation:maxGenerations:maxVariance:minVariance];
                             }
                             case FixedVarMutId: {
-                                float sigma = 0.05;
-                                return [self fixedVarianceMutationForParameter:value :sigma];
+                                return [self fixedVarianceMutationForParameter:value :fixedVarianceSigma];
                             }
                             default: {
                                 NSLog(@"Mutation parameter undefined.");

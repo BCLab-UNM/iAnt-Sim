@@ -212,7 +212,9 @@ using namespace cv;
             
             for(int tick = 0; tick < tickCount; tick++) {
                 
-                [self stateTransition:robots inTeam:team atTick:tick onGrid:grid withPheromones:pheromones clusters:clusters regions:regions unexploredRegions:unexploredRegions];
+                int tagsFound = [self stateTransition:robots inTeam:team atTick:tick onGrid:grid withPheromones:pheromones clusters:clusters regions:regions unexploredRegions:unexploredRegions];
+                
+                [team setFitness:[team fitness] + tagsFound];
             
                 if(tickRate != 0.f){[NSThread sleepForTimeInterval:tickRate];}
                 if(viewDelegate != nil) {
@@ -229,11 +231,13 @@ using namespace cv;
 /*
  * State transition case statement for robots using central-place foraging algorithm
  */
--(void) stateTransition:(NSMutableArray*)robots inTeam:(Team*)team atTick:(int)tick onGrid:(Array2D*)grid
+-(int) stateTransition:(NSMutableArray*)robots inTeam:(Team*)team atTick:(int)tick onGrid:(Array2D*)grid
          withPheromones:(NSMutableArray*)pheromones
                clusters:(NSMutableArray*)clusters
                 regions:(NSMutableArray*)regions
       unexploredRegions:(NSMutableArray*)unexploredRegions {
+    
+    int tagsFound = 0;
     
     for (Robot* robot in robots) {
         switch([robot status]) {
@@ -465,7 +469,7 @@ using namespace cv;
                             
                             [team setExplorePhase:NO];
                             
-                            //                                        numberOfClusterings++;
+                            //numberOfClusterings++;
                             
                             NSPoint origin;
                             origin.x = 0;
@@ -481,7 +485,7 @@ using namespace cv;
                         Tag* foundTag = nil;
                         if ([[robot discoveredTags] count] > 0) {
                             foundTag = [[robot discoveredTags] objectAtIndex:0];
-                            [team setFitness:[team fitness] + 1];
+                            tagsFound++;
                         }
                         
                         //Add (perturbed) tag position to global pheromone array if using centralized pheromones
@@ -592,6 +596,8 @@ using namespace cv;
             }
         }
     }
+    
+    return tagsFound;
 }
 
 /*

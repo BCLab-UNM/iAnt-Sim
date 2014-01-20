@@ -32,7 +32,7 @@
 
 -(NSMutableArray*) run;
 -(void) evaluateTeams:(NSMutableArray*)teams onGrid:(Array2D*)grid;
--(void) stateTransition:(NSMutableArray*)robots inTeam:(Team*)team atTick:(int)tick onGrid:(Array2D*)grid
+-(int) stateTransition:(NSMutableArray*)robots inTeam:(Team*)team atTick:(int)tick onGrid:(Array2D*)grid
          withPheromones:(NSMutableArray*)pheromones
                clusters:(NSMutableArray*)clusters
                 regions:(NSMutableArray*)regions

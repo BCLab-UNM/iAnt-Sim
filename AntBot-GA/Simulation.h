@@ -39,7 +39,6 @@
       unexploredRegions:(NSMutableArray*)unexploredRegions;
 -(NSMutableArray*) evaluateTeam:(Team*)team onGrid:(Array2D*)grid;
 -(void) initDistributionForArray:(Array2D*)grid;
--(NSPoint) getPheromone:(NSMutableArray*)pheromones atTick:(int)tick withDecayRate:(float)decayRate;
 
 @property (readonly, nonatomic) Team* averageTeam;
 @property (readonly, nonatomic) Team* bestTeam;

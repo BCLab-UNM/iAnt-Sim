@@ -219,7 +219,7 @@ using namespace cv;
                 if(tickRate != 0.f){[NSThread sleepForTimeInterval:tickRate];}
                 if(viewDelegate != nil) {
                     if([viewDelegate respondsToSelector:@selector(updateDisplayWindowWithRobots:team:grid:pheromones:regions:clusters:)]) {
-                        [self getPheromone:pheromones atTick:tick withDecayRate:team.pheromoneDecayRate];
+                        [Pheromone getPheromone:pheromones atTick:tick];
                         [viewDelegate updateDisplayWindowWithRobots:[robots copy] team:team grid:[grid copy] pheromones:[pheromones copy] regions:[unexploredRegions copy] clusters:[clusters copy]];
                     }
                 }
@@ -459,7 +459,7 @@ using namespace cv;
                             //Iterate through clusters
                             for(int i = 0; i < em.get<int>("nclusters"); i++) {
                                 //Create pheromone at centroid location
-                                Pheromone* p = [[Pheromone alloc] initWithPosition:NSMakePoint(means.at<double>(i,0), means.at<double>(i,1)) weight:1 - covDeterminants[i]/determinantSum andUpdatedTick:tick];
+                                Pheromone* p = [[Pheromone alloc] initWithPosition:NSMakePoint(means.at<double>(i,0), means.at<double>(i,1)) weight:1 - covDeterminants[i]/determinantSum decayRate:[team pheromoneDecayRate] andUpdatedTick:tick];
                                 [pheromones addObject:p];
                             }
                             
@@ -492,14 +492,14 @@ using namespace cv;
                         //Use of *decentralized pheromones* guarantees that the pheromones array will always be empty, which means robots will only be recruited from the nest when using *centralized pheromones*
                         if (foundTag && !decentralizedPheromones &&
                             (randomFloat(1.) < poissonCDF([[robot discoveredTags] count], [team pheromoneLayingRate]))) {
-                            Pheromone* p = [[Pheromone alloc] initWithPosition:[foundTag position] weight:1. andUpdatedTick:tick];
+                            Pheromone* p = [[Pheromone alloc] initWithPosition:[foundTag position] weight:1. decayRate:[team pheromoneDecayRate] andUpdatedTick:tick];
                             [pheromones addObject:p];
                         }
                         
                         
                         //Set required local variables
                         BOOL siteFidelityFlag = randomFloat(1.) < poissonCDF([[robot discoveredTags] count], [team siteFidelityRate]);
-                        NSPoint pheromone = [self getPheromone:pheromones atTick:tick withDecayRate:[team pheromoneDecayRate]];
+                        NSPoint pheromone = [Pheromone getPheromone:pheromones atTick:tick];
                         
                         //If a tag was found, decide whether to return to its location
                         if(foundTag && siteFidelityFlag) {
@@ -750,35 +750,6 @@ using namespace cv;
             }
         }
     }
-}
-
-
-/*
- * Picks a pheromone out of the passed list based on a random number weighted on the pheromone strengths.
- * This might work better in Team.m, as we're passing a lot of Team related stuff.
- */
--(NSPoint) getPheromone:(NSMutableArray*)pheromones atTick:(int)tick withDecayRate:(float)decayRate {
-    float nSum = 0.f;
-    
-    for(int i = 0; i < [pheromones count]; i++) {
-        Pheromone* pheromone = [pheromones objectAtIndex:i];
-        pheromone.n = exponentialDecay(pheromone.n, tick - pheromone.updated, decayRate);
-        if(pheromone.n < .001){[pheromones removeObjectAtIndex:i]; i--;}
-        else {
-            pheromone.updated = tick;
-            nSum += pheromone.n;
-        }
-    }
-    
-    float r = randomFloat(nSum);
-    for(Pheromone* pheromone in pheromones) {
-        if(r < pheromone.n) {
-            return [pheromone position];
-        }
-        r -= pheromone.n;
-    }
-    
-    return NSNullPoint;
 }
 
 /*

@@ -4,7 +4,7 @@
 
 @synthesize travelGiveUpProbability, searchGiveUpProbability;
 @synthesize uninformedSearchCorrelation, informedSearchCorrelationDecayRate, stepSizeVariation;
-@synthesize pheromoneDecayRate, pheromoneLayingRate, siteFidelityRate;
+@synthesize pheromoneDecayRate, pheromoneLayingRate, siteFidelityRate, decompositionAllocProbability;
 @synthesize fitness, explorePhase;
 
 -(id) initRandom {
@@ -13,6 +13,7 @@
         
         travelGiveUpProbability = randomFloat(1.0);
         searchGiveUpProbability = randomFloat(1.0);
+        decompositionAllocProbability = randomFloat(1.);
         
         uninformedSearchCorrelation = randomFloat(2 * M_2PI);
         informedSearchCorrelationDecayRate = randomExponential(5.0);
@@ -50,7 +51,8 @@
              [NSNumber numberWithFloat:informedSearchCorrelationDecayRate],
              [NSNumber numberWithFloat:stepSizeVariation],
              [NSNumber numberWithFloat:pheromoneLayingRate],
-             [NSNumber numberWithFloat:siteFidelityRate], nil] forKeys:
+             [NSNumber numberWithFloat:siteFidelityRate],
+             [NSNumber numberWithFloat:decompositionAllocProbability], nil] forKeys:
             [NSArray arrayWithObjects:
              @"pheromoneDecayRate",
              @"travelGiveUpProbability",
@@ -59,7 +61,8 @@
              @"informedSearchCorrelationDecayRate",
              @"stepSizeVariation",
              @"pheromoneLayingRate",
-             @"siteFidelityRate", nil]];
+             @"siteFidelityRate",
+             @"decompositionAllocProbability", nil]];
 }
 
 -(void) setParameters:(NSDictionary *)parameters {
@@ -74,13 +77,15 @@
     
     pheromoneLayingRate = [[parameters objectForKey:@"pheromoneLayingRate"] floatValue];
     siteFidelityRate = [[parameters objectForKey:@"siteFidelityRate"] floatValue];
+    decompositionAllocProbability = [[parameters objectForKey:@"siteFidelityRate"] floatValue];
 }
 
 -(void) writeParametersToFile:(NSString *)file {
-    [Utilities appendText:[NSString stringWithFormat:@"%f,%f,%f,%f,%f,%f,%f,%f,%f\n",
+    [Utilities appendText:[NSString stringWithFormat:@"%f,%f,%f,%f,%f,%f,%f,%f,%f,%f\n",
                            [self pheromoneDecayRate],
                            [self travelGiveUpProbability],
                            [self searchGiveUpProbability],
+                           [self decompositionAllocProbability],
                            [self uninformedSearchCorrelation],
                            [self informedSearchCorrelationDecayRate],
                            [self stepSizeVariation],
@@ -92,10 +97,11 @@
 
 
 +(void) writeParameterNamesToFile:(NSString *)file {
-    NSString* headers = [NSString stringWithFormat:@"%@,%@,%@,%@,%@,%@,%@,%@,%@\n",
+    NSString* headers = [NSString stringWithFormat:@"%@,%@,%@,%@,%@,%@,%@,%@,%@,%@\n",
                          @"pheromoneDecayRate",
                          @"travelGiveUpProbability",
                          @"searchGiveUpProbability",
+                         @"decompositionAllocProbability",
                          @"uninformedSearchCorrelation",
                          @"informedSearchCorrelationDecayRate",
                          @"stepSizeVariation",

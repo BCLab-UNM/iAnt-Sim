@@ -10,6 +10,7 @@
 //Behavior parameters:
 @property (nonatomic) float travelGiveUpProbability;
 @property (nonatomic) float searchGiveUpProbability;
+@property (nonatomic) float decompositionAllocProbability;
 
 //Random walk parameters:
 @property (nonatomic) float uninformedSearchCorrelation;

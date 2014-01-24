@@ -499,6 +499,7 @@ using namespace cv;
                         
                         //Set required local variables
                         BOOL siteFidelityFlag = randomFloat(1.) < poissonCDF([[robot discoveredTags] count], [team siteFidelityRate]);
+                        BOOL decompositionAllocFlag = randomFloat(1.) > [team decompositionAllocProbability];
                         NSPoint pheromone = [Pheromone getPheromone:pheromones atTick:tick];
                         
                         //If a tag was found, decide whether to return to its location
@@ -521,7 +522,7 @@ using namespace cv;
                             [robot setInformed:ROBOT_INFORMED_PHEROMONE];
                         }
                         
-                        else if([unexploredRegions count] > 0) {
+                        else if(([unexploredRegions count] > 0) && decompositionAllocFlag) {
                             int regionChoice = arc4random() % [unexploredRegions count];
                             QuadTree* tree = [unexploredRegions objectAtIndex:regionChoice];
                             NSPoint target;

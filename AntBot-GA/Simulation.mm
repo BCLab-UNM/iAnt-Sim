@@ -201,7 +201,7 @@ using namespace cv;
             for(Robot* robot in robots) {
                 [robot reset];
                 if (variableStepSize) {
-                    [robot setStepSize:(int)floor(randomLogNormal(0, [team stepSizeVariation])) + 1];
+                    [robot setStepSize:(int)round(randomLogNormal(0, [team stepSizeVariation]))];
                 }
             }
             
@@ -550,6 +550,7 @@ using namespace cv;
             case ROBOT_STATUS_EXPLORING: {
                 if (tick >= exploreTime) {
                     robot.status = ROBOT_STATUS_RETURNING;
+                    [robot setStepSize:(variableStepSize ? (int)round(randomLogNormal(0, team.stepSizeVariation)) : 1)];
                     [robot setTarget:nest];
                     break;
                 }
@@ -571,7 +572,7 @@ using namespace cv;
                 [robot moveWithin:gridSize];
                 
                 if(stepsRemaining <= 1) {
-                    [robot setStepSize:(int)round(randomLogNormal(0, team.stepSizeVariation))];
+                    [robot setStepSize:(int)round(randomLogNormal(0, [team stepSizeVariation]))];
                     [robot turn:TRUE withParameters:team];
                     [robot setLastTurned:(tick + robot.delay + 1)];
                 }

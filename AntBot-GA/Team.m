@@ -13,7 +13,7 @@
         
         travelGiveUpProbability = randomFloat(1.0);
         searchGiveUpProbability = randomFloat(1.0);
-        decompositionAllocProbability = randomFloat(1.);
+        decompositionAllocProbability = randomFloat(1.0);
         
         uninformedSearchCorrelation = randomFloat(2 * M_2PI);
         informedSearchCorrelationDecayRate = randomExponential(5.0);
@@ -47,22 +47,22 @@
              [NSNumber numberWithFloat:pheromoneDecayRate],
              [NSNumber numberWithFloat:travelGiveUpProbability],
              [NSNumber numberWithFloat:searchGiveUpProbability],
+             [NSNumber numberWithFloat:decompositionAllocProbability],
              [NSNumber numberWithFloat:uninformedSearchCorrelation],
              [NSNumber numberWithFloat:informedSearchCorrelationDecayRate],
              [NSNumber numberWithFloat:stepSizeVariation],
              [NSNumber numberWithFloat:pheromoneLayingRate],
-             [NSNumber numberWithFloat:siteFidelityRate],
-             [NSNumber numberWithFloat:decompositionAllocProbability], nil] forKeys:
+             [NSNumber numberWithFloat:siteFidelityRate], nil] forKeys:
             [NSArray arrayWithObjects:
              @"pheromoneDecayRate",
              @"travelGiveUpProbability",
              @"searchGiveUpProbability",
+             @"decompositionAllocProbability",
              @"uninformedSearchCorrelation",
              @"informedSearchCorrelationDecayRate",
              @"stepSizeVariation",
              @"pheromoneLayingRate",
-             @"siteFidelityRate",
-             @"decompositionAllocProbability", nil]];
+             @"siteFidelityRate", nil]];
 }
 
 -(void) setParameters:(NSDictionary *)parameters {
@@ -70,6 +70,7 @@
     
     travelGiveUpProbability = [[parameters objectForKey:@"travelGiveUpProbability"] floatValue];
     searchGiveUpProbability = [[parameters objectForKey:@"searchGiveUpProbability"] floatValue];
+    decompositionAllocProbability = [[parameters objectForKey:@"decompositionAllocProbability"] floatValue];
     
     uninformedSearchCorrelation = [[parameters objectForKey:@"uninformedSearchCorrelation"] floatValue];
     informedSearchCorrelationDecayRate = [[parameters objectForKey:@"informedSearchCorrelationDecayRate"] floatValue];
@@ -77,7 +78,6 @@
     
     pheromoneLayingRate = [[parameters objectForKey:@"pheromoneLayingRate"] floatValue];
     siteFidelityRate = [[parameters objectForKey:@"siteFidelityRate"] floatValue];
-    decompositionAllocProbability = [[parameters objectForKey:@"siteFidelityRate"] floatValue];
 }
 
 -(void) writeParametersToFile:(NSString *)file {

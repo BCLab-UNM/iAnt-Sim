@@ -8,6 +8,18 @@
 @synthesize tagDetectionProbability, neighborDetectionProbability;
 @synthesize fitness;
 
+-(id)init {
+    if (self = [super init]) {
+        localizationSlope = NSMakePoint(0., 0.);
+        localizationIntercept = NSMakePoint(0., 0.);
+        travelingSlope = NSMakePoint(0., 0.);
+        travelingIntercept = NSMakePoint(0., 0.);
+        tagDetectionProbability = 1;
+        neighborDetectionProbability = 1;
+    }
+    return self;
+}
+
 -(id)initRandom {
     if (self = [super init]) {
         localizationSlope = NSMakePoint(randomFloatRange(-1, 1), randomFloatRange(-1, 1));
@@ -16,6 +28,18 @@
         travelingIntercept = NSMakePoint(randomFloat(500), randomFloat(500));
         tagDetectionProbability = randomFloat(1);
         neighborDetectionProbability = randomFloat(1);
+    }
+    return self;
+}
+
+-(id)initObserved {
+    if (self = [super init]) {
+        localizationSlope = NSMakePoint(0.164, 0.166);
+        localizationIntercept = NSMakePoint(-15.3, -16.1);
+        travelingSlope = NSMakePoint(0.045, 0.173);
+        travelingIntercept = NSMakePoint(9.32, -13.9);
+        tagDetectionProbability = 0.55;
+        neighborDetectionProbability = 0.43;
     }
     return self;
 }

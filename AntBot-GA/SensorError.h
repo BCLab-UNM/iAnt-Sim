@@ -5,6 +5,7 @@
 @interface SensorError : NSObject <Archivable>
 
 -(id)initRandom;
+-(id)initObserved;
 
 -(NSPoint) perturbTagPosition:(NSPoint)position withGridSize:(NSSize)size andGridCenter:(NSPoint)center;
 -(NSPoint) perturbTargetPosition:(NSPoint)position withGridSize:(NSSize)size andGridCenter:(NSPoint)center;

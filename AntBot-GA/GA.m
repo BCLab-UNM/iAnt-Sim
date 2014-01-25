@@ -13,7 +13,7 @@
 -(void)twoPointCrossoverFromParents:(NSMutableArray*)parents toChild:(Team *)child;
 
 //Mutation
--(float)valueDependentVarianceMutationForParameter:(float)parameter atGeneration:(int)generation;
+-(float)valueDependentVarianceMutationForParameter:(float)parameter;
 -(float)fixedVarianceMutationForParameter:(float)parameter :(float)sigma;
 -(float)decreasingVarianceMutationForParameter:(float)parameter atGeneration:(int)generation :(int)maxGenerations :(float)maxVariance :(float)minVariance;
 
@@ -177,7 +177,7 @@
 /*
  * Gaussian mutation with variance based on value to be mutated.
  */
--(float)valueDependentVarianceMutationForParameter:(float)parameter atGeneration:(int)generation {
+-(float)valueDependentVarianceMutationForParameter:(float)parameter {
     //calculate the variance. Larger values will have more variance!
     float sigma = fabs(parameter) * .05;
     //add a random amount sampled from a normal distribution centered at zero.
@@ -289,7 +289,7 @@
                     float (^mutateParameter)(float) = ^float(float value) {
                         switch (mutationOperator) {
                             case ValueDependentVarMutId: {
-                                return [self valueDependentVarianceMutationForParameter:value atGeneration:generation];
+                                return [self valueDependentVarianceMutationForParameter:value];
                             }
                             case DecreasingVarMutId: {
                                 float maxVariance = 0.1;

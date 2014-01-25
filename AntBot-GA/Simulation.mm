@@ -23,7 +23,7 @@ using namespace cv;
 @synthesize variableStepSize, uniformDirection, adaptiveWalk;
 @synthesize decentralizedPheromones, wirelessRange;
 @synthesize parameterFile;
-@synthesize error;
+@synthesize error, observedError;
 @synthesize delegate, viewDelegate;
 @synthesize tickRate;
 
@@ -63,13 +63,7 @@ using namespace cv;
         
         parameterFile = nil;
         
-        error = [[SensorError alloc] init];
-        [error setLocalizationSlope:NSMakePoint(0.164, 0.166)];
-        [error setLocalizationIntercept:NSMakePoint(-15.3, -16.1)];
-        [error setTravelingSlope:NSMakePoint(0.045, 0.173)];
-        [error setTravelingIntercept:NSMakePoint(9.32, -13.9)];
-        [error setTagDetectionProbability:0.55];
-        [error setNeighborDetectionProbability:0.43];
+        observedError = YES;
     }
     return self;
 }
@@ -90,6 +84,14 @@ using namespace cv;
         else {
             [teams addObject:[[Team alloc] initRandom]];
         }
+    }
+    
+    //Allocate and initialize error model
+    if (observedError) {
+        error = [[SensorError alloc] initObserved];
+    }
+    else {
+        error = [[SensorError alloc] init];
     }
     
     //Initialize average and best teams

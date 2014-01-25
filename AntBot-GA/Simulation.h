@@ -44,6 +44,7 @@
 @property (readonly, nonatomic) Team* bestTeam;
 
 @property (nonatomic) SensorError* error;
+@property (nonatomic) BOOL observedError;
 
 @property (nonatomic) int teamCount;
 @property (nonatomic) int generationCount;

@@ -33,7 +33,7 @@ int simTime;
     if(self = [super init]) {
         teamCount = 100;
         generationCount = 100;
-        robotCount = 6;
+        robotCount = 1;
         tagCount = 256;
         evaluationCount = 8;
         evaluationLimit = -1;
@@ -292,6 +292,9 @@ int simTime;
                 }
                 
                 [robot moveWithin:gridSize];
+                
+                [robot dischargeBattery:tick];
+                
                 break;
             }
                 
@@ -342,6 +345,8 @@ int simTime;
                 
                 //Move one cell
                 [robot moveWithin:gridSize];
+                
+                [robot dischargeBattery:tick];
                 
                 //Turn
                 if(stepsRemaining <= 1) {
@@ -399,6 +404,25 @@ int simTime;
                 [robot setLastMoved:tick];
                 break;
             }
+                
+                /*
+                 The robot has returned to the nest for battery charging
+                 */
+            case ROBOT_STATUS_CHARGING:
+                
+                if(randomFloat(1.0) < rayleighCDF(robot.batteryLevel, team.chargeActiveSigma, 0.0)){
+                    
+                    //printf("CHARGE SIGMA   %f\n", team.chargeActiveSigma);
+                    robot.status = ROBOT_STATUS_DEPARTING;
+                    break;
+                    
+                } else {
+                    
+                    //printf("CHARGING ");
+                    [robot chargeBattery];
+                    break;
+                    
+                }
                 
                 /*
                  * The robot is on its way back to the nest.

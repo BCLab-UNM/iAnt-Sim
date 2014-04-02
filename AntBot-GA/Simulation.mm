@@ -35,7 +35,7 @@ int simTime;
         generationCount = 100;
         robotCount = 1;
         tagCount = 256;
-        evaluationCount = 8;
+        evaluationCount = 1;
         evaluationLimit = -1;
         tickCount = 7200;
         simTime = tickCount;
@@ -246,9 +246,11 @@ int simTime;
     
     for (Robot* robot in robots) {
         
+        //////////////POWER STUFF///////////////
         if(robot.isDead == TRUE){           // IF YOU REMOVE DEAD ROBOT FROM ARRAY, ALL HELL BREAKS LOOSE SO JUST DONT ALLOW MOVEMENT
             continue;
         }
+        //////////////POWER STUFF///////////////
         
         switch([robot status]) {
                 
@@ -298,7 +300,9 @@ int simTime;
                 
                 [robot moveWithin:gridSize];
                 
+                //////////////POWER STUFF///////////////
                 [robot dischargeBattery:tick];
+                //////////////POWER STUFF///////////////
                 
                 break;
             }
@@ -316,6 +320,18 @@ int simTime;
                     break;
                 }
                 [robot setDelay:0];
+                
+                //////////////POWER STUFF///////////////
+                if(randomFloat(1.0) < rayleighCDF((1 - robot.batteryLevel), team.powerReturnSigma, team.powerReturnShift)){
+                    
+                    //printf("SIGMA   %f    SHIFT   %f\n", team.powerReturnSigma, team.powerReturnShift);
+                    [robot setTarget:nest];
+                    robot.needsCharging = true;
+                    robot.status = ROBOT_STATUS_RETURNING;
+                    break;
+                    
+                }
+                //////////////POWER STUFF///////////////
                 
                 //Probabilistically give up searching and return to the nest
                 if(randomFloat(1.) < [team searchGiveUpProbability]) {
@@ -351,7 +367,9 @@ int simTime;
                 //Move one cell
                 [robot moveWithin:gridSize];
                 
+                //////////////POWER STUFF///////////////
                 [robot dischargeBattery:tick];
+                //////////////POWER STUFF///////////////
                 
                 //Turn
                 if(stepsRemaining <= 1) {
@@ -410,6 +428,7 @@ int simTime;
                 break;
             }
                 
+                //////////////POWER STUFF///////////////
                 /*
                  The robot has returned to the nest for battery charging
                  */
@@ -428,6 +447,7 @@ int simTime;
                     break;
                     
                 }
+                //////////////POWER STUFF///////////////
                 
                 /*
                  * The robot is on its way back to the nest.
@@ -575,7 +595,20 @@ int simTime;
                         
                         [robot setDiscoveredTags:nil];
                         [robot setSearchTime:0];
-                        [robot setStatus:ROBOT_STATUS_DEPARTING];
+                        
+                        //////////////POWER STUFF///////////////
+                        if(robot.needsCharging){
+                            
+                            printf("STATUS CHANGED TO CHARGING\n");
+                            robot.status = ROBOT_STATUS_CHARGING;
+                            
+                        } else {
+                            
+                            robot.status = ROBOT_STATUS_DEPARTING;
+                            
+                        }
+                        //////////////POWER STUFF///////////////
+                        
                     }
                 }
                 break;

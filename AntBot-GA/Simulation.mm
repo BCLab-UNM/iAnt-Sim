@@ -245,6 +245,11 @@ int simTime;
     int tagsFound = 0;
     
     for (Robot* robot in robots) {
+        
+        if(robot.isDead == TRUE){           // IF YOU REMOVE DEAD ROBOT FROM ARRAY, ALL HELL BREAKS LOOSE SO JUST DONT ALLOW MOVEMENT
+            continue;
+        }
+        
         switch([robot status]) {
                 
                 /*

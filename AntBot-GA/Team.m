@@ -24,9 +24,11 @@
         pheromoneLayingRate = randomFloat(20.);
         siteFidelityRate = randomFloat(20.);
         
+        //////////////POWER STUFF///////////////
         powerReturnShift = randomFloat(1.0);            // This is positive shift of return probablity curve
         powerReturnSigma = randomFloat(1.0);            // This is the sigma value of return probablity curve
         chargeActiveSigma = randomFloat(1.0);           // This is the sigma value of charge leaving probablity curve
+        //////////////POWER STUFF///////////////
         
         
     }
@@ -60,7 +62,10 @@
              [NSNumber numberWithFloat:informedSearchCorrelationDecayRate],
              [NSNumber numberWithFloat:stepSizeVariation],
              [NSNumber numberWithFloat:pheromoneLayingRate],
-             [NSNumber numberWithFloat:siteFidelityRate], nil] forKeys:
+             [NSNumber numberWithFloat:siteFidelityRate],
+             [NSNumber numberWithFloat:powerReturnShift],
+             [NSNumber numberWithFloat:powerReturnSigma],
+             [NSNumber numberWithFloat:chargeActiveSigma], nil] forKeys:
             [NSArray arrayWithObjects:
              @"pheromoneDecayRate",
              @"travelGiveUpProbability",
@@ -70,7 +75,10 @@
              @"informedSearchCorrelationDecayRate",
              @"stepSizeVariation",
              @"pheromoneLayingRate",
-             @"siteFidelityRate", nil]];
+             @"siteFidelityRate",
+             @"powerReturnShift",
+             @"powerReturnSigma",
+             @"chargeActiveSigma", nil]];
 }
 
 -(void) setParameters:(NSDictionary *)parameters {
@@ -86,10 +94,14 @@
     
     pheromoneLayingRate = [[parameters objectForKey:@"pheromoneLayingRate"] floatValue];
     siteFidelityRate = [[parameters objectForKey:@"siteFidelityRate"] floatValue];
+    
+    powerReturnShift = [[parameters objectForKey:@"powerReturnShift"] floatValue];
+    powerReturnSigma = [[parameters objectForKey:@"powerReturnSigma"] floatValue];
+    chargeActiveSigma = [[parameters objectForKey:@"chargeActiveSigma"] floatValue];
 }
 
 -(void) writeParametersToFile:(NSString *)file {
-    [Utilities appendText:[NSString stringWithFormat:@"%f,%f,%f,%f,%f,%f,%f,%f,%f,%f\n",
+    [Utilities appendText:[NSString stringWithFormat:@"%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f\n",
                            [self pheromoneDecayRate],
                            [self travelGiveUpProbability],
                            [self searchGiveUpProbability],
@@ -99,13 +111,16 @@
                            [self stepSizeVariation],
                            [self pheromoneLayingRate],
                            [self siteFidelityRate],
+                           [self powerReturnShift],
+                           [self powerReturnSigma],
+                           [self chargeActiveSigma],
                            [self fitness]]
                    toFile:file];
 }
 
 
 +(void) writeParameterNamesToFile:(NSString *)file {
-    NSString* headers = [NSString stringWithFormat:@"%@,%@,%@,%@,%@,%@,%@,%@,%@,%@\n",
+    NSString* headers = [NSString stringWithFormat:@"%@,%@,%@,%@,%@,%@,%@,%@,%@,%@,%@,%@,%@\n",
                          @"pheromoneDecayRate",
                          @"travelGiveUpProbability",
                          @"searchGiveUpProbability",
@@ -115,6 +130,9 @@
                          @"stepSizeVariation",
                          @"pheromoneLayingRate",
                          @"siteFidelityRate",
+                         @"powerReturnShift",
+                         @"powerReturnSigma",
+                         @"chargeActiveSigma",
                          @"fitness"];
     [Utilities appendText:headers toFile :file];
 }

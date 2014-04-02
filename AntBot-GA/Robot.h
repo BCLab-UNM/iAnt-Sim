@@ -13,9 +13,13 @@
 #define ROBOT_INFORMED_PHEROMONE 2
 #define ROBOT_INFORMED_DECOMPOSITION 3
 
+
+
 @class Tag;
 
-@interface Robot : NSObject {}
+@interface Robot : NSObject {
+    int dischargeStartTick;
+}
 
 -(void) reset;
 -(void) moveWithin:(NSSize)bounds;
@@ -40,5 +44,21 @@
 @property (nonatomic) NSMutableArray* discoveredTags; //Tags discovered by robot while searching
 
 @property (nonatomic) NSPoint localPheromone; //Buffer to store latest pheromone location received from neighboring robots
+
+
+//////////////POWER STUFF///////////////
+-(void) chargeBattery;
+-(void) dischargeBattery:(int) tick;
+
+@property (nonatomic) float batteryLevel;
+@property (nonatomic, readonly) float batteryDischargeTime;
+@property (nonatomic, readonly) float batteryChargeTime;
+@property (nonatomic, readonly) float batteryDeadPercent;
+@property (nonatomic) BOOL pheremoneOn;
+@property (nonatomic) BOOL atNest;
+@property (nonatomic) BOOL isDead;
+@property (nonatomic) BOOL needsCharging;
+//////////////POWER STUFF///////////////
+
 
 @end

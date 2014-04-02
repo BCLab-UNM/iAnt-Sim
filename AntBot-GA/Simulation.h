@@ -40,6 +40,11 @@
 -(NSMutableArray*) evaluateTeam:(Team*)team onGrid:(Array2D*)grid;
 -(void) initDistributionForArray:(Array2D*)grid;
 
+//////////////POWER STUFF///////////////
++(int) getSimTicks;
+//////////////POWER STUFF///////////////
+
+
 @property (readonly, nonatomic) Team* averageTeam;
 @property (readonly, nonatomic) Team* bestTeam;
 

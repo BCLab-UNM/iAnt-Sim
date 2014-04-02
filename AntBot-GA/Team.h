@@ -22,6 +22,12 @@
 @property (nonatomic) float pheromoneLayingRate;
 @property (nonatomic) float siteFidelityRate;
 
+//////////////POWER STUFF///////////////
+@property (nonatomic) float powerReturnShift;
+@property (nonatomic) float powerReturnSigma;
+@property (nonatomic) float chargeActiveSigma;
+//////////////POWER STUFF///////////////
+
 //Non-evolved variables:
 @property (nonatomic) float fitness;
 @property (nonatomic) BOOL explorePhase; //Flag denoting whether robot team is currently exploring for tags instead of collecting them

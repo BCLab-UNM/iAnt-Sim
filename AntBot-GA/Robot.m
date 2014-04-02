@@ -1,5 +1,6 @@
 #import "Robot.h"
 #import "Utilities.h"
+#import "Simulation.h"
 
 @implementation Robot
 
@@ -8,6 +9,17 @@
 @synthesize direction, searchTime, lastMoved, lastTurned, delay, stepSize;
 @synthesize discoveredTags;
 @synthesize localPheromone;
+
+
+//////////////POWER STUFF///////////////
+@synthesize batteryLevel;
+@synthesize batteryDischargeTime, batteryChargeTime, batteryDeadPercent;
+@synthesize pheremoneOn, atNest, isDead, needsCharging;
+
+const float DISCHARGE_SCALE = 0.03;                         // Constant factors for scaling and shifting logit function to create battery discharge curve
+const float DISCHARGE_VSHIFT = 0.8;
+//////////////POWER STUFF///////////////
+
 
 -(id) init {
     if (self = [super init]) {
@@ -33,6 +45,19 @@
     discoveredTags = [[NSMutableArray alloc] init];
     
     localPheromone = NSNullPoint;
+    
+    //////////////POWER STUFF///////////////
+    batteryLevel = 1.0;                                     // Battery level is a percent - starts at 100% (duh)
+    batteryDischargeTime = [Simulation getSimTicks] * 0.6;                // Time to complete battery discharge is 60% of total sim run time
+    batteryChargeTime = batteryDischargeTime * 2;           // Time to charge battery is 2x the discharge time
+    batteryDeadPercent = 0.65;                              // If battery falls below 65% of full charge robot dies
+    dischargeStartTick = 0;                                 // For calculating battery level as percentage of run time
+    pheremoneOn = FALSE;
+    atNest = TRUE;
+    isDead = FALSE;
+    needsCharging = FALSE;
+    //////////////POWER STUFF///////////////
+    
 }
 
 
@@ -113,5 +138,62 @@
         }
     }
 }
+
+//////////////POWER STUFF///////////////
+
+-(void) chargeBattery {
+    
+    if(batteryLevel > 1.0){
+        
+        //printf("                                   BATTERY FULL\n");
+        return;
+        
+    }
+    
+    if(!isDead){
+        
+        batteryLevel = batteryLevel + ((1 - batteryDeadPercent) / batteryChargeTime);           // Should charge battery at constant rate that is 2x the discharge speed
+        //printf("                                   %f\n", batteryLevel);
+        
+    }
+    
+}
+
+-(void) dischargeBattery:(int) tick {
+    
+    float temp;
+    if(tick != 0){
+        
+        temp = logitFunction(((tick - dischargeStartTick) / batteryDischargeTime), DISCHARGE_SCALE, DISCHARGE_VSHIFT);
+        
+    } else {
+        
+        return;
+        
+    }
+    
+    if(batteryLevel < batteryDeadPercent || isnan(temp) || isinf(temp)){                        // If battery > 65% then robot is now dead due to battery damage
+        
+        isDead = TRUE;
+        //printf("DEAD!!!!!!!!!!!!!!!!!\n");
+        return;
+        
+    }
+    
+    if(!pheremoneOn){
+        
+        batteryLevel = temp;
+        
+    } else {
+        
+        batteryLevel = temp - .001;                                                             // Additional penalty for using pheremone is 0.1% per step
+        
+    }
+    
+    //printf("%f\n", batteryLevel);
+    
+}
+//////////////POWER STUFF///////////////
+
 
 @end

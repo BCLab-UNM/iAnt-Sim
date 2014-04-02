@@ -27,6 +27,8 @@ using namespace cv;
 @synthesize delegate, viewDelegate;
 @synthesize tickRate;
 
+int simTime;
+
 -(id) init {
     if(self = [super init]) {
         teamCount = 100;
@@ -36,6 +38,7 @@ using namespace cv;
         evaluationCount = 8;
         evaluationLimit = -1;
         tickCount = 7200;
+        simTime = tickCount;
         exploreTime = 0;
         
         distributionClustered = 1.;
@@ -909,6 +912,11 @@ using namespace cv;
     //unused
 }
 
+//////////////POWER STUFF///////////////
++(int) getSimTicks {
+    return simTime;
+}
+//////////////POWER STUFF///////////////
 
 
 @end

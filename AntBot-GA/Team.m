@@ -7,6 +7,8 @@
 @synthesize pheromoneDecayRate, pheromoneLayingRate, siteFidelityRate, decompositionAllocProbability;
 @synthesize fitness, explorePhase;
 
+@synthesize powerReturnShift, powerReturnSigma, chargeActiveSigma;
+
 -(id) initRandom {
     if(self = [super init]) {
         pheromoneDecayRate = randomExponential(10.0);
@@ -21,6 +23,12 @@
         
         pheromoneLayingRate = randomFloat(20.);
         siteFidelityRate = randomFloat(20.);
+        
+        powerReturnShift = randomFloat(1.0);            // This is positive shift of return probablity curve
+        powerReturnSigma = randomFloat(1.0);            // This is the sigma value of return probablity curve
+        chargeActiveSigma = randomFloat(1.0);           // This is the sigma value of charge leaving probablity curve
+        
+        
     }
     return self;
 }

@@ -144,3 +144,30 @@ static inline float exponentialCDF(float x, float lambda) {
 static inline float exponentialDecay(float quantity, float time, float lambda) {
     return (quantity * exp(-lambda * time));
 }
+
+
+//////////////POWER STUFF///////////////
+
+/*
+ * New functions for implementing power management sim
+ * See http://en.wikipedia.org/wiki/Rayleigh_distribution for additional info on Rayleigh CDF (sigmoidal curve)
+ * and http://en.wikipedia.org/wiki/Logit for additional info on Logit Function (used for battery discharge curve)
+ */
+static inline float rayleighCDF(float x, float sigma, float shift){
+    
+    if(x < shift){
+        return 0;
+    } else {
+        return 1 - (exp(-((x - shift) * (x - shift)) / (2 * sigma * sigma)));
+    }
+    
+}
+
+static inline float logitFunction(float x, float scale, float vshift){
+    
+    return -((log(x) * scale) - (log(1 - x) * scale)) + vshift;
+    
+}
+
+
+

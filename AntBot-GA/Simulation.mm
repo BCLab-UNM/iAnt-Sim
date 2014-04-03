@@ -225,6 +225,8 @@ int simTime;
                 [team setFitness:[team fitness] + tagsFound];
                 
                 //////////////POWER STUFF///////////////
+                //printf("%d dead      ", [team casualties]);
+                //printf("%f tags\n", [team fitness]);
                 [team setCasualties:[team casualties] + deadCount];
                 //////////////POWER STUFF///////////////
             
@@ -250,13 +252,11 @@ int simTime;
       unexploredRegions:(NSMutableArray*)unexploredRegions {
     
     int tagsFound = 0;
-    deadCount = 0;
     
     for (Robot* robot in robots) {
         
         //////////////POWER STUFF///////////////
         if(robot.isDead == TRUE){           // IF YOU REMOVE DEAD ROBOT FROM ARRAY, ALL HELL BREAKS LOOSE SO JUST DONT ALLOW MOVEMENT
-            deadCount ++;
             continue;
         }
         //////////////POWER STUFF///////////////

@@ -48,7 +48,7 @@ const float DISCHARGE_VSHIFT = 0.8;
     
     //////////////POWER STUFF///////////////
     batteryLevel = 1.0;                                     // Battery level is a percent - starts at 100% (duh)
-    batteryDischargeTime = [Simulation getSimTicks] * 0.6;  // Time to complete battery discharge is 60% of total sim run time
+    batteryDischargeTime = [Simulation getSimTicks] * 0.1;  // Time to complete battery discharge is 10% of total sim run time
     batteryChargeTime = batteryDischargeTime * 2;           // Time to charge battery is 2x the discharge time
     batteryDeadPercent = 0.65;                              // If battery falls below 65% of full charge robot dies
     dischargeStartTick = 0;                                 // For calculating battery level as percentage of run time

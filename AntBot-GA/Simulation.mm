@@ -32,9 +32,9 @@ int simTime;
 
 -(id) init {
     if(self = [super init]) {
-        teamCount = 100;
-        generationCount = 100;
-        robotCount = 6;
+        teamCount = 1;
+        generationCount = 1;
+        robotCount = 10;
         tagCount = 256;
         evaluationCount = 1;
         evaluationLimit = -1;
@@ -70,6 +70,7 @@ int simTime;
         observedError = YES;
         
         deadCount = 0;
+        //tickRate = 0.5;
     }
     return self;
 }
@@ -136,6 +137,9 @@ int simTime;
         
         for(Team* team in teams) {
             [team setFitness:0.];
+            
+            [team setCasualties:0];
+            
             if (exploreTime > 0) {
                 [team setExplorePhase:YES];
             }
@@ -191,9 +195,9 @@ int simTime;
         NSMutableArray* regions = [[NSMutableArray alloc] init];
         NSMutableArray* unexploredRegions = [[NSMutableArray alloc] init];
         NSMutableArray* clusters = [[NSMutableArray alloc] init];
-//        int scheduledClusterings = 2;
-//        int numberOfClusterings = 0;
-//        int reclusteringInterval = tickCount / scheduledClusterings;
+        //        int scheduledClusterings = 2;
+        //        int numberOfClusterings = 0;
+        //        int reclusteringInterval = tickCount / scheduledClusterings;
         for(int i = 0; i < robotCount; i++){[robots addObject:[[Robot alloc] init]];}
         
         for(Team* team in teams) {
@@ -225,11 +229,12 @@ int simTime;
                 [team setFitness:[team fitness] + tagsFound];
                 
                 //////////////POWER STUFF///////////////
-                //printf("%d dead      ", [team casualties]);
-                //printf("%f tags\n", [team fitness]);
-                [team setCasualties:[team casualties] + deadCount];
+                if(tick == tickCount - 1){
+                    [team setCasualties:[team casualties] + deadCount];
+                    //printf("%d dead\n", [team casualties]);
+                }
                 //////////////POWER STUFF///////////////
-            
+                
                 if(tickRate != 0.f){[NSThread sleepForTimeInterval:tickRate];}
                 if(viewDelegate != nil) {
                     if([viewDelegate respondsToSelector:@selector(updateDisplayWindowWithRobots:team:grid:pheromones:regions:clusters:)]) {
@@ -246,10 +251,10 @@ int simTime;
  * State transition case statement for robots using central-place foraging algorithm
  */
 -(int) stateTransition:(NSMutableArray*)robots inTeam:(Team*)team atTick:(int)tick onGrid:(Array2D*)grid
-         withPheromones:(NSMutableArray*)pheromones
-               clusters:(NSMutableArray*)clusters
-                regions:(NSMutableArray*)regions
-      unexploredRegions:(NSMutableArray*)unexploredRegions {
+        withPheromones:(NSMutableArray*)pheromones
+              clusters:(NSMutableArray*)clusters
+               regions:(NSMutableArray*)regions
+     unexploredRegions:(NSMutableArray*)unexploredRegions {
     
     int tagsFound = 0;
     
@@ -257,6 +262,10 @@ int simTime;
         
         //////////////POWER STUFF///////////////
         if(robot.isDead == TRUE){           // IF YOU REMOVE DEAD ROBOT FROM ARRAY, ALL HELL BREAKS LOOSE SO JUST DONT ALLOW MOVEMENT
+            if(deadCount < robotCount){
+                printf("                                   DEAD ROBOT\n");
+                deadCount ++;
+            }
             continue;
         }
         //////////////POWER STUFF///////////////
@@ -674,7 +683,7 @@ int simTime;
             }
         }
     }
-        
+    
     return tagsFound;
 }
 
@@ -737,10 +746,10 @@ int simTime;
             aggregate.at<double>(counter, 1) = [tag position].y;
             counter++;
         }
-
+        
         //Train EM
         em.train(aggregate);
-
+        
         [totalFoundTags removeAllObjects];
     }
     
@@ -882,62 +891,62 @@ int simTime;
  */
 -(NSMutableDictionary*) getParameters {
     NSMutableDictionary* parameters = [[NSMutableDictionary alloc] initWithObjects:
-            [NSArray arrayWithObjects:
-             [NSNumber numberWithInt:teamCount],
-             [NSNumber numberWithInt:generationCount],
-             [NSNumber numberWithInt:robotCount],
-             [NSNumber numberWithInt:tagCount],
-             [NSNumber numberWithInt:evaluationCount],
-             [NSNumber numberWithInt:tickCount],
-             [NSNumber numberWithInt:exploreTime],
-             
-             [NSNumber numberWithFloat:distributionRandom],
-             [NSNumber numberWithFloat:distributionPowerlaw],
-             [NSNumber numberWithFloat:distributionClustered],
-             
-             [NSNumber numberWithInt:pileRadius],
-             
-             [NSNumber numberWithFloat:crossoverRate],
-             [NSNumber numberWithFloat:mutationRate],
-             [NSNumber numberWithBool:elitism],
-
-             NSStringFromSize(gridSize),
-             NSStringFromPoint(nest),
-             
-             [NSNumber numberWithBool:variableStepSize],
-             [NSNumber numberWithBool:uniformDirection],
-             [NSNumber numberWithBool:adaptiveWalk],
-             
-             [NSNumber numberWithBool:decentralizedPheromones],
-             [NSNumber numberWithInt:wirelessRange], nil] forKeys:
-            [NSArray arrayWithObjects:
-             @"teamCount",
-             @"generationCount",
-             @"robotCount",
-             @"tagCount",
-             @"evaluationCount",
-             @"tickCount",
-             @"exploreTime",
-             
-             @"distributionRandom",
-             @"distributionPowerlaw",
-             @"distributionClustered",
-             
-             @"pileRadius",
-             
-             @"crossoverRate",
-             @"mutationRate",
-             @"elitism",
-             
-             @"gridSize",
-             @"nest",
-             
-             @"variableStepSize",
-             @"uniformDirection",
-             @"adaptiveWalk",
-             
-             @"decentralizedPheromones",
-             @"wirelessRange", nil]];
+                                       [NSArray arrayWithObjects:
+                                        [NSNumber numberWithInt:teamCount],
+                                        [NSNumber numberWithInt:generationCount],
+                                        [NSNumber numberWithInt:robotCount],
+                                        [NSNumber numberWithInt:tagCount],
+                                        [NSNumber numberWithInt:evaluationCount],
+                                        [NSNumber numberWithInt:tickCount],
+                                        [NSNumber numberWithInt:exploreTime],
+                                        
+                                        [NSNumber numberWithFloat:distributionRandom],
+                                        [NSNumber numberWithFloat:distributionPowerlaw],
+                                        [NSNumber numberWithFloat:distributionClustered],
+                                        
+                                        [NSNumber numberWithInt:pileRadius],
+                                        
+                                        [NSNumber numberWithFloat:crossoverRate],
+                                        [NSNumber numberWithFloat:mutationRate],
+                                        [NSNumber numberWithBool:elitism],
+                                        
+                                        NSStringFromSize(gridSize),
+                                        NSStringFromPoint(nest),
+                                        
+                                        [NSNumber numberWithBool:variableStepSize],
+                                        [NSNumber numberWithBool:uniformDirection],
+                                        [NSNumber numberWithBool:adaptiveWalk],
+                                        
+                                        [NSNumber numberWithBool:decentralizedPheromones],
+                                        [NSNumber numberWithInt:wirelessRange], nil] forKeys:
+                                       [NSArray arrayWithObjects:
+                                        @"teamCount",
+                                        @"generationCount",
+                                        @"robotCount",
+                                        @"tagCount",
+                                        @"evaluationCount",
+                                        @"tickCount",
+                                        @"exploreTime",
+                                        
+                                        @"distributionRandom",
+                                        @"distributionPowerlaw",
+                                        @"distributionClustered",
+                                        
+                                        @"pileRadius",
+                                        
+                                        @"crossoverRate",
+                                        @"mutationRate",
+                                        @"elitism",
+                                        
+                                        @"gridSize",
+                                        @"nest",
+                                        
+                                        @"variableStepSize",
+                                        @"uniformDirection",
+                                        @"adaptiveWalk",
+                                        
+                                        @"decentralizedPheromones",
+                                        @"wirelessRange", nil]];
     
     return parameters;
 }

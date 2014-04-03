@@ -28,12 +28,13 @@ using namespace cv;
 @synthesize tickRate;
 
 int simTime;
+@synthesize deadCount;
 
 -(id) init {
     if(self = [super init]) {
         teamCount = 100;
         generationCount = 100;
-        robotCount = 1;
+        robotCount = 6;
         tagCount = 256;
         evaluationCount = 1;
         evaluationLimit = -1;
@@ -67,6 +68,8 @@ int simTime;
         parameterFile = nil;
         
         observedError = YES;
+        
+        deadCount = 0;
     }
     return self;
 }
@@ -220,6 +223,10 @@ int simTime;
                 int tagsFound = [self stateTransition:robots inTeam:team atTick:tick onGrid:grid withPheromones:pheromones clusters:clusters regions:regions unexploredRegions:unexploredRegions];
                 
                 [team setFitness:[team fitness] + tagsFound];
+                
+                //////////////POWER STUFF///////////////
+                [team setCasualties:[team casualties] + deadCount];
+                //////////////POWER STUFF///////////////
             
                 if(tickRate != 0.f){[NSThread sleepForTimeInterval:tickRate];}
                 if(viewDelegate != nil) {
@@ -243,11 +250,13 @@ int simTime;
       unexploredRegions:(NSMutableArray*)unexploredRegions {
     
     int tagsFound = 0;
+    deadCount = 0;
     
     for (Robot* robot in robots) {
         
         //////////////POWER STUFF///////////////
         if(robot.isDead == TRUE){           // IF YOU REMOVE DEAD ROBOT FROM ARRAY, ALL HELL BREAKS LOOSE SO JUST DONT ALLOW MOVEMENT
+            deadCount ++;
             continue;
         }
         //////////////POWER STUFF///////////////
@@ -599,7 +608,7 @@ int simTime;
                         //////////////POWER STUFF///////////////
                         if(robot.needsCharging){
                             
-                            printf("STATUS CHANGED TO CHARGING\n");
+                            //printf("STATUS CHANGED TO CHARGING\n");
                             robot.status = ROBOT_STATUS_CHARGING;
                             
                         } else {
@@ -665,7 +674,7 @@ int simTime;
             }
         }
     }
-    
+        
     return tagsFound;
 }
 

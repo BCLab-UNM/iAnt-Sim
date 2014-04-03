@@ -26,6 +26,7 @@
 @property (nonatomic) float powerReturnShift;
 @property (nonatomic) float powerReturnSigma;
 @property (nonatomic) float chargeActiveSigma;
+@property (nonatomic) int casualties;
 //////////////POWER STUFF///////////////
 
 //Non-evolved variables:

@@ -7,7 +7,10 @@
 @synthesize pheromoneDecayRate, pheromoneLayingRate, siteFidelityRate, decompositionAllocProbability;
 @synthesize fitness, explorePhase;
 
+//////////////POWER STUFF///////////////
 @synthesize powerReturnShift, powerReturnSigma, chargeActiveSigma;
+@synthesize casualties;
+//////////////POWER STUFF///////////////
 
 -(id) initRandom {
     if(self = [super init]) {
@@ -101,7 +104,7 @@
 }
 
 -(void) writeParametersToFile:(NSString *)file {
-    [Utilities appendText:[NSString stringWithFormat:@"%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f\n",
+    [Utilities appendText:[NSString stringWithFormat:@"%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%d,%f\n",
                            [self pheromoneDecayRate],
                            [self travelGiveUpProbability],
                            [self searchGiveUpProbability],
@@ -114,13 +117,14 @@
                            [self powerReturnShift],
                            [self powerReturnSigma],
                            [self chargeActiveSigma],
+                           [self casualties],
                            [self fitness]]
                    toFile:file];
 }
 
 
 +(void) writeParameterNamesToFile:(NSString *)file {
-    NSString* headers = [NSString stringWithFormat:@"%@,%@,%@,%@,%@,%@,%@,%@,%@,%@,%@,%@,%@\n",
+    NSString* headers = [NSString stringWithFormat:@"%@,%@,%@,%@,%@,%@,%@,%@,%@,%@,%@,%@,%@,%@\n",
                          @"pheromoneDecayRate",
                          @"travelGiveUpProbability",
                          @"searchGiveUpProbability",
@@ -133,6 +137,7 @@
                          @"powerReturnShift",
                          @"powerReturnSigma",
                          @"chargeActiveSigma",
+                         @"casualties",
                          @"fitness"];
     [Utilities appendText:headers toFile :file];
 }

@@ -145,7 +145,7 @@ const float DISCHARGE_VSHIFT = 0.8;
     
     if(batteryLevel > 1.0){
         
-        printf("                                   BATTERY FULL\n");
+        //printf("                                   BATTERY FULL\n");
         return;
         
     }
@@ -153,7 +153,7 @@ const float DISCHARGE_VSHIFT = 0.8;
     if(!isDead){
         
         batteryLevel = batteryLevel + ((1 - batteryDeadPercent) / batteryChargeTime);           // Should charge battery at constant rate that is 2x the discharge speed
-        printf("                                   %f\n", batteryLevel);
+        //printf("                                   %f\n", batteryLevel);
         
     }
     
@@ -175,7 +175,7 @@ const float DISCHARGE_VSHIFT = 0.8;
     if(batteryLevel < batteryDeadPercent || isnan(temp) || isinf(temp)){                        // If battery > 65% then robot is now dead due to battery damage
         
         isDead = TRUE;
-        printf("DEAD!!!!!!!!!!!!!!!!!\n");
+        //printf("DEAD!!!!!!!!!!!!!!!!!\n");
         return;
         
     }
@@ -190,7 +190,7 @@ const float DISCHARGE_VSHIFT = 0.8;
         
     }
     
-    printf("%f\n", batteryLevel);
+    //printf("%f\n", batteryLevel);
     
 }
 //////////////POWER STUFF///////////////

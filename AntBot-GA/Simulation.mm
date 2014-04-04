@@ -29,16 +29,17 @@ using namespace cv;
 
 int simTime;
 @synthesize deadCount;
+@synthesize deadPenalty;
 
 -(id) init {
     if(self = [super init]) {
-        teamCount = 1;
-        generationCount = 1;
-        robotCount = 1;
+        teamCount = 10;
+        generationCount = 10;
+        robotCount = 6;
         tagCount = 256;
-        evaluationCount = 1;
+        evaluationCount = 3;
         evaluationLimit = -1;
-        tickCount = 10;
+        tickCount = 1800;
         simTime = tickCount;
         exploreTime = 0;
         
@@ -70,6 +71,7 @@ int simTime;
         observedError = YES;
         
         deadCount = 0;
+        deadPenalty = 3;
         //tickRate = 0.5;
     }
     return self;
@@ -231,7 +233,8 @@ int simTime;
                 //////////////POWER STUFF///////////////
                 if(tick == tickCount - 1){
                     [team setCasualties:[team casualties] + deadCount];
-                    printf("%d dead\n", [team casualties]);
+                    tagsFound = tagsFound - (deadCount * deadPenalty);
+                    //printf("%d dead\n", [team casualties]);
                 }
                 //////////////POWER STUFF///////////////
                 
@@ -263,7 +266,7 @@ int simTime;
         //////////////POWER STUFF///////////////
         if(robot.isDead == TRUE){           // IF YOU REMOVE DEAD ROBOT FROM ARRAY, ALL HELL BREAKS LOOSE SO JUST DONT ALLOW MOVEMENT
             if(deadCount < robotCount){
-                printf("tick %d                                  DEAD ROBOT\n", tick);
+                //printf("tick %d                                  DEAD ROBOT\n", tick);
                 deadCount ++;
             }
             continue;
@@ -684,7 +687,7 @@ int simTime;
         }
     }
     
-    printf("                          %d\n", tick);
+    //printf("                          %d\n", tick);
     return tagsFound;
 }
 
@@ -847,10 +850,12 @@ int simTime;
     averageTeam = [[Team alloc] init];
     NSMutableDictionary* parameterSums = [[NSMutableDictionary alloc] init];
     float tagSum = 0.f;
+    float deadSum = 0.f;
     
     for(Team* team in teams) {
         NSMutableDictionary* parameters = [team getParameters];
         tagSum += [team fitness];
+        deadSum += [team casualties];
         for(NSString* key in parameters) {
             float val = [[parameterSums objectForKey:key] floatValue] + [[parameters objectForKey:key] floatValue];
             [parameterSums setObject:[NSNumber numberWithFloat:val] forKey:key];
@@ -863,6 +868,7 @@ int simTime;
     }
     
     [averageTeam setFitness:(tagSum / teamCount) / evaluationCount];
+    [averageTeam setCasualties:(deadSum / teamCount) / evaluationCount];
     [averageTeam setParameters:parameterSums];
 }
 
@@ -873,15 +879,21 @@ int simTime;
 -(void) setBestTeamFrom:(NSMutableArray*)teams {
     bestTeam = [[Team alloc] init];
     float maxTags = -1.;
+    float minDead = FLT_MAX;
     
     for(Team* team in teams) {
         if([team fitness] > maxTags) {
             maxTags = [team fitness];
             [bestTeam setParameters:[team getParameters]];
         }
+        if([team casualties] < minDead){
+            minDead = [team casualties];
+            [bestTeam setParameters:[team getParameters]];
+        }
     }
     
     [bestTeam setFitness:maxTags / evaluationCount];
+    [bestTeam setCasualties:minDead / evaluationCount];
 }
 
 

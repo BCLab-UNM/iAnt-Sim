@@ -42,6 +42,7 @@
 
 //////////////POWER STUFF///////////////
 +(int) getSimTicks;
+@property (nonatomic) int deadPenalty;
 @property (nonatomic) int deadCount;
 //////////////POWER STUFF///////////////
 

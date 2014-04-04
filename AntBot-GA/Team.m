@@ -104,7 +104,7 @@
 }
 
 -(void) writeParametersToFile:(NSString *)file {
-    [Utilities appendText:[NSString stringWithFormat:@"%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%d,%f\n",
+    [Utilities appendText:[NSString stringWithFormat:@"%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f\n",
                            [self pheromoneDecayRate],
                            [self travelGiveUpProbability],
                            [self searchGiveUpProbability],

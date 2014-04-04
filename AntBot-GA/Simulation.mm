@@ -34,11 +34,11 @@ int simTime;
     if(self = [super init]) {
         teamCount = 1;
         generationCount = 1;
-        robotCount = 10;
+        robotCount = 1;
         tagCount = 256;
         evaluationCount = 1;
         evaluationLimit = -1;
-        tickCount = 7200;
+        tickCount = 10;
         simTime = tickCount;
         exploreTime = 0;
         
@@ -231,7 +231,7 @@ int simTime;
                 //////////////POWER STUFF///////////////
                 if(tick == tickCount - 1){
                     [team setCasualties:[team casualties] + deadCount];
-                    //printf("%d dead\n", [team casualties]);
+                    printf("%d dead\n", [team casualties]);
                 }
                 //////////////POWER STUFF///////////////
                 
@@ -263,7 +263,7 @@ int simTime;
         //////////////POWER STUFF///////////////
         if(robot.isDead == TRUE){           // IF YOU REMOVE DEAD ROBOT FROM ARRAY, ALL HELL BREAKS LOOSE SO JUST DONT ALLOW MOVEMENT
             if(deadCount < robotCount){
-                printf("                                   DEAD ROBOT\n");
+                printf("tick %d                                  DEAD ROBOT\n", tick);
                 deadCount ++;
             }
             continue;
@@ -684,6 +684,7 @@ int simTime;
         }
     }
     
+    printf("                          %d\n", tick);
     return tagsFound;
 }
 

@@ -18,6 +18,7 @@
 
 const float DISCHARGE_SCALE = 0.03;                         // Constant factors for scaling and shifting logit function to create battery discharge curve
 const float DISCHARGE_VSHIFT = 0.8;
+const float CHARGE_DISCHARGE_RATIO = 1.0;
 //////////////POWER STUFF///////////////
 
 
@@ -47,11 +48,11 @@ const float DISCHARGE_VSHIFT = 0.8;
     localPheromone = NSNullPoint;
     
     //////////////POWER STUFF///////////////
-    batteryLevel = 1.0;                                     // Battery level is a percent - starts at 100% (duh)
-    batteryDischargeTime = [Simulation getSimTicks] * 0.8;  // Time to complete battery discharge is 10% of total sim run time
-    batteryChargeTime = batteryDischargeTime * .1;           // Time to charge battery is 2x the discharge time
-    batteryDeadPercent = 0.65;                              // If battery falls below 65% of full charge robot dies
-    dischargeStartTick = 0;                                 // For calculating battery level as percentage of run time
+    batteryLevel = 1.0;                                                 // Battery level is a percent - starts at 100% (duh)
+    batteryDischargeTime = [Simulation getSimTicks] * 0.8;              // Time to complete battery discharge is 10% of total sim run time
+    batteryChargeTime = batteryDischargeTime * CHARGE_DISCHARGE_RATIO;  // Time to charge battery is 2x the discharge time
+    batteryDeadPercent = 0.65;                                          // If battery falls below 65% of full charge robot dies
+    dischargeStartTick = 0;                                             // For calculating battery level as percentage of run time
     pheremoneOn = FALSE;
     atNest = TRUE;
     isDead = FALSE;

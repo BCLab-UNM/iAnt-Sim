@@ -33,13 +33,13 @@ int simTime;
 
 -(id) init {
     if(self = [super init]) {
-        teamCount = 10;
-        generationCount = 10;
+        teamCount = 100;
+        generationCount = 100;
         robotCount = 6;
         tagCount = 256;
-        evaluationCount = 3;
+        evaluationCount = 8;
         evaluationLimit = -1;
-        tickCount = 1800;
+        tickCount = 7200;
         simTime = tickCount;
         exploreTime = 0;
         

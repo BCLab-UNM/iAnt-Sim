@@ -49,7 +49,7 @@ const float CHARGE_DISCHARGE_RATIO = 1.0;
     
     //////////////POWER STUFF///////////////
     batteryLevel = 1.0;                                                 // Battery level is a percent - starts at 100% (duh)
-    batteryDischargeTime = [Simulation getSimTicks] * 0.8;              // Time to complete battery discharge is 10% of total sim run time
+    batteryDischargeTime = [Simulation getSimTicks] * 0.2;              // Time to complete battery discharge is 10% of total sim run time
     batteryChargeTime = batteryDischargeTime * CHARGE_DISCHARGE_RATIO;  // Time to charge battery is 2x the discharge time
     batteryDeadPercent = 0.65;                                          // If battery falls below 65% of full charge robot dies
     dischargeStartTick = 0;                                             // For calculating battery level as percentage of run time
@@ -144,7 +144,7 @@ const float CHARGE_DISCHARGE_RATIO = 1.0;
 
 -(void) chargeBattery {
     
-    if(batteryLevel > 1.0){
+    if(batteryLevel >= 1.0){
         
         //printf("                                   BATTERY FULL\n");
         return;
@@ -154,7 +154,8 @@ const float CHARGE_DISCHARGE_RATIO = 1.0;
     if(!isDead){
         
         batteryLevel = batteryLevel + ((1 - batteryDeadPercent) / batteryChargeTime);           // Should charge battery at constant rate that is 2x the discharge speed
-        //printf("                                   %f\n", batteryLevel);
+        printf("                                 charging   %f\n", batteryLevel);
+        dischargeStartTick ++;
         
     }
     
@@ -173,25 +174,25 @@ const float CHARGE_DISCHARGE_RATIO = 1.0;
         
     }
     
-    if(batteryLevel < batteryDeadPercent || isnan(temp) || isinf(temp)){                        // If battery > 65% then robot is now dead due to battery damage
+    if(batteryLevel < batteryDeadPercent){                        // If battery > 65% then robot is now dead due to battery damage
         
         isDead = TRUE;
-        //printf("DEAD!!!!!!!!!!!!!!!!!\n");
+        //printf("%f     DEAD!!!!!!!!!!!!!!!!!\n", batteryLevel);
         return;
         
     }
     
-    if(!pheremoneOn){
-        
+//    if(!pheremoneOn){
+//        
         batteryLevel = temp;
-        
-    } else {
-        
-        batteryLevel = temp - .001;                                                             // Additional penalty for using pheremone is 0.1% per step
-        
-    }
+//        
+//    } else {
+//        
+//        batteryLevel = temp - .001;                                                             // Additional penalty for using pheremone is 0.1% per step
+//        
+//    }
     
-    //printf("%f\n", batteryLevel);
+    printf("%d ticks    %d batteryStartTick  %f\n", tick, dischargeStartTick, batteryLevel);
     
 }
 //////////////POWER STUFF///////////////

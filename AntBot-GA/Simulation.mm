@@ -33,11 +33,11 @@ int simTime;
 
 -(id) init {
     if(self = [super init]) {
-        teamCount = 100;
-        generationCount = 100;
-        robotCount = 6;
+        teamCount = 1;
+        generationCount = 1;
+        robotCount = 1;
         tagCount = 256;
-        evaluationCount = 8;
+        evaluationCount = 1;
         evaluationLimit = -1;
         tickCount = 7200;
         simTime = tickCount;
@@ -71,8 +71,8 @@ int simTime;
         observedError = YES;
         
         deadCount = 0;
-        deadPenalty = 3;
-        //tickRate = 0.5;
+        deadPenalty = 20;
+        //tickRate = .05;
     }
     return self;
 }
@@ -343,7 +343,7 @@ int simTime;
                 [robot setDelay:0];
                 
                 //////////////POWER STUFF///////////////
-                if(randomFloat(1.0) < rayleighCDF((1 - robot.batteryLevel), team.powerReturnSigma, team.powerReturnShift)){
+                if(robot.batteryLevel < .85){//(randomFloat(1.0) < rayleighCDF((1 - robot.batteryLevel), team.powerReturnSigma, team.powerReturnShift)){
                     
                     //printf("SIGMA   %f    SHIFT   %f\n", team.powerReturnSigma, team.powerReturnShift);
                     [robot setTarget:nest];
@@ -455,7 +455,7 @@ int simTime;
                  */
             case ROBOT_STATUS_CHARGING:
                 
-                if(randomFloat(1.0) < rayleighCDF(robot.batteryLevel, team.chargeActiveSigma, 0.0)){
+                if(randomFloat(1.0) > 0.992){//rayleighCDF(robot.batteryLevel, team.chargeActiveSigma, 0.0)){
                     
                     //printf("CHARGE SIGMA   %f\n", team.chargeActiveSigma);
                     robot.status = ROBOT_STATUS_DEPARTING;
@@ -702,6 +702,7 @@ int simTime;
         
         //Reset
         [averageTeam setFitness:0.];
+        [averageTeam setCasualties:0.];
         if (exploreTime > 0) {
             [team setExplorePhase:YES];
         }

@@ -49,9 +49,9 @@ const float CHARGE_DISCHARGE_RATIO = 1.0;
     
     //////////////POWER STUFF///////////////
     batteryLevel = 1.0;                                                 // Battery level is a percent - starts at 100%
-    batteryDischargeTime = 3600;//[Simulation getSimTicks] * 0.2;       // Time to complete battery discharge time
+    //batteryDischargeTime = 3600;//[Simulation getSimTicks] * 0.2;       // Time to complete battery discharge time
     //batteryChargeTime = batteryDischargeTime * CHARGE_DISCHARGE_RATIO;  // Time to charge battery is 2x the discharge time
-    batteryDeadPercent = 0.1;                                          // If battery falls below 65% of full charge robot dies
+    batteryDeadPercent = 0.5;                                          // If battery falls below 65% of full charge robot dies
     //dischargeStartTick = 0;                                             // For calculating battery level as percentage of run time
     pheremoneOn = FALSE;
     atNest = TRUE;

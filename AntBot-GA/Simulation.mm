@@ -37,7 +37,7 @@ int simTime;
         generationCount = 100;
         robotCount = 10;
         tagCount = 256;
-        evaluationCount = 8;
+        evaluationCount = 1;
         evaluationLimit = -1;
         tickCount = 7200;
         simTime = tickCount;
@@ -71,7 +71,7 @@ int simTime;
         observedError = YES;
         
         deadCount = 0;
-        deadPenalty = 50;
+        deadPenalty = 500;
         //tickRate = .01;
     }
     return self;
@@ -211,6 +211,8 @@ int simTime;
                     [[cell tag] setPickedUp:NO];
                 }
             }
+            
+            deadCount = 0;
             
             for(Robot* robot in robots) {
                 [robot reset];
@@ -455,7 +457,7 @@ int simTime;
                  */
             case ROBOT_STATUS_CHARGING:
                 
-                if([robot batteryLevel] < team.batteryLeaveVal){//randomFloat(1.0) > 0.995){//rayleighCDF(robot.batteryLevel, team.chargeActiveSigma, 0.0)){
+                if([robot batteryLevel] > team.batteryLeaveVal){//randomFloat(1.0) > 0.995){//rayleighCDF(robot.batteryLevel, team.chargeActiveSigma, 0.0)){
                     
                     //printf("CHARGE SIGMA   %f\n", team.chargeActiveSigma);
                     robot.status = ROBOT_STATUS_DEPARTING;

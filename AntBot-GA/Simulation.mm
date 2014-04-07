@@ -33,11 +33,11 @@ int simTime;
 
 -(id) init {
     if(self = [super init]) {
-        teamCount = 1;
-        generationCount = 1;
-        robotCount = 1;
+        teamCount = 100;
+        generationCount = 100;
+        robotCount = 10;
         tagCount = 256;
-        evaluationCount = 1;
+        evaluationCount = 8;
         evaluationLimit = -1;
         tickCount = 7200;
         simTime = tickCount;
@@ -71,8 +71,8 @@ int simTime;
         observedError = YES;
         
         deadCount = 0;
-        deadPenalty = 20;
-        //tickRate = .05;
+        deadPenalty = 50;
+        //tickRate = .01;
     }
     return self;
 }
@@ -233,7 +233,7 @@ int simTime;
                 //////////////POWER STUFF///////////////
                 if(tick == tickCount - 1){
                     [team setCasualties:[team casualties] + deadCount];
-                    tagsFound = tagsFound - (deadCount * deadPenalty);
+                    //tagsFound = tagsFound - (deadCount * deadPenalty);
                     //printf("%d dead\n", [team casualties]);
                 }
                 //////////////POWER STUFF///////////////
@@ -343,7 +343,7 @@ int simTime;
                 [robot setDelay:0];
                 
                 //////////////POWER STUFF///////////////
-                if(robot.batteryLevel < .85){//(randomFloat(1.0) < rayleighCDF((1 - robot.batteryLevel), team.powerReturnSigma, team.powerReturnShift)){
+                if(robot.batteryLevel < team.batteryReturnVal){//(randomFloat(1.0) < rayleighCDF((1 - robot.batteryLevel), team.powerReturnSigma, team.powerReturnShift)){
                     
                     //printf("SIGMA   %f    SHIFT   %f\n", team.powerReturnSigma, team.powerReturnShift);
                     [robot setTarget:nest];
@@ -455,7 +455,7 @@ int simTime;
                  */
             case ROBOT_STATUS_CHARGING:
                 
-                if(randomFloat(1.0) > 0.992){//rayleighCDF(robot.batteryLevel, team.chargeActiveSigma, 0.0)){
+                if([robot batteryLevel] < team.batteryLeaveVal){//randomFloat(1.0) > 0.995){//rayleighCDF(robot.batteryLevel, team.chargeActiveSigma, 0.0)){
                     
                     //printf("CHARGE SIGMA   %f\n", team.chargeActiveSigma);
                     robot.status = ROBOT_STATUS_DEPARTING;
@@ -464,7 +464,7 @@ int simTime;
                 } else {
                     
                     //printf("CHARGING ");
-                    [robot chargeBattery];
+                    [robot chargeBattery: tick];
                     break;
                     
                 }
@@ -574,7 +574,7 @@ int simTime;
                         
                         //Set required local variables
                         BOOL siteFidelityFlag = randomFloat(1.) < poissonCDF([[robot discoveredTags] count], [team siteFidelityRate]);
-                        BOOL decompositionAllocFlag = randomFloat(1.) > [team decompositionAllocProbability];
+                        //BOOL decompositionAllocFlag = randomFloat(1.) > [team decompositionAllocProbability];
                         NSPoint pheromone = [Pheromone getPheromone:pheromones atTick:tick];
                         
                         //If a tag was found, decide whether to return to its location
@@ -597,7 +597,7 @@ int simTime;
                             [robot setInformed:ROBOT_INFORMED_PHEROMONE];
                         }
                         
-                        else if(([unexploredRegions count] > 0) && decompositionAllocFlag) {
+                        else if(([unexploredRegions count] > 0)){// && decompositionAllocFlag) {
                             int regionChoice = arc4random() % [unexploredRegions count];
                             QuadTree* tree = [unexploredRegions objectAtIndex:regionChoice];
                             NSPoint target;

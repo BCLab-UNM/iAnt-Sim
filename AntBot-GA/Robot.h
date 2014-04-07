@@ -48,7 +48,7 @@
 
 
 //////////////POWER STUFF///////////////
--(void) chargeBattery;
+-(void) chargeBattery:(int) tick;
 -(void) dischargeBattery:(int) tick;
 
 @property (nonatomic) float batteryLevel;

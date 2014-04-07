@@ -16,7 +16,7 @@
 @synthesize batteryDischargeTime, batteryChargeTime, batteryDeadPercent;
 @synthesize pheremoneOn, atNest, isDead, needsCharging;
 
-const float DISCHARGE_SCALE = 0.03;                         // Constant factors for scaling and shifting logit function to create battery discharge curve
+const float DISCHARGE_SCALE = 0.03265;                         // Constant factors for scaling and shifting logit function to create battery discharge curve
 const float DISCHARGE_VSHIFT = 0.8;
 const float CHARGE_DISCHARGE_RATIO = 1.0;
 //////////////POWER STUFF///////////////
@@ -48,11 +48,11 @@ const float CHARGE_DISCHARGE_RATIO = 1.0;
     localPheromone = NSNullPoint;
     
     //////////////POWER STUFF///////////////
-    batteryLevel = 1.0;                                                 // Battery level is a percent - starts at 100% (duh)
-    batteryDischargeTime = [Simulation getSimTicks] * 0.2;              // Time to complete battery discharge is 10% of total sim run time
-    batteryChargeTime = batteryDischargeTime * CHARGE_DISCHARGE_RATIO;  // Time to charge battery is 2x the discharge time
-    batteryDeadPercent = 0.65;                                          // If battery falls below 65% of full charge robot dies
-    dischargeStartTick = 0;                                             // For calculating battery level as percentage of run time
+    batteryLevel = 1.0;                                                 // Battery level is a percent - starts at 100%
+    batteryDischargeTime = 3600;//[Simulation getSimTicks] * 0.2;       // Time to complete battery discharge time
+    //batteryChargeTime = batteryDischargeTime * CHARGE_DISCHARGE_RATIO;  // Time to charge battery is 2x the discharge time
+    batteryDeadPercent = 0.1;                                          // If battery falls below 65% of full charge robot dies
+    //dischargeStartTick = 0;                                             // For calculating battery level as percentage of run time
     pheremoneOn = FALSE;
     atNest = TRUE;
     isDead = FALSE;
@@ -142,44 +142,38 @@ const float CHARGE_DISCHARGE_RATIO = 1.0;
 
 //////////////POWER STUFF///////////////
 
--(void) chargeBattery {
+-(void) chargeBattery:(int) tick {
     
     if(batteryLevel >= 1.0){
-        
         //printf("                                   BATTERY FULL\n");
         return;
-        
     }
     
     if(!isDead){
+        //batteryLevel = batteryLevel + ((1 - batteryDeadPercent) / batteryChargeTime);
+        //batteryLevel = logitFunction(((tick - dischargeStartTick) / batteryDischargeTime), -1*DISCHARGE_SCALE, DISCHARGE_VSHIFT);
         
-        batteryLevel = batteryLevel + ((1 - batteryDeadPercent) / batteryChargeTime);           // Should charge battery at constant rate that is 2x the discharge speed
-        printf("                                 charging   %f\n", batteryLevel);
-        dischargeStartTick ++;
+        batteryLevel = batteryLevel + .001;
+        //printf("                                 charging   %f\n", batteryLevel);
         
+        //dischargeStartTick ++;
     }
-    
 }
 
 -(void) dischargeBattery:(int) tick {
     
     float temp;
     if(tick != 0){
-        
-        temp = logitFunction(((tick - dischargeStartTick) / batteryDischargeTime), DISCHARGE_SCALE, DISCHARGE_VSHIFT);
-        
+        //temp = logitFunction(((tick - dischargeStartTick) / batteryDischargeTime), DISCHARGE_SCALE, DISCHARGE_VSHIFT);
+        temp = batteryLevel - .001;
     } else {
-        
         return;
-        
     }
     
     if(batteryLevel < batteryDeadPercent){                        // If battery > 65% then robot is now dead due to battery damage
-        
         isDead = TRUE;
         //printf("%f     DEAD!!!!!!!!!!!!!!!!!\n", batteryLevel);
         return;
-        
     }
     
 //    if(!pheremoneOn){
@@ -192,7 +186,7 @@ const float CHARGE_DISCHARGE_RATIO = 1.0;
 //        
 //    }
     
-    printf("%d ticks    %d batteryStartTick  %f\n", tick, dischargeStartTick, batteryLevel);
+    //printf("%f\n", batteryLevel);
     
 }
 //////////////POWER STUFF///////////////

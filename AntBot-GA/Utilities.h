@@ -166,17 +166,17 @@ static inline float rayleighCDF(float x, float sigma, float shift){
 static inline float logitFunction(float x, float scale, float vshift){
     
     float temp = -((log(x) * scale) - (log(1 - x) * scale)) + vshift;
-    
     if(!isfinite(temp) && temp > 0){
         temp = 1.0;
     }
-    
     if(!isfinite(temp) && temp < 0){
         temp = 0.0;
     }
+    if(temp > 1.0){
+        temp = 1.0;
+    }
     
-    return temp;
-    
+    return temp;    
 }
 
 

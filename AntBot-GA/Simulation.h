@@ -41,7 +41,7 @@
 -(void) initDistributionForArray:(Array2D*)grid;
 
 //////////////POWER STUFF///////////////
-+(int) getSimTicks;
+//+(int) getSimTicks;
 @property (nonatomic) int deadPenalty;
 @property (nonatomic) int deadCount;
 //////////////POWER STUFF///////////////

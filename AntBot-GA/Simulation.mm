@@ -27,7 +27,7 @@ using namespace cv;
 @synthesize delegate, viewDelegate;
 @synthesize tickRate;
 
-int simTime;
+//int simTime;
 @synthesize deadCount;
 @synthesize deadPenalty;
 
@@ -35,12 +35,12 @@ int simTime;
     if(self = [super init]) {
         teamCount = 100;
         generationCount = 100;
-        robotCount = 10;
+        robotCount = 6;                                    //normally 6
         tagCount = 256;
-        evaluationCount = 1;
+        evaluationCount = 8;                               //normally 8
         evaluationLimit = -1;
-        tickCount = 7200;
-        simTime = tickCount;
+        tickCount = 7200;                                  //normally 7200 - 1 hr
+        //simTime = tickCount;
         exploreTime = 0;
         
         distributionClustered = 1.;
@@ -56,8 +56,8 @@ int simTime;
         mutationOperator = FixedVarMutId;
         elitism = YES;
         
-        gridSize = NSMakeSize(125, 125);
-        nest = NSMakePoint(62, 62);
+        gridSize = NSMakeSize(256, 256);                    //normally 125
+        nest = NSMakePoint(128, 128);                       // 62
         
         variableStepSize = NO;
         uniformDirection = NO;
@@ -71,7 +71,7 @@ int simTime;
         observedError = YES;
         
         deadCount = 0;
-        deadPenalty = 500;
+        //deadPenalty = 500;
         //tickRate = .01;
     }
     return self;
@@ -347,7 +347,7 @@ int simTime;
                 //////////////POWER STUFF///////////////
                 if(robot.batteryLevel < team.batteryReturnVal){//(randomFloat(1.0) < rayleighCDF((1 - robot.batteryLevel), team.powerReturnSigma, team.powerReturnShift)){
                     
-                    //printf("SIGMA   %f    SHIFT   %f\n", team.powerReturnSigma, team.powerReturnShift);
+                    //printf("WTF\n");
                     [robot setTarget:nest];
                     robot.needsCharging = true;
                     robot.status = ROBOT_STATUS_RETURNING;
@@ -460,6 +460,7 @@ int simTime;
                 if([robot batteryLevel] > team.batteryLeaveVal){//randomFloat(1.0) > 0.995){//rayleighCDF(robot.batteryLevel, team.chargeActiveSigma, 0.0)){
                     
                     //printf("CHARGE SIGMA   %f\n", team.chargeActiveSigma);
+                    robot.needsCharging = false;
                     robot.status = ROBOT_STATUS_DEPARTING;
                     break;
                     
@@ -1007,12 +1008,12 @@ int simTime;
 +(void)writeParameterNamesToFile:(NSString *)file {
     //unused
 }
-
-//////////////POWER STUFF///////////////
-+(int) getSimTicks {
-    return simTime;
-}
-//////////////POWER STUFF///////////////
+//
+////////////////POWER STUFF///////////////
+//+(int) getSimTicks {
+//    return simTime;
+//}
+////////////////POWER STUFF///////////////
 
 
 @end

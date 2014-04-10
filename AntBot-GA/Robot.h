@@ -52,8 +52,8 @@
 -(void) dischargeBattery:(int) tick;
 
 @property (nonatomic) float batteryLevel;
-@property (nonatomic, readonly) float batteryDischargeTime;
-@property (nonatomic, readonly) float batteryChargeTime;
+@property (nonatomic, readonly) int batteryFull;
+@property (nonatomic, readonly) int batteryTime;
 @property (nonatomic, readonly) float batteryDeadPercent;
 @property (nonatomic) BOOL pheremoneOn;
 @property (nonatomic) BOOL atNest;

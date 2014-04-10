@@ -13,12 +13,12 @@
 
 //////////////POWER STUFF///////////////
 @synthesize batteryLevel;
-@synthesize batteryDischargeTime, batteryChargeTime, batteryDeadPercent;
+@synthesize batteryDeadPercent;
+@synthesize batteryFull, batteryTime;
 @synthesize pheremoneOn, atNest, isDead, needsCharging;
 
-const float DISCHARGE_SCALE = 0.03265;                         // Constant factors for scaling and shifting logit function to create battery discharge curve
+const float DISCHARGE_SCALE = 0.028;
 const float DISCHARGE_VSHIFT = 0.8;
-const float CHARGE_DISCHARGE_RATIO = 1.0;
 //////////////POWER STUFF///////////////
 
 
@@ -49,10 +49,9 @@ const float CHARGE_DISCHARGE_RATIO = 1.0;
     
     //////////////POWER STUFF///////////////
     batteryLevel = 1.0;                                                 // Battery level is a percent - starts at 100%
-    //batteryDischargeTime = 3600;//[Simulation getSimTicks] * 0.2;       // Time to complete battery discharge time
-    //batteryChargeTime = batteryDischargeTime * CHARGE_DISCHARGE_RATIO;  // Time to charge battery is 2x the discharge time
-    batteryDeadPercent = 0.5;                                          // If battery falls below 65% of full charge robot dies
-    //dischargeStartTick = 0;                                             // For calculating battery level as percentage of run time
+    batteryDeadPercent = 0.65;                                          // If battery falls below 65% of full charge robot dies
+    batteryFull = 500;                     //15% of 7200
+    batteryTime = 0;
     pheremoneOn = FALSE;
     atNest = TRUE;
     isDead = FALSE;
@@ -149,23 +148,24 @@ const float CHARGE_DISCHARGE_RATIO = 1.0;
         return;
     }
     
-    if(!isDead){
-        //batteryLevel = batteryLevel + ((1 - batteryDeadPercent) / batteryChargeTime);
-        //batteryLevel = logitFunction(((tick - dischargeStartTick) / batteryDischargeTime), -1*DISCHARGE_SCALE, DISCHARGE_VSHIFT);
+    if(!isDead && batteryTime >= 0){
+        batteryLevel = logitFunction((float) batteryTime/batteryFull, DISCHARGE_SCALE, DISCHARGE_VSHIFT);
         
-        batteryLevel = batteryLevel + .001;
-        //printf("                                 charging   %f\n", batteryLevel);
-        
-        //dischargeStartTick ++;
+        //batteryLevel = batteryLevel + .001;
+        //printf("                  charging");
+        batteryTime--;
     }
+    //printf("%f\n", batteryLevel);
 }
 
 -(void) dischargeBattery:(int) tick {
     
     float temp;
-    if(tick != 0){
-        //temp = logitFunction(((tick - dischargeStartTick) / batteryDischargeTime), DISCHARGE_SCALE, DISCHARGE_VSHIFT);
-        temp = batteryLevel - .001;
+    if(batteryTime < batteryFull){
+        batteryTime++;
+        temp = logitFunction((float) batteryTime/batteryFull, DISCHARGE_SCALE, DISCHARGE_VSHIFT);
+        
+        //temp = batteryLevel - .001;
     } else {
         return;
     }

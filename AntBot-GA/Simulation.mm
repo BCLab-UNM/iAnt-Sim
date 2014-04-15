@@ -391,6 +391,7 @@ using namespace cv;
                 [robot moveWithin:gridSize];
                 
                 //////////////POWER STUFF///////////////
+                //printf("%d\n",tick);
                 [robot dischargeBattery:tick];
                 //////////////POWER STUFF///////////////
                 
@@ -448,6 +449,8 @@ using namespace cv;
                 }
                 
                 [robot setLastMoved:tick];
+                //printf("%d\n",tick);
+                [robot dischargeBattery: tick];
                 break;
             }
                 
@@ -466,7 +469,7 @@ using namespace cv;
                     
                 } else {
                     
-                    //printf("CHARGING ");
+                    //printf("%d\n",tick);
                     [robot chargeBattery: tick];
                     break;
                     
@@ -635,10 +638,13 @@ using namespace cv;
                         
                     }
                 }
+                //printf("%d\n",tick);
+                [robot dischargeBattery: tick];
                 break;
             }
                 
             case ROBOT_STATUS_EXPLORING: {
+                printf("WTF\n");
                 if (tick >= exploreTime) {
                     robot.status = ROBOT_STATUS_RETURNING;
                     [robot setStepSize:(variableStepSize ? (int)round(randomLogNormal(0, team.stepSizeVariation)) : 1)];
@@ -685,6 +691,10 @@ using namespace cv;
                 
                 //This makes the robots hold their current position (i.e. NO-OP)
             case ROBOT_STATUS_WAITING:{
+                //////////////POWER STUFF///////////////
+                //printf("%d\n",tick);
+                [robot dischargeBattery: tick];
+                //////////////POWER STUFF///////////////
                 break;
             }
         }

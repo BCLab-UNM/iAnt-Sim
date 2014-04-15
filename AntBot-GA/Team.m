@@ -30,9 +30,6 @@
         siteFidelityRate = randomFloat(20.);
         
         //////////////POWER STUFF///////////////
-//        powerReturnShift = randomFloat(1.0);            // This is positive shift of return probablity curve
-//        powerReturnSigma = randomFloat(1.0);            // This is the sigma value of return probablity curve
-//        chargeActiveSigma = randomFloat(1.0);           // This is the sigma value of charge leaving probablity curve
         batteryReturnVal = randomFloat(1.0);
         batteryLeaveVal = randomFloat(1.0);
         //////////////POWER STUFF///////////////

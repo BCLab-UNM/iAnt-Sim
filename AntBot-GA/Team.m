@@ -31,7 +31,9 @@
         
         //////////////POWER STUFF///////////////
         batteryReturnVal = randomFloat(1.0);
-        batteryLeaveVal = randomFloat(1.0);
+        while(batteryLeaveVal < batteryReturnVal){
+            batteryLeaveVal = randomFloat(1.0);
+        }
         //////////////POWER STUFF///////////////
         
         

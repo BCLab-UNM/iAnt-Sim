@@ -54,10 +54,10 @@ using namespace cv;
         selectionOperator  = TournamentSelectionId;
         crossoverOperator = UniformPointCrossId;
         mutationOperator = FixedVarMutId;
-        elitism = NO;
+        elitism = YES;
         
-        gridSize = NSMakeSize(256, 256);                    //normally 125
-        nest = NSMakePoint(128, 128);                       // 62
+        gridSize = NSMakeSize(125, 125);                    //normally 125
+        nest = NSMakePoint(62, 62);                       // 62
         
         variableStepSize = NO;
         uniformDirection = NO;

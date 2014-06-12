@@ -46,10 +46,10 @@ static inline float pointDistance(float x1, float y1, float x2, float y2) {
 }
 
 /*
- * Returns (in radians) the angle between x and y.
+ * Returns (in radians) the angle between p1 and p2 relative to (0,0).
  */
-static inline float pointDirection(float x1, float y1, float x2, float y2) {
-    return atan2f(y2 - y1, x2 - x1);
+static inline float directedAngle(NSPoint p1, NSPoint p2) {
+    return atan2f(p2.y, p2.x) - atan2f(p1.y, p1.x);
 }
 
 /*

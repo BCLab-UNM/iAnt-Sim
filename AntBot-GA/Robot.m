@@ -84,7 +84,7 @@
     float dTheta;
     if(uniformDirection) {
         float newDirection = randomFloat(M_2PI);
-        dTheta = pointDirection(0, 0, cos(direction - newDirection), sin(direction - newDirection));
+        dTheta = directedAngle(NSMakePoint(cos(direction), sin(direction)), NSMakePoint(cos(newDirection), sin(newDirection)));
         direction = newDirection;
     }
     else {

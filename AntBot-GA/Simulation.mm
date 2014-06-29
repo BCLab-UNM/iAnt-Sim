@@ -183,15 +183,13 @@ using namespace cv;
         NSMutableArray* regions = [[NSMutableArray alloc] init];
         NSMutableArray* unexploredRegions = [[NSMutableArray alloc] init];
         NSMutableArray* clusters = [[NSMutableArray alloc] init];
-//        int scheduledClusterings = 2;
-//        int numberOfClusterings = 0;
-//        int reclusteringInterval = tickCount / scheduledClusterings;
         for(int i = 0; i < robotCount; i++){[robots addObject:[[Robot alloc] init]];}
         
         for(Team* team in teams) {
             
             for(Cell* cell in grid) {
                 [cell setIsClustered:NO];
+                [cell setIsExplored:NO];
                 if([cell tag]) {
                     [[cell tag] setDiscovered:NO];
                     [[cell tag] setPickedUp:NO];
@@ -238,6 +236,7 @@ using namespace cv;
       unexploredRegions:(NSMutableArray*)unexploredRegions {
     
     int tagsFound = 0;
+    Decomposition* decomp = [[Decomposition alloc] initWithRegions:regions];
     
     for (Robot* robot in robots) {
         switch([robot status]) {
@@ -335,8 +334,11 @@ using namespace cv;
                     [robot setTarget:NSMakePoint(roundf([robot position].x + cos([robot direction])), roundf([robot position].y + sin([robot direction])))];
                 }
                 
+                
                 //Move one cell
                 [robot moveWithin:gridSize];
+                [[grid objectAtRow:[robot position].x col:[robot position].y] setIsExplored:YES];
+                
                 
                 //Turn
                 if(stepsRemaining <= 1) {
@@ -404,9 +406,7 @@ using namespace cv;
                 if(tick - [robot lastMoved] <= [robot delay]) {
                     break;
                 }
-                //                            if(tick >= reclusteringInterval && numberOfClusterings < scheduledClusterings) {
-                //                                [team setExplorePhase:YES];
-                //                            }
+                
                 [robot setDelay:0];
                 [robot moveWithin:gridSize];
                 
@@ -469,14 +469,13 @@ using namespace cv;
                             
                             [team setExplorePhase:NO];
                             
-                            //numberOfClusterings++;
                             
                             NSPoint origin;
                             origin.x = 0;
                             origin.y = 0;
-                            QuadTree* tree = [[QuadTree alloc] initWithHeight:gridSize.height width:gridSize.width origin:origin andCells:grid];
+                            QuadTree* tree = [[QuadTree alloc] initWithHeight:gridSize.height width:gridSize.width origin:origin cells:grid andParent:NULL];
                             [regions addObject:tree];
-                            [unexploredRegions addObjectsFromArray:[Decomposition runDecomposition:regions]];
+                            [unexploredRegions addObjectsFromArray:[decomp runDecomposition:regions]];
                         }
                     }
                     
@@ -542,6 +541,10 @@ using namespace cv;
                         [robot setDiscoveredTags:nil];
                         [robot setSearchTime:0];
                         [robot setStatus:ROBOT_STATUS_DEPARTING];
+                        
+
+                        [unexploredRegions removeAllObjects];
+                        [unexploredRegions addObjectsFromArray:[decomp runDecomposition:regions]];
                     }
                 }
                 break;
@@ -570,6 +573,7 @@ using namespace cv;
                 }
                 
                 [robot moveWithin:gridSize];
+                [[grid objectAtRow:[robot position].x col:[robot position].y] setIsExplored:YES];
                 
                 if(stepsRemaining <= 1) {
                     [robot setStepSize:(int)round(randomLogNormal(0, [team stepSizeVariation]))];

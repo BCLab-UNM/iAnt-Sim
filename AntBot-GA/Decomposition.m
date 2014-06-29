@@ -2,16 +2,34 @@
 
 @implementation Decomposition
 
+@synthesize baseRegions;
+
+-(id) initWithRegions:(NSMutableArray *)_baseRegions {
+    if(self = [super init]) {
+        baseRegions = _baseRegions;
+    }
+    return self;
+}
+
 /*
  * Executes quadratic decomposition algorithm on input region
  * Returns array of unclustered regions
  */
-+(NSMutableArray*) runDecomposition:(NSMutableArray*)regions {
-    BOOL decompComplete = NO;
+-(NSMutableArray*) runDecomposition:(NSMutableArray*)regions {
     int width1, width2, height1, height2;
     NSMutableArray *parents = [[NSMutableArray alloc] init];
-    NSMutableArray *children = [[NSMutableArray alloc] init];
-    NSMutableArray *unclusteredRegions = [[NSMutableArray alloc] init];
+    NSMutableArray *kids = [[NSMutableArray alloc] init];
+    NSMutableArray *unexploredRegions = [[NSMutableArray alloc] init];
+    NSMutableArray *pendingRegions = [[NSMutableArray alloc] init];
+    
+    for(int i = 0; i < [regions count]; ++i) {
+        QuadTree *region = [regions objectAtIndex:i];
+        [region setPercentExplored:[self checkExploredness:region]];
+        if([region percentExplored] > .5) {
+            [regions removeObject:region];
+            [baseRegions removeObject:region];
+        }
+    }
     [parents addObjectsFromArray:regions];
     
     for(QuadTree* parent in parents) {
@@ -85,45 +103,61 @@
             y = 0;
         }
         
-        QuadTree *northWest = [[QuadTree alloc] initWithHeight:height1 width:width1 origin:nwOrigin andCells:nwCells];
-        QuadTree *northEast = [[QuadTree alloc] initWithHeight:height1 width:width2 origin:neOrigin andCells:neCells];
-        QuadTree *southWest = [[QuadTree alloc] initWithHeight:height2 width:width1 origin:swOrigin andCells:swCells];
-        QuadTree *southEast = [[QuadTree alloc] initWithHeight:height2 width:width2 origin:seOrigin andCells:seCells];
+        QuadTree *northWest = [[QuadTree alloc] initWithHeight:height1 width:width1 origin:nwOrigin cells:nwCells andParent:parent];
+        QuadTree *northEast = [[QuadTree alloc] initWithHeight:height1 width:width2 origin:neOrigin cells:neCells andParent:parent];
+        QuadTree *southWest = [[QuadTree alloc] initWithHeight:height2 width:width1 origin:swOrigin cells:swCells andParent:parent];
+        QuadTree *southEast = [[QuadTree alloc] initWithHeight:height2 width:width2 origin:seOrigin cells:seCells andParent:parent];
         
-        [children addObject:northWest];
-        [children addObject:northEast];
-        [children addObject:southWest];
-        [children addObject:southEast];
+//        [kids removeAllObjects];
+        [kids addObject:northWest];
+        [kids addObject:northEast];
+        [kids addObject:southWest];
+        [kids addObject:southEast];
+        
+        [[parent children] addObjectsFromArray:kids];
+        [parent setDirty:NO];
+        
+        [baseRegions removeObject:parent];
     }
     
-    for(QuadTree* child in children) {
-        if([self isFullyUnclustered:child]) {
-            decompComplete = YES;
-            [unclusteredRegions addObject:child];
+    [baseRegions addObjectsFromArray:kids];
+    for(int i = 0; i < [kids count]; ++i) {
+        QuadTree* child = [kids objectAtIndex:i];
+        [child setPercentExplored:[self checkExploredness:child]];
+        if([child percentExplored] == 0.) {
+            [unexploredRegions addObject:child];
+        }
+        else if([child percentExplored] <= .1 && ([child height] * [child width]) >= 4) {
+            [pendingRegions addObject:child];
+        }
+        else {
+            [baseRegions removeObject:child];
         }
     }
     
-    if(!decompComplete) {
-        [unclusteredRegions removeAllObjects];
-        unclusteredRegions = [self runDecomposition:children];
+    if([pendingRegions count] > 0) {
+        [unexploredRegions addObjectsFromArray:[self runDecomposition:pendingRegions]];
     }
     
-    return unclusteredRegions;
+    return unexploredRegions;
 }
 
 /*
- * Checks all cells in input region for cluster status
- * Returns true if all cells are unclustered, false otherwise
+ * Checks how much of the region is explored
+ * Returns the percentage of the region that has been explored as a double
  */
-+(BOOL) isFullyUnclustered:(QuadTree*)region {
+-(double) checkExploredness:(QuadTree*)region {
+    double exploredCount = 0.;
+    double regionSize = [region width] * [region height];
     for(int i = 0; i < [region width]; i++) {
         for(int j = 0; j < [region height]; j++) {
-            if([(Cell*)[[region cells] objectAtRow:i col:j] isClustered]) {
-                return FALSE;
+            if([(Cell*)[[region cells] objectAtRow:i col:j] isExplored]) {
+                exploredCount++;
             }
         }
     }
-    return TRUE;
+    
+    return exploredCount / regionSize;
 }
 
 @end

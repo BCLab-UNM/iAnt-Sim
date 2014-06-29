@@ -6,11 +6,15 @@
 
 @interface QuadTree : NSObject {}
 
--(id) initWithHeight:(int)_height width:(int)_width origin:(NSPoint)_origin andCells:(Array2D*)_cells;
+-(id) initWithHeight:(int)_height width:(int)_width origin:(NSPoint)_origin cells:(Array2D*)_cells andParent:(QuadTree*)_parent;
 
 @property (nonatomic) NSPoint origin;
 @property (nonatomic) int width;
 @property (nonatomic) int height;
+@property (nonatomic) double percentExplored;
+@property (nonatomic) BOOL dirty;
 @property (nonatomic) Array2D* cells;
+@property (nonatomic) QuadTree* parent;
+@property (nonatomic) NSMutableArray* children;
 
 @end

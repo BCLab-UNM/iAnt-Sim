@@ -5,6 +5,9 @@
 
 @interface Decomposition : NSObject
 
-+(NSMutableArray*) runDecomposition:(NSMutableArray*)regions;
+@property (nonatomic) NSMutableArray* baseRegions;
+
+-(id) initWithRegions:(NSMutableArray*)_baseRegions;
+-(NSMutableArray*) runDecomposition:(NSMutableArray*)regions;
 
 @end

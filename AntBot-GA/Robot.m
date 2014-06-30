@@ -1,13 +1,20 @@
 #import "Robot.h"
-#include "Util.h"
+#import "Utilities.h"
 
 @implementation Robot
 
 @synthesize status, informed;
 @synthesize position, target, recruitmentTarget;
-@synthesize direction, searchTime, lastMoved, lastTurned, delay;
+@synthesize direction, searchTime, lastMoved, lastTurned, delay, stepSize;
 @synthesize discoveredTags;
 @synthesize localPheromone;
+
+-(id) init {
+    if (self = [super init]) {
+        [self reset];
+    }
+    return self;
+}
 
 -(void) reset {
     status = ROBOT_STATUS_INACTIVE;
@@ -20,6 +27,8 @@
     direction = randomFloat(M_2PI);
     lastMoved = 0;
     lastTurned = 0;
+    delay = 0;
+    stepSize = 1;
     
     discoveredTags = [[NSMutableArray alloc] init];
     
@@ -75,7 +84,7 @@
     float dTheta;
     if(uniformDirection) {
         float newDirection = randomFloat(M_2PI);
-        dTheta = pointDirection(0, 0, cos(direction - newDirection), sin(direction - newDirection));
+        dTheta = directedAngle(NSMakePoint(cos(direction), sin(direction)), NSMakePoint(cos(newDirection), sin(newDirection)));
         direction = newDirection;
     }
     else {

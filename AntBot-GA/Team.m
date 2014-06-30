@@ -1,12 +1,11 @@
 #import "Team.h"
-#include "Util.h"
 
 @implementation Team
 
 @synthesize travelGiveUpProbability, searchGiveUpProbability;
 @synthesize uninformedSearchCorrelation, informedSearchCorrelationDecayRate, stepSizeVariation;
-@synthesize pheromoneDecayRate, pheromoneLayingRate, siteFidelityRate;
-@synthesize tagsCollected, explorePhase;
+@synthesize pheromoneDecayRate, pheromoneLayingRate, siteFidelityRate, decompositionAllocProbability;
+@synthesize fitness, explorePhase;
 
 -(id) initRandom {
     if(self = [super init]) {
@@ -14,6 +13,7 @@
         
         travelGiveUpProbability = randomFloat(1.0);
         searchGiveUpProbability = randomFloat(1.0);
+        decompositionAllocProbability = randomFloat(1.0);
         
         uninformedSearchCorrelation = randomFloat(2 * M_2PI);
         informedSearchCorrelationDecayRate = randomExponential(5.0);
@@ -27,7 +27,7 @@
 
 -(id) initWithFile:(NSString *)filePath {
     if (self = [super init]) {
-        NSDictionary *parameters = [[NSDictionary alloc] initWithContentsOfFile:filePath];
+        NSMutableDictionary *parameters = [[NSMutableDictionary alloc] initWithContentsOfFile:filePath];
         if (!parameters) {
             NSLog(@"Error reading file.");
         }
@@ -38,12 +38,16 @@
     return self;
 }
 
+
+#pragma Archivable methods
+
 -(NSMutableDictionary*) getParameters {
     return [[NSMutableDictionary alloc] initWithObjects:
             [NSArray arrayWithObjects:
              [NSNumber numberWithFloat:pheromoneDecayRate],
              [NSNumber numberWithFloat:travelGiveUpProbability],
              [NSNumber numberWithFloat:searchGiveUpProbability],
+             [NSNumber numberWithFloat:decompositionAllocProbability],
              [NSNumber numberWithFloat:uninformedSearchCorrelation],
              [NSNumber numberWithFloat:informedSearchCorrelationDecayRate],
              [NSNumber numberWithFloat:stepSizeVariation],
@@ -53,6 +57,7 @@
              @"pheromoneDecayRate",
              @"travelGiveUpProbability",
              @"searchGiveUpProbability",
+             @"decompositionAllocProbability",
              @"uninformedSearchCorrelation",
              @"informedSearchCorrelationDecayRate",
              @"stepSizeVariation",
@@ -65,6 +70,7 @@
     
     travelGiveUpProbability = [[parameters objectForKey:@"travelGiveUpProbability"] floatValue];
     searchGiveUpProbability = [[parameters objectForKey:@"searchGiveUpProbability"] floatValue];
+    decompositionAllocProbability = [[parameters objectForKey:@"decompositionAllocProbability"] floatValue];
     
     uninformedSearchCorrelation = [[parameters objectForKey:@"uninformedSearchCorrelation"] floatValue];
     informedSearchCorrelationDecayRate = [[parameters objectForKey:@"informedSearchCorrelationDecayRate"] floatValue];
@@ -72,6 +78,37 @@
     
     pheromoneLayingRate = [[parameters objectForKey:@"pheromoneLayingRate"] floatValue];
     siteFidelityRate = [[parameters objectForKey:@"siteFidelityRate"] floatValue];
+}
+
+-(void) writeParametersToFile:(NSString *)file {
+    [Utilities appendText:[NSString stringWithFormat:@"%f,%f,%f,%f,%f,%f,%f,%f,%f,%f\n",
+                           [self pheromoneDecayRate],
+                           [self travelGiveUpProbability],
+                           [self searchGiveUpProbability],
+                           [self decompositionAllocProbability],
+                           [self uninformedSearchCorrelation],
+                           [self informedSearchCorrelationDecayRate],
+                           [self stepSizeVariation],
+                           [self pheromoneLayingRate],
+                           [self siteFidelityRate],
+                           [self fitness]]
+                   toFile:file];
+}
+
+
++(void) writeParameterNamesToFile:(NSString *)file {
+    NSString* headers = [NSString stringWithFormat:@"%@,%@,%@,%@,%@,%@,%@,%@,%@,%@\n",
+                         @"pheromoneDecayRate",
+                         @"travelGiveUpProbability",
+                         @"searchGiveUpProbability",
+                         @"decompositionAllocProbability",
+                         @"uninformedSearchCorrelation",
+                         @"informedSearchCorrelationDecayRate",
+                         @"stepSizeVariation",
+                         @"pheromoneLayingRate",
+                         @"siteFidelityRate",
+                         @"fitness"];
+    [Utilities appendText:headers toFile :file];
 }
 
 @end

@@ -24,4 +24,12 @@
     return self;
 }
 
+-(void) bubbleUpPercentage {
+    [parent setPercentExplored:.25 * percentExplored + [parent percentExplored]];
+    
+    if([parent percentExplored] > .75) {
+        [parent bubbleUpPercentage];
+    }
+}
+
 @end

@@ -7,6 +7,7 @@
 @interface QuadTree : NSObject {}
 
 -(id) initWithHeight:(int)_height width:(int)_width origin:(NSPoint)_origin cells:(Array2D*)_cells andParent:(QuadTree*)_parent;
+-(void) bubbleUpPercentage;
 
 @property (nonatomic) NSPoint origin;
 @property (nonatomic) int width;

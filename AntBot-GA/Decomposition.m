@@ -25,7 +25,12 @@
     for(int i = 0; i < [regions count]; ++i) {
         QuadTree *region = [regions objectAtIndex:i];
         [region setPercentExplored:[self checkExploredness:region]];
-        if([region percentExplored] > .5) {
+        if([region percentExplored] > .75) {
+            [regions removeObject:region];
+            [baseRegions removeObject:region];
+        }
+        
+        if([region width] * [region height] < 16) {
             [regions removeObject:region];
             [baseRegions removeObject:region];
         }
@@ -108,7 +113,6 @@
         QuadTree *southWest = [[QuadTree alloc] initWithHeight:height2 width:width1 origin:swOrigin cells:swCells andParent:parent];
         QuadTree *southEast = [[QuadTree alloc] initWithHeight:height2 width:width2 origin:seOrigin cells:seCells andParent:parent];
         
-//        [kids removeAllObjects];
         [kids addObject:northWest];
         [kids addObject:northEast];
         [kids addObject:southWest];
@@ -127,11 +131,12 @@
         if([child percentExplored] == 0.) {
             [unexploredRegions addObject:child];
         }
-        else if([child percentExplored] <= .1 && ([child height] * [child width]) >= 4) {
+        else if([child percentExplored] <= .75 && ([child height] * [child width]) >= 16) {
             [pendingRegions addObject:child];
         }
         else {
             [baseRegions removeObject:child];
+            [child bubbleUpPercentage];
         }
     }
     

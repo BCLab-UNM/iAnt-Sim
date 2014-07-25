@@ -5,5 +5,6 @@
 
 @property (nonatomic) Tag* tag;
 @property (nonatomic) BOOL isClustered;
+@property (nonatomic) BOOL isExplored;
 
 @end

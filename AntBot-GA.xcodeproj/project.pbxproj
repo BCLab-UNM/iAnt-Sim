@@ -19,7 +19,10 @@
 		40ED662116DABE8F006F8494 /* Sim.h in Headers */ = {isa = PBXBuildFile; fileRef = 40ED65C216DABD31006F8494 /* Sim.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		422F6EEA187FD099008486DD /* SensorError.h in Headers */ = {isa = PBXBuildFile; fileRef = 422F6EE8187FD099008486DD /* SensorError.h */; };
 		422F6EEB187FD099008486DD /* SensorError.m in Sources */ = {isa = PBXBuildFile; fileRef = 422F6EE9187FD099008486DD /* SensorError.m */; };
+<<<<<<< HEAD
 
+=======
+>>>>>>> faf9618
 		42307A5C176D262A005BB34B /* GA.h in Headers */ = {isa = PBXBuildFile; fileRef = 42307A5A176D262A005BB34B /* GA.h */; };
 		42307A5D176D262A005BB34B /* GA.m in Sources */ = {isa = PBXBuildFile; fileRef = 42307A5B176D262A005BB34B /* GA.m */; };
 		4239E9E21767B7A4007F35EE /* calib3d.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 4239E9041767B7A4007F35EE /* calib3d.hpp */; };

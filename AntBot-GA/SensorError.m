@@ -8,6 +8,7 @@
 @synthesize tagDetectionProbability, neighborDetectionProbability;
 @synthesize fitness;
 
+<<<<<<< HEAD
 -(id)init {
     if (self = [super init]) {
         localizationSlope = NSMakePoint(0., 0.);
@@ -20,6 +21,8 @@
     return self;
 }
 
+=======
+>>>>>>> faf9618
 -(id)initRandom {
     if (self = [super init]) {
         localizationSlope = NSMakePoint(randomFloatRange(-1, 1), randomFloatRange(-1, 1));
@@ -32,6 +35,7 @@
     return self;
 }
 
+<<<<<<< HEAD
 -(id)initObserved {
     if (self = [super init]) {
         localizationSlope = NSMakePoint(0.164, 0.166);
@@ -44,6 +48,8 @@
     return self;
 }
 
+=======
+>>>>>>> faf9618
 /*
  * Introduces error into recorded tag position - Simulates localization error in real robot
  */

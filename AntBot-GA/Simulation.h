@@ -12,7 +12,10 @@
 #import "Robot.h"
 #import "Tag.h"
 #import "Utilities.h"
+<<<<<<< HEAD
 
+=======
+>>>>>>> faf9618
 
 
 @class Team;
@@ -40,15 +43,21 @@
       unexploredRegions:(NSMutableArray*)unexploredRegions;
 -(NSMutableArray*) evaluateTeam:(Team*)team onGrid:(Array2D*)grid;
 -(void) initDistributionForArray:(Array2D*)grid;
+<<<<<<< HEAD
 
 -(NSMutableDictionary*) getParameters;
 -(void) setParameters:(NSMutableDictionary*)parameters;
+=======
+>>>>>>> faf9618
 
 @property (readonly, nonatomic) Team* averageTeam;
 @property (readonly, nonatomic) Team* bestTeam;
 
 @property (nonatomic) SensorError* error;
+<<<<<<< HEAD
 @property (nonatomic) BOOL observedError;
+=======
+>>>>>>> faf9618
 
 @property (nonatomic) int teamCount;
 @property (nonatomic) int generationCount;

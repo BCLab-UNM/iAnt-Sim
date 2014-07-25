@@ -2,16 +2,51 @@
 
 @implementation Decomposition
 
+<<<<<<< HEAD
+=======
+@synthesize baseRegions;
+
+-(id) initWithRegions:(NSMutableArray *)_baseRegions {
+    if(self = [super init]) {
+        baseRegions = _baseRegions;
+    }
+    return self;
+}
+
+>>>>>>> faf9618
 /*
  * Executes quadratic decomposition algorithm on input region
  * Returns array of unclustered regions
  */
+<<<<<<< HEAD
 +(NSMutableArray*) runDecomposition:(NSMutableArray*)regions {
     BOOL decompComplete = NO;
     int width1, width2, height1, height2;
     NSMutableArray *parents = [[NSMutableArray alloc] init];
     NSMutableArray *children = [[NSMutableArray alloc] init];
     NSMutableArray *unclusteredRegions = [[NSMutableArray alloc] init];
+=======
+-(NSMutableArray*) runDecomposition:(NSMutableArray*)regions {
+    int width1, width2, height1, height2;
+    NSMutableArray *parents = [[NSMutableArray alloc] init];
+    NSMutableArray *kids = [[NSMutableArray alloc] init];
+    NSMutableArray *unexploredRegions = [[NSMutableArray alloc] init];
+    NSMutableArray *pendingRegions = [[NSMutableArray alloc] init];
+    
+    for(int i = 0; i < [regions count]; ++i) {
+        QuadTree *region = [regions objectAtIndex:i];
+        [region setPercentExplored:[self checkExploredness:region]];
+        if([region percentExplored] > .75) {
+            [regions removeObject:region];
+            [baseRegions removeObject:region];
+        }
+        
+        if([region width] * [region height] < 16) {
+            [regions removeObject:region];
+            [baseRegions removeObject:region];
+        }
+    }
+>>>>>>> faf9618
     [parents addObjectsFromArray:regions];
     
     for(QuadTree* parent in parents) {
@@ -85,6 +120,7 @@
             y = 0;
         }
         
+<<<<<<< HEAD
         QuadTree *northWest = [[QuadTree alloc] initWithHeight:height1 width:width1 origin:nwOrigin andCells:nwCells];
         QuadTree *northEast = [[QuadTree alloc] initWithHeight:height1 width:width2 origin:neOrigin andCells:neCells];
         QuadTree *southWest = [[QuadTree alloc] initWithHeight:height2 width:width1 origin:swOrigin andCells:swCells];
@@ -124,6 +160,63 @@
         }
     }
     return TRUE;
+=======
+        QuadTree *northWest = [[QuadTree alloc] initWithHeight:height1 width:width1 origin:nwOrigin cells:nwCells andParent:parent];
+        QuadTree *northEast = [[QuadTree alloc] initWithHeight:height1 width:width2 origin:neOrigin cells:neCells andParent:parent];
+        QuadTree *southWest = [[QuadTree alloc] initWithHeight:height2 width:width1 origin:swOrigin cells:swCells andParent:parent];
+        QuadTree *southEast = [[QuadTree alloc] initWithHeight:height2 width:width2 origin:seOrigin cells:seCells andParent:parent];
+        
+        [kids addObject:northWest];
+        [kids addObject:northEast];
+        [kids addObject:southWest];
+        [kids addObject:southEast];
+        
+        [[parent children] addObjectsFromArray:kids];
+        [parent setDirty:NO];
+        
+        [baseRegions removeObject:parent];
+    }
+    
+    [baseRegions addObjectsFromArray:kids];
+    for(int i = 0; i < [kids count]; ++i) {
+        QuadTree* child = [kids objectAtIndex:i];
+        [child setPercentExplored:[self checkExploredness:child]];
+        if([child percentExplored] == 0.) {
+            [unexploredRegions addObject:child];
+        }
+        else if([child percentExplored] <= .75 && ([child height] * [child width]) >= 16) {
+            [pendingRegions addObject:child];
+        }
+        else {
+            [baseRegions removeObject:child];
+            [child bubbleUpPercentage];
+        }
+    }
+    
+    if([pendingRegions count] > 0) {
+        [unexploredRegions addObjectsFromArray:[self runDecomposition:pendingRegions]];
+    }
+    
+    return unexploredRegions;
+}
+
+/*
+ * Checks how much of the region is explored
+ * Returns the percentage of the region that has been explored as a double
+ */
+-(double) checkExploredness:(QuadTree*)region {
+    double exploredCount = 0.;
+    double regionSize = [region width] * [region height];
+    for(int i = 0; i < [region width]; i++) {
+        for(int j = 0; j < [region height]; j++) {
+            if([(Cell*)[[region cells] objectAtRow:i col:j] isExplored]) {
+                exploredCount++;
+            }
+        }
+    }
+    
+    return exploredCount / regionSize;
+>>>>>>> faf9618
 }
 
 @end

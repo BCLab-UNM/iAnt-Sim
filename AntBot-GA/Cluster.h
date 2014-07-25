@@ -1,4 +1,5 @@
 <<<<<<< HEAD
+<<<<<<< HEAD
 //
 //  Cluster.h
 //  AntBot-GA
@@ -9,6 +10,8 @@
 
 =======
 >>>>>>> 8c44715e7fbcb776c3f7855c6aa17bad1cc56e09
+=======
+>>>>>>> faf9618
 #import <Foundation/Foundation.h>
 
 @interface Cluster : NSObject

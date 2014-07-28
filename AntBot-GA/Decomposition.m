@@ -2,8 +2,6 @@
 
 @implementation Decomposition
 
-<<<<<<< HEAD
-=======
 @synthesize baseRegions;
 
 -(id) initWithRegions:(NSMutableArray *)_baseRegions {
@@ -13,19 +11,10 @@
     return self;
 }
 
->>>>>>> faf9618
 /*
  * Executes quadratic decomposition algorithm on input region
  * Returns array of unclustered regions
  */
-<<<<<<< HEAD
-+(NSMutableArray*) runDecomposition:(NSMutableArray*)regions {
-    BOOL decompComplete = NO;
-    int width1, width2, height1, height2;
-    NSMutableArray *parents = [[NSMutableArray alloc] init];
-    NSMutableArray *children = [[NSMutableArray alloc] init];
-    NSMutableArray *unclusteredRegions = [[NSMutableArray alloc] init];
-=======
 -(NSMutableArray*) runDecomposition:(NSMutableArray*)regions {
     int width1, width2, height1, height2;
     NSMutableArray *parents = [[NSMutableArray alloc] init];
@@ -46,7 +35,6 @@
             [baseRegions removeObject:region];
         }
     }
->>>>>>> faf9618
     [parents addObjectsFromArray:regions];
     
     for(QuadTree* parent in parents) {
@@ -120,47 +108,6 @@
             y = 0;
         }
         
-<<<<<<< HEAD
-        QuadTree *northWest = [[QuadTree alloc] initWithHeight:height1 width:width1 origin:nwOrigin andCells:nwCells];
-        QuadTree *northEast = [[QuadTree alloc] initWithHeight:height1 width:width2 origin:neOrigin andCells:neCells];
-        QuadTree *southWest = [[QuadTree alloc] initWithHeight:height2 width:width1 origin:swOrigin andCells:swCells];
-        QuadTree *southEast = [[QuadTree alloc] initWithHeight:height2 width:width2 origin:seOrigin andCells:seCells];
-        
-        [children addObject:northWest];
-        [children addObject:northEast];
-        [children addObject:southWest];
-        [children addObject:southEast];
-    }
-    
-    for(QuadTree* child in children) {
-        if([self isFullyUnclustered:child]) {
-            decompComplete = YES;
-            [unclusteredRegions addObject:child];
-        }
-    }
-    
-    if(!decompComplete) {
-        [unclusteredRegions removeAllObjects];
-        unclusteredRegions = [self runDecomposition:children];
-    }
-    
-    return unclusteredRegions;
-}
-
-/*
- * Checks all cells in input region for cluster status
- * Returns true if all cells are unclustered, false otherwise
- */
-+(BOOL) isFullyUnclustered:(QuadTree*)region {
-    for(int i = 0; i < [region width]; i++) {
-        for(int j = 0; j < [region height]; j++) {
-            if([(Cell*)[[region cells] objectAtRow:i col:j] isClustered]) {
-                return FALSE;
-            }
-        }
-    }
-    return TRUE;
-=======
         QuadTree *northWest = [[QuadTree alloc] initWithHeight:height1 width:width1 origin:nwOrigin cells:nwCells andParent:parent];
         QuadTree *northEast = [[QuadTree alloc] initWithHeight:height1 width:width2 origin:neOrigin cells:neCells andParent:parent];
         QuadTree *southWest = [[QuadTree alloc] initWithHeight:height2 width:width1 origin:swOrigin cells:swCells andParent:parent];
@@ -216,7 +163,6 @@
     }
     
     return exploredCount / regionSize;
->>>>>>> faf9618
 }
 
 @end

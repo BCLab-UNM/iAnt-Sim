@@ -1,15 +1,7 @@
 #import <Foundation/Foundation.h>
 
 #import <AntBot-GA/Constants.h>
-<<<<<<< HEAD
-<<<<<<< HEAD
-#import <AntBot-GA/Util.h>
-=======
 #import <AntBot-GA/Utilities.h>
->>>>>>> 8c44715e7fbcb776c3f7855c6aa17bad1cc56e09
-=======
-#import <AntBot-GA/Utilities.h>
->>>>>>> faf9618
 #import <AntBot-GA/Array2D.h>
 #import <AntBot-GA/Pheromone.h>
 #import <AntBot-GA/Simulation.h>

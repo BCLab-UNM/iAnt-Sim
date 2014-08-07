@@ -9,5 +9,6 @@
 
 -(id) initWithRegions:(NSMutableArray*)_baseRegions;
 -(NSMutableArray*) runDecomposition:(NSMutableArray*)regions;
+-(double) checkExploredness:(QuadTree*)region;
 
 @end

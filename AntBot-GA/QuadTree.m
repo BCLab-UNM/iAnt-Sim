@@ -3,9 +3,9 @@
 @implementation QuadTree
 
 @synthesize origin;
-@synthesize width, height;
+@synthesize width, height, area;
 @synthesize percentExplored;
-@synthesize dirty;
+@synthesize needsDecomposition;
 @synthesize cells;
 @synthesize parent;
 @synthesize children;
@@ -14,22 +14,15 @@
     if(self = [super init]) {
         height = _height;
         width = _width;
+        area = height * width;
         origin = _origin;
         cells = _cells;
         parent = _parent;
-        dirty = NO;
+        needsDecomposition = YES;
         percentExplored = 2.0;
         children = [[NSMutableArray alloc] init];
     }
     return self;
-}
-
--(void) bubbleUpPercentage {
-    [parent setPercentExplored:.25 * percentExplored + [parent percentExplored]];
-    
-    if([parent percentExplored] > .75) {
-        [parent bubbleUpPercentage];
-    }
 }
 
 @end

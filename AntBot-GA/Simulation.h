@@ -83,4 +83,6 @@
 @property (nonatomic) NSObject* viewDelegate;
 @property (nonatomic) float tickRate;
 
+@property (nonatomic) Decomposition* decomp;
+
 @end

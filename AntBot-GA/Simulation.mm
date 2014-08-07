@@ -26,6 +26,7 @@ using namespace cv;
 @synthesize error, observedError;
 @synthesize delegate, viewDelegate;
 @synthesize tickRate;
+@synthesize decomp;
 
 -(id) init {
     if(self = [super init]) {
@@ -64,6 +65,8 @@ using namespace cv;
         parameterFile = nil;
         
         observedError = YES;
+        
+        decomp = [[Decomposition alloc] init];
     }
     return self;
 }
@@ -238,7 +241,6 @@ using namespace cv;
       unexploredRegions:(NSMutableArray*)unexploredRegions {
     
     int tagsFound = 0;
-    Decomposition* decomp = [[Decomposition alloc] initWithRegions:regions];
     
     for (Robot* robot in robots) {
         switch([robot status]) {
@@ -477,6 +479,7 @@ using namespace cv;
                             origin.y = 0;
                             QuadTree* tree = [[QuadTree alloc] initWithHeight:gridSize.height width:gridSize.width origin:origin cells:grid andParent:NULL];
                             [regions addObject:tree];
+                            [decomp setBaseRegions:regions];
                             [unexploredRegions addObjectsFromArray:[decomp runDecomposition:regions]];
                         }
                     }

@@ -30,7 +30,7 @@
     delay = 0;
     stepSize = 1;
     
-    discoveredTags = [[NSMutableArray alloc] init];
+    discoveredTags = nil;
     
     localPheromone = NSNullPoint;
 }

@@ -2,25 +2,16 @@
 
 @implementation QuadTree
 
-@synthesize origin;
-@synthesize width, height, area;
+@synthesize shape, area;
 @synthesize percentExplored;
 @synthesize needsDecomposition;
-@synthesize cells;
-@synthesize parent;
-@synthesize children;
 
--(id) initWithHeight:(int)_height width:(int)_width origin:(NSPoint)_origin cells:(Array2D*)_cells andParent:(QuadTree *)_parent{
+-(id) initWithRect:(NSRect)rect{
     if(self = [super init]) {
-        height = _height;
-        width = _width;
-        area = height * width;
-        origin = _origin;
-        cells = _cells;
-        parent = _parent;
+        shape = rect;
+        area = rect.size.height * rect.size.width;
         needsDecomposition = YES;
-        percentExplored = 2.0;
-        children = [[NSMutableArray alloc] init];
+        percentExplored = 0.;
     }
     return self;
 }

@@ -88,21 +88,13 @@
 #pragma Archivable methods
 
 -(NSMutableDictionary *)getParameters {
-    return [[NSMutableDictionary alloc] initWithObjects:
-            [NSArray arrayWithObjects:
-             [NSValue valueWithPoint:localizationSlope],
-             [NSValue valueWithPoint:localizationIntercept],
-             [NSValue valueWithPoint:travelingSlope],
-             [NSValue valueWithPoint:travelingIntercept],
-             [NSNumber numberWithFloat:tagDetectionProbability],
-             [NSNumber numberWithFloat:neighborDetectionProbability], nil] forKeys:
-            [NSArray arrayWithObjects:
-             @"localizationSlope",
-             @"localizationIntercept",
-             @"travelingSlope",
-             @"travelingIntercept",
-             @"tagDetectionProbability",
-             @"neighborDetectionProbability",nil]];
+    return [@{@"localizationSlope" : [NSValue valueWithPoint:localizationSlope],
+              @"localizationIntercept" : [NSValue valueWithPoint:localizationIntercept],
+              @"travelingSlope" : [NSValue valueWithPoint:travelingSlope],
+              @"travelingIntercept" : [NSValue valueWithPoint:travelingIntercept],
+              @"tagDetectionProbability" : @(tagDetectionProbability),
+              @"neighborDetectionProbability" :@(neighborDetectionProbability)}
+            mutableCopy];
 }
 
 -(void)setParameters:(NSMutableDictionary *)parameters {

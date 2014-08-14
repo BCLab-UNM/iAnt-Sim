@@ -226,9 +226,7 @@
     if ((populationSize > 1) && [populationClass conformsToProtocol:@protocol(Archivable)]) {
         //Sort array smallest to largest
         population = (NSMutableArray*)[population sortedArrayUsingComparator:^NSComparisonResult(id objA, id objB) {
-            NSNumber* fitnessA = [NSNumber numberWithFloat:[objA fitness]];
-            NSNumber* fitnessB = [NSNumber numberWithFloat:[objB fitness]];
-            return [fitnessA compare:fitnessB];
+            return [@([objA fitness]) compare:@([objB fitness])];
         }];
         
         //Elitism
@@ -254,6 +252,7 @@
                     parents = [self rankBasedElististSelectionOn:population withCutoff:0.5];
                     break;
                 default:
+                    [NSException raise:@"Invalid GA selection operator" format:@"Selection operator %d does not exist", selectionOperator];
                     break;
             }
             
@@ -271,6 +270,9 @@
                         break;
                     case TwoPointCross:
                         [self twoPointCrossoverFromParents:parents toChild:child];
+                        break;
+                    default:
+                        [NSException raise:@"Invalid GA crossover operator" format:@"Crossover operator %d does not exist", crossoverOperator];
                         break;
                 }
             }
@@ -300,14 +302,14 @@
                                 return [self fixedVarianceMutationForParameter:value :fixedVarianceSigma];
                             }
                             default: {
-                                NSLog(@"Mutation parameter undefined.");
+                                [NSException raise:@"Invalid GA mutation operator" format:@"Mutation operator %d does not exist", crossoverOperator];
                                 return value;
                             }
                         }
                     };
                     
                     if ([parameter isKindOfClass:[NSNumber class]]) {
-                        parameter = [NSNumber numberWithFloat:mutateParameter([parameter floatValue])];
+                        parameter = @(mutateParameter([parameter floatValue]));
                     }
                     else if ([parameter isKindOfClass:[NSValue class]]) {
                         NSPoint p = [parameter pointValue];

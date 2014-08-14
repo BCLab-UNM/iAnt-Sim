@@ -24,9 +24,9 @@ using namespace cv;
 @synthesize decentralizedPheromones, wirelessRange;
 @synthesize parameterFile;
 @synthesize error, observedError;
+@synthesize decompose;
 @synthesize delegate, viewDelegate;
 @synthesize tickRate;
-@synthesize decomp;
 
 -(id) init {
     if(self = [super init]) {
@@ -66,7 +66,7 @@ using namespace cv;
         
         observedError = YES;
         
-        decomp = [[Decomposition alloc] init];
+        decompose = YES;
     }
     return self;
 }
@@ -122,15 +122,21 @@ using namespace cv;
     int evalCount = 0;
     
     //Allocate and initialize cellular grids
-    NSMutableArray* grids = [[NSMutableArray alloc] initWithCapacity:evaluationCount];
+    vector<vector<vector<Cell*>>> grids;
     for (int i = 0; i < evaluationCount; i++) {
-        Array2D* grid = [[Array2D alloc] initWithRows:gridSize.width cols:gridSize.height objClass:[Cell class]];
-        [grids addObject:grid];
+        vector<vector<Cell*>> grid;
+        grid.resize(gridSize.height);
+        for (int i = 0; i < gridSize.height; i++) {
+            grid[i].resize(gridSize.width);
+            for (int j = 0; j < gridSize.width; j++) {
+                grid[i][j] = [[Cell alloc] init];
+            }
+        }
+        grids.push_back(grid);
     }
     
     //Main loop
     for(int generation = 0; generation < generationCount && evalCount < evaluationLimit; generation++) {
-        
         for(Team* team in teams) {
             [team setFitness:0.];
             if (exploreTime > 0) {
@@ -144,11 +150,11 @@ using namespace cv;
         if (evaluationCount > 1) {
             dispatch_queue_t queue = dispatch_get_global_queue(0, 0);
             dispatch_apply(evaluationCount, queue, ^(size_t iteration) {
-                [self evaluateTeams:teams onGrid:[grids objectAtIndex:iteration]];
+                [self evaluateTeams:teams onGrid:grids[iteration]];
             });
         }
         else {
-            [self evaluateTeams:teams onGrid:[grids objectAtIndex:0]];
+            [self evaluateTeams:teams onGrid:grids[0]];
         }
         
         //Number of evaluations performed is the number of teams times the number of evaluations per team.
@@ -158,7 +164,9 @@ using namespace cv;
         [self setAverageTeamFrom:teams];
         [self setBestTeamFrom:teams];
         
-        [ga breedPopulation:teams AtGeneration:generation andMaxGeneration:generationCount];
+        @autoreleasepool {
+            [ga breedPopulation:teams AtGeneration:generation andMaxGeneration:generationCount];
+        }
         
         if(delegate) {
             
@@ -172,27 +180,27 @@ using namespace cv;
     printf("Completed\n");
     
     //Return an evaluation of the average team from the final generation
-    return [self evaluateTeam:averageTeam onGrid:[grids objectAtIndex:0]];
+    return [self evaluateTeam:averageTeam onGrid:grids[0]];
 }
 
 
 /*
  * Run a single evaluation
  */
--(void) evaluateTeams:(NSMutableArray*)teams onGrid:(Array2D*)grid {
-    @autoreleasepool {
-        [self initDistributionForArray:grid];
-        
-        NSMutableArray* robots = [[NSMutableArray alloc] initWithCapacity:robotCount];
-        NSMutableArray* pheromones = [[NSMutableArray alloc] init];
-        NSMutableArray* regions = [[NSMutableArray alloc] init];
-        NSMutableArray* unexploredRegions = [[NSMutableArray alloc] init];
-        NSMutableArray* clusters = [[NSMutableArray alloc] init];
-        for(int i = 0; i < robotCount; i++){[robots addObject:[[Robot alloc] init]];}
-        
-        for(Team* team in teams) {
-            
-            for(Cell* cell in grid) {
+-(void) evaluateTeams:(NSMutableArray*)teams onGrid:(vector<vector<Cell*>>)grid{
+    [self initDistributionForArray:grid];
+    
+    NSMutableArray* robots = [[NSMutableArray alloc] initWithCapacity:robotCount];
+    NSMutableArray* pheromones = [[NSMutableArray alloc] init];
+    NSMutableArray* unexploredRegions = [[NSMutableArray alloc] init];
+    NSMutableArray* clusters = [[NSMutableArray alloc] init];
+    NSMutableArray* foundTags = [[NSMutableArray alloc] init];
+    for(int i = 0; i < robotCount; i++){[robots addObject:[[Robot alloc] init]];}
+    Decomposition* decomp = [[Decomposition alloc] initWithGrid:grid];
+
+    for(Team* team in teams) {
+        for (vector<Cell*> v : grid) {
+            for (Cell* cell : v) {
                 [cell setIsClustered:NO];
                 [cell setIsExplored:NO];
                 if([cell tag]) {
@@ -200,31 +208,32 @@ using namespace cv;
                     [[cell tag] setPickedUp:NO];
                 }
             }
-            
-            for(Robot* robot in robots) {
-                [robot reset];
-                if (variableStepSize) {
-                    [robot setStepSize:(int)round(randomLogNormal(0, [team stepSizeVariation]))];
-                }
+        }
+        
+        for(Robot* robot in robots) {
+            [robot reset];
+            if (variableStepSize) {
+                [robot setStepSize:(int)round(randomLogNormal(0, [team stepSizeVariation]))];
             }
+        }
+        
+        [pheromones removeAllObjects];
+        [unexploredRegions removeAllObjects];
+        [clusters removeAllObjects];
+        [foundTags removeAllObjects];
+        [decomp reset];
+        
+        for(int tick = 0; tick < tickCount; tick++) {
             
-            [pheromones removeAllObjects];
-            [unexploredRegions removeAllObjects];
-            [clusters removeAllObjects];
-            [regions removeAllObjects];
+            int tagsFound = [self stateTransition:robots inTeam:team atTick:tick onGrid:grid withDecomp:decomp withPheromones:pheromones clusters:clusters foundTags:foundTags unexploredRegions:unexploredRegions];
             
-            for(int tick = 0; tick < tickCount; tick++) {
-                
-                int tagsFound = [self stateTransition:robots inTeam:team atTick:tick onGrid:grid withPheromones:pheromones clusters:clusters regions:regions unexploredRegions:unexploredRegions];
-                
-                [team setFitness:[team fitness] + tagsFound];
+            [team setFitness:[team fitness] + tagsFound];
             
-                if(tickRate != 0.f){[NSThread sleepForTimeInterval:tickRate];}
-                if(viewDelegate != nil) {
-                    if([viewDelegate respondsToSelector:@selector(updateDisplayWindowWithRobots:team:grid:pheromones:regions:clusters:)]) {
-                        [Pheromone getPheromone:pheromones atTick:tick];
-                        [viewDelegate updateDisplayWindowWithRobots:[robots copy] team:team grid:[grid copy] pheromones:[pheromones copy] regions:[unexploredRegions copy] clusters:[clusters copy]];
-                    }
+            if(tickRate != 0.f){[NSThread sleepForTimeInterval:tickRate];}
+            if(viewDelegate != nil) {
+                if([viewDelegate respondsToSelector:@selector(updateDisplayWindowWithRobots:team:grid:pheromones:regions:clusters:)]) {
+                    [Pheromone getPheromone:pheromones atTick:tick];
+                    [viewDelegate updateDisplayWindowWithRobots:[robots copy] team:team grid:grid pheromones:[pheromones copy] regions:[unexploredRegions copy] clusters:[clusters copy]];
                 }
             }
         }
@@ -234,11 +243,11 @@ using namespace cv;
 /*
  * State transition case statement for robots using central-place foraging algorithm
  */
--(int) stateTransition:(NSMutableArray*)robots inTeam:(Team*)team atTick:(int)tick onGrid:(Array2D*)grid
-         withPheromones:(NSMutableArray*)pheromones
-               clusters:(NSMutableArray*)clusters
-                regions:(NSMutableArray*)regions
-      unexploredRegions:(NSMutableArray*)unexploredRegions {
+-(int) stateTransition:(NSMutableArray*)robots inTeam:(Team*)team atTick:(int)tick onGrid:(vector<vector<Cell*>>&)grid withDecomp:(Decomposition *)decomp
+        withPheromones:(NSMutableArray*)pheromones
+              clusters:(NSMutableArray*)clusters
+             foundTags:(NSMutableArray *)foundTags
+     unexploredRegions:(NSMutableArray*)unexploredRegions {
     
     int tagsFound = 0;
     
@@ -341,7 +350,7 @@ using namespace cv;
                 
                 //Move one cell
                 [robot moveWithin:gridSize];
-                [[grid objectAtRow:[robot position].x col:[robot position].y] setIsExplored:YES];
+                [grid[[robot position].y][[robot position].x] setIsExplored:YES];
                 
                 
                 //Turn
@@ -358,7 +367,7 @@ using namespace cv;
                 //Reusing robot.target here (without consequence, it just gets overwritten when moving).
                 [robot setTarget:NSMakePoint(roundf([robot position].x + cos([robot direction])), roundf([robot position].y + sin([robot direction])))];
                 if([robot target].x >= 0 && [robot target].y >= 0 && [robot target].x < gridSize.width && [robot target].y < gridSize.height) {
-                    Tag* foundTag = [(Cell*)[grid objectAtRow:[robot target].y col:[robot target].x] tag];
+                    Tag* foundTag = [grid[[robot target].y][[robot target].x] tag];
                     //Note we use shortcircuiting here.
                     if([error detectTag] && foundTag && ![foundTag pickedUp]) {
                         //Perturb found tag position to simulate error
@@ -378,7 +387,7 @@ using namespace cv;
                                    ([foundTag position].y + dy >= 0 && [foundTag position].y + dy < gridSize.height))
                                 {
                                     //Look up tag in tags array
-                                    Cell* cell = [grid objectAtRow:[foundTag position].y + dy col:[foundTag position].x + dx];
+                                    Cell* cell = grid[[foundTag position].y][[foundTag position].x + dx];
                                     
                                     //If tag exists and is detectable
                                     if (([cell tag]) && !([[cell tag] pickedUp]) && [error detectTag]) {
@@ -424,8 +433,7 @@ using namespace cv;
                             }
                         }
                         
-                        EM em;
-                        em = [self clusterTags:[robot discoveredTags] ifAllRobotsHome:allHome];
+                        [foundTags addObjectsFromArray:[robot discoveredTags]];
                         
                         if(allHome == NO) {
                             [robot setStatus:ROBOT_STATUS_WAITING];
@@ -433,6 +441,7 @@ using namespace cv;
                         }
                         else {
                             //Extract means and covariance matrices
+                            EM em = [self clusterTags:foundTags];
                             Mat means = em.get<Mat>("means");
                             vector<Mat> covs = em.get<vector<Mat>>("covs");
                             
@@ -444,9 +453,9 @@ using namespace cv;
                                 double height = ceil(covs[i].at<double>(1,1) * 2);
                                 Cluster* c = [[Cluster alloc] initWithCenter:p width:width andHeight:height];
                                 [clusters addObject:c];
-                                for(int j = clip(p.x - ceil(width/2),0,gridSize.width); j < clip(p.x + ceil(width/2),0,gridSize.width); j++) {
-                                    for(int k= clip(p.y-ceil(height/2),0,gridSize.height); k<clip(p.y + ceil(height/2),0,gridSize.height); k++) {
-                                        [(Cell*)[grid objectAtRow:j col:k] setIsClustered:YES];
+                                for(int j = clip(p.y-ceil(height/2),0,gridSize.height); j<clip(p.y + ceil(height/2),0,gridSize.height); j++) {
+                                    for(int k = clip(p.x - ceil(width/2),0,gridSize.width); k < clip(p.x + ceil(width/2),0,gridSize.width); k++) {
+                                        [grid[j][k] setIsClustered:YES];
                                     }
                                 }
                             }
@@ -472,15 +481,12 @@ using namespace cv;
                             }
                             
                             [team setExplorePhase:NO];
-                            
-                            
-                            NSPoint origin;
-                            origin.x = 0;
-                            origin.y = 0;
-                            QuadTree* tree = [[QuadTree alloc] initWithHeight:gridSize.height width:gridSize.width origin:origin cells:grid andParent:NULL];
-                            [regions addObject:tree];
-                            [decomp setBaseRegions:regions];
-                            [unexploredRegions addObjectsFromArray:[decomp runDecomposition:regions]];
+                            if (decompose) {
+                                @autoreleasepool {
+                                    QuadTree* seedRegion = [[QuadTree alloc] initWithRect:NSMakeRect(0., 0., gridSize.width, gridSize.height)];
+                                    [unexploredRegions setArray:[decomp runDecomposition:[NSMutableArray arrayWithObject:seedRegion]]];
+                                }
+                            }
                         }
                     }
                     
@@ -530,8 +536,8 @@ using namespace cv;
                             int regionChoice = arc4random() % [unexploredRegions count];
                             QuadTree* tree = [unexploredRegions objectAtIndex:regionChoice];
                             NSPoint target;
-                            target.x = [tree origin].x + [tree width] / 2;
-                            target.y = [tree origin].y + [tree height] / 2;
+                            target.x = [tree shape].origin.x + [tree shape].size.width / 2;
+                            target.y = [tree shape].origin.y + [tree shape].size.height / 2;
                             [robot setTarget:[error perturbTargetPosition:target withGridSize:gridSize andGridCenter:nest]];
                             [robot setInformed:ROBOT_INFORMED_DECOMPOSITION];
                         }
@@ -547,9 +553,13 @@ using namespace cv;
                         [robot setSearchTime:0];
                         [robot setStatus:ROBOT_STATUS_DEPARTING];
                         
-
-                        [unexploredRegions removeAllObjects];
-                        [unexploredRegions addObjectsFromArray:[decomp runDecomposition:regions]];
+                        
+                        if (decompose) {
+                            @autoreleasepool {
+                                [decomp reset];
+                                [unexploredRegions setArray:[decomp runDecomposition:unexploredRegions]];
+                            }
+                        }
                     }
                 }
                 break;
@@ -578,7 +588,7 @@ using namespace cv;
                 }
                 
                 [robot moveWithin:gridSize];
-                [[grid objectAtRow:[robot position].x col:[robot position].y] setIsExplored:YES];
+                [grid[[robot position].y][[robot position].x] setIsExplored:YES];
                 
                 if(stepsRemaining <= 1) {
                     [robot setStepSize:(int)round(randomLogNormal(0, [team stepSizeVariation]))];
@@ -590,7 +600,7 @@ using namespace cv;
                 //Reusing robot.target here (without consequence, it just gets overwritten when moving).
                 [robot setTarget:NSMakePoint(roundf([robot position].x+cos([robot direction])),roundf([robot position].y+sin([robot direction])))];
                 if([robot target].x >= 0 && [robot target].y >= 0 && [robot target].x < gridSize.width && [robot target].y < gridSize.height) {
-                    Tag* t = [(Cell*)[grid objectAtRow:(int)[robot target].y col:(int)[robot target].x] tag];
+                    Tag* t = [grid[(int)[robot target].y][(int)[robot target].x] tag];
                     if([error detectTag] && t) { //Note we use shortcircuiting here.
                         [[robot discoveredTags] addObject:t];
                         [t setDiscovered:YES];
@@ -614,7 +624,7 @@ using namespace cv;
 /*
  * Run 100 post evaluations of the average team from the final generation (i.e. generationCount)
  */
--(NSMutableArray*) evaluateTeam:(Team*)team onGrid:(Array2D *)grid {
+-(NSMutableArray*) evaluateTeam:(Team*)team onGrid:(vector<vector<Cell*>>)grid{
     NSMutableArray* fitness = [[NSMutableArray alloc] init];
     NSMutableArray* teams = [[NSMutableArray alloc] initWithObjects:averageTeam, nil];
     
@@ -631,7 +641,7 @@ using namespace cv;
         
         //Evaluate
         [self evaluateTeams:teams onGrid:grid];
-        [fitness addObject:[NSNumber numberWithFloat:[averageTeam fitness]]];
+        [fitness addObject:@([averageTeam fitness])];
     }
     
     return fitness;
@@ -641,30 +651,17 @@ using namespace cv;
  * Executes unsupervised clustering algorithm Expectation-Maximization (EM) on input
  * Returns trained instantiation of EM if all robots home, untrained otherwise
  */
--(cv::EM) clusterTags:(NSMutableArray*)foundTags ifAllRobotsHome:(BOOL)allHome {
-    //Create aggregate array
-    // (static keyword ensures value is maintained between calls)
-    static NSMutableArray* totalFoundTags = [[NSMutableArray alloc] init];
-    
-    //Instantiate NSLock to ensure thread safety during access to totalFoundTags
-    // (also done statically to save memory)
-    static NSLock* threadLock = [[NSLock alloc] init];
-    [threadLock lock]; //lock program
-    
-    //Append input to aggregate tag array
-    [totalFoundTags addObjectsFromArray:foundTags];
-    
+-(cv::EM) clusterTags:(NSMutableArray*)foundTags {
     //Construct EM for k clusters, where k = sqrt(num points / 2)
-    int k = round(sqrt((double)[totalFoundTags count] / 2));
+    int k = round(sqrt((double)[foundTags count] / 2));
     EM em = EM(k);
     
-    //If all robots have returned to the nest and tags have been found, run EM on aggregate tag array
-    if (allHome && [totalFoundTags count]) {
-        
-        Mat aggregate((int)[totalFoundTags count], 2, CV_64F); //Create [totalFoundTags count] x 2 matrix
+    //Run EM on aggregate tag array
+    if ([foundTags count]) {
+        Mat aggregate((int)[foundTags count], 2, CV_64F); //Create [totalFoundTags count] x 2 matrix
         int counter = 0;
         //Iterate over all tags
-        for (Tag* tag in totalFoundTags) {
+        for (Tag* tag in foundTags) {
             //Copy x and y location of tag into matrix
             aggregate.at<double>(counter, 0) = [tag position].x;
             aggregate.at<double>(counter, 1) = [tag position].y;
@@ -673,11 +670,7 @@ using namespace cv;
 
         //Train EM
         em.train(aggregate);
-
-        [totalFoundTags removeAllObjects];
     }
-    
-    [threadLock unlock]; //unlock program
     
     return em;
 }
@@ -686,10 +679,12 @@ using namespace cv;
  * Creates a random distribution of tags.
  * Called at the beginning of each evaluation.
  */
--(void) initDistributionForArray:(Array2D*)grid {
+-(void) initDistributionForArray:(vector<vector<Cell*>>&)grid {
     
-    for(Cell* cell in grid) {
-        [cell setTag:nil];
+    for(vector<Cell*> v : grid) {
+        for (Cell* cell : v) {
+            [cell setTag:nil];
+        }
     }
     
     int pilesOf[tagCount]; //Key is size of pile.  Value is number of piles with this many tags.
@@ -719,9 +714,9 @@ using namespace cv;
                 do {
                     tagX = randomInt(gridSize.width);
                     tagY = randomInt(gridSize.height);
-                } while([(Cell*)[grid objectAtRow:tagY col:tagX] tag]);
+                } while([grid[tagY][tagX] tag]);
                 
-                [(Cell*)[grid objectAtRow:tagY col:tagX] setTag:[[Tag alloc] initWithX:tagX andY:tagY]];
+                [grid[tagY][tagX] setTag:[[Tag alloc] initWithX:tagX andY:tagY]];
             }
         }
         else {
@@ -754,9 +749,9 @@ using namespace cv;
                         tagY = clip(roundf(pileY + (rad * sin(dir))), 0, gridSize.height - 1);
                         
                         maxRadius += 1;
-                    } while([(Cell*)[grid objectAtRow:tagY col:tagX] tag]);
+                    } while([grid[tagY][tagX] tag]);
                     
-                    [(Cell*)[grid objectAtRow:tagY col:tagX] setTag:[[Tag alloc] initWithX:tagX andY:tagY]];
+                    [grid[tagY][tagX] setTag:[[Tag alloc] initWithX:tagX andY:tagY]];
                 }
             }
         }
@@ -776,13 +771,13 @@ using namespace cv;
         tagSum += [team fitness];
         for(NSString* key in parameters) {
             float val = [[parameterSums objectForKey:key] floatValue] + [[parameters objectForKey:key] floatValue];
-            [parameterSums setObject:[NSNumber numberWithFloat:val] forKey:key];
+            [parameterSums setObject:@(val) forKey:key];
         }
     }
     
     for(NSString* key in [parameterSums allKeys]) {
         float val = [[parameterSums objectForKey:key] floatValue] / teamCount;
-        [parameterSums setObject:[NSNumber numberWithFloat:val] forKey:key];
+        [parameterSums setObject:@(val) forKey:key];
     }
     
     [averageTeam setFitness:(tagSum / teamCount) / evaluationCount];
@@ -814,65 +809,27 @@ using namespace cv;
  * Getter for all @properties of Simulation
  */
 -(NSMutableDictionary*) getParameters {
-    NSMutableDictionary* parameters = [[NSMutableDictionary alloc] initWithObjects:
-                                       [NSArray arrayWithObjects:
-                                        [NSNumber numberWithInt:teamCount],
-                                        [NSNumber numberWithInt:generationCount],
-                                        [NSNumber numberWithInt:robotCount],
-                                        [NSNumber numberWithInt:tagCount],
-                                        [NSNumber numberWithInt:evaluationCount],
-                                        [NSNumber numberWithInt:tickCount],
-                                        [NSNumber numberWithInt:exploreTime],
-                                        
-                                        [NSNumber numberWithFloat:distributionRandom],
-                                        [NSNumber numberWithFloat:distributionPowerlaw],
-                                        [NSNumber numberWithFloat:distributionClustered],
-                                        
-                                        [NSNumber numberWithInt:pileRadius],
-                                        
-                                        [NSNumber numberWithFloat:crossoverRate],
-                                        [NSNumber   numberWithFloat:mutationRate],
-                                        [NSNumber numberWithBool:elitism],
-                                        
-                                        NSStringFromSize(gridSize),
-                                        NSStringFromPoint(nest),
-                                        
-                                        [NSNumber numberWithBool:variableStepSize],
-                                        [NSNumber numberWithBool:uniformDirection],
-                                        [NSNumber numberWithBool:adaptiveWalk],
-                                        
-                                        [NSNumber numberWithBool:decentralizedPheromones],
-                                        [NSNumber numberWithInt:wirelessRange], nil] forKeys:
-                                       [NSArray arrayWithObjects:
-                                        @"teamCount",
-                                        @"generationCount",
-                                        @"robotCount",
-                                        @"tagCount",
-                                        @"evaluationCount",
-                                        @"tickCount",
-                                        @"exploreTime",
-                                        
-                                        @"distributionRandom",
-                                        @"distributionPowerlaw",
-                                        @"distributionClustered",
-                                        
-                                        @"pileRadius",
-                                        
-                                        @"crossoverRate",
-                                        @"mutationRate",
-                                        @"elitism",
-                                        
-                                        @"gridSize",
-                                        @"nest",
-                                        
-                                        @"variableStepSize",
-                                        @"uniformDirection",
-                                        @"adaptiveWalk",
-                                        
-                                        @"decentralizedPheromones",
-                                        @"wirelessRange", nil]];
-    
-    return parameters;
+    return [@{@"teamCount" : @(teamCount),
+              @"generationCount" : @(generationCount),
+              @"robotCount" : @(robotCount),
+              @"tagCount" : @(tagCount),
+              @"evaluationCount" : @(evaluationCount),
+              @"tickCount" : @(tickCount),
+              @"exploreTime" : @(exploreTime),
+              @"distributionRandom" : @(distributionRandom),
+              @"distributionPowerlaw" : @(distributionPowerlaw),
+              @"distributionClustered" : @(distributionClustered),
+              @"pileRadius" : @(pileRadius),
+              @"crossoverRate" : @(crossoverRate),
+              @"mutationRate" : @(mutationRate),
+              @"elitism" : @(elitism),
+              @"gridSize" : NSStringFromSize(gridSize),
+              @"nest" : NSStringFromPoint(nest),
+              @"variableStepSize" : @(variableStepSize),
+              @"uniformDirection" : @(uniformDirection),
+              @"adaptiveWalk" : @(adaptiveWalk),
+              @"decentralizedPheromones" : @(decentralizedPheromones),
+              @"wirelessRange" : @(wirelessRange)} mutableCopy];
 }
 
 /*
@@ -886,24 +843,18 @@ using namespace cv;
     evaluationCount = [[parameters objectForKey:@"evaluationCount"] intValue];
     tickCount = [[parameters objectForKey:@"tickCount"] intValue];
     exploreTime = [[parameters objectForKey:@"exploreTime"] intValue];
-    
     distributionRandom = [[parameters objectForKey:@"distributionRandom"] floatValue];
     distributionPowerlaw = [[parameters objectForKey:@"distributionPowerlaw"] floatValue];
     distributionClustered = [[parameters objectForKey:@"distributionClustered"] floatValue];
-    
     pileRadius = [[parameters objectForKey:@"pileRadius"] intValue];
-    
     crossoverRate = [[parameters objectForKey:@"crossoverRate"] floatValue];
     mutationRate = [[parameters objectForKey:@"mutationRate"] floatValue];
     elitism = [[parameters objectForKey:@"elitism"] boolValue];
-    
     gridSize = NSSizeFromString([parameters objectForKey:@"gridSize"]);
     nest = NSPointFromString([parameters objectForKey:@"nest"]);
-    
     variableStepSize = [[parameters objectForKey:@"variableStepSize"] boolValue];
     uniformDirection = [[parameters objectForKey:@"uniformDirection"] boolValue];
     adaptiveWalk = [[parameters objectForKey:@"adaptiveWalk"] boolValue];
-    
     decentralizedPheromones = [[parameters objectForKey:@"decentralizedPheromones"] boolValue];
     wirelessRange = [[parameters objectForKey:@"wirelessRange"] boolValue];
 }

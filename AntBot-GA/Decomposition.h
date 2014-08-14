@@ -1,14 +1,21 @@
 #import <Foundation/Foundation.h>
-#import "Array2D.h"
 #import "Cell.h"
 #import "QuadTree.h"
 
-@interface Decomposition : NSObject
+@interface Decomposition : NSObject {
+    NSMutableArray* unexploredRegions;
+}
 
-@property (nonatomic) NSMutableArray* baseRegions;
+#ifdef __cplusplus
 
--(id) initWithRegions:(NSMutableArray*)_baseRegions;
+@property (nonatomic) std::vector<std::vector<Cell*>> grid;
+
+-(id) initWithGrid:(std::vector<std::vector<Cell*>>)_grid;
+-(void) reset;
+
 -(NSMutableArray*) runDecomposition:(NSMutableArray*)regions;
 -(double) checkExploredness:(QuadTree*)region;
+
+#endif
 
 @end

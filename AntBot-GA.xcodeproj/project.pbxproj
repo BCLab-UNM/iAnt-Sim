@@ -34,8 +34,6 @@
 		4239EA621767B7A5007F35EE /* ml.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 4239E98F1767B7A4007F35EE /* ml.hpp */; };
 		4239EA6F1767B7A5007F35EE /* opencv.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 4239E99F1767B7A4007F35EE /* opencv.hpp */; };
 		423C12C91724DFAD00297C18 /* Constants.h in Headers */ = {isa = PBXBuildFile; fileRef = 423C12C71724DFAD00297C18 /* Constants.h */; };
-		423C12D61725B9BA00297C18 /* Array2D.h in Headers */ = {isa = PBXBuildFile; fileRef = 423C12D41725B9BA00297C18 /* Array2D.h */; };
-		423C12D71725B9BA00297C18 /* Array2D.m in Sources */ = {isa = PBXBuildFile; fileRef = 423C12D51725B9BA00297C18 /* Array2D.m */; };
 		424C5E461884A3F100017F25 /* Utilities.h in Headers */ = {isa = PBXBuildFile; fileRef = 424C5E441884A3F100017F25 /* Utilities.h */; };
 		424C5E471884A3F100017F25 /* Utilities.m in Sources */ = {isa = PBXBuildFile; fileRef = 424C5E451884A3F100017F25 /* Utilities.m */; };
 		4290E24217E0E2A60023CF98 /* photo.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 4290E24117E0E2A60023CF98 /* photo.hpp */; };
@@ -48,7 +46,7 @@
 		42E1C8A11731AB40000D102A /* Pheromone.h in Headers */ = {isa = PBXBuildFile; fileRef = 42E1C89F1731AB40000D102A /* Pheromone.h */; };
 		42E1C8A21731AB40000D102A /* Pheromone.m in Sources */ = {isa = PBXBuildFile; fileRef = 42E1C8A01731AB40000D102A /* Pheromone.m */; };
 		42E407D1184FD28D006F8761 /* Decomposition.h in Headers */ = {isa = PBXBuildFile; fileRef = 42E407CF184FD28D006F8761 /* Decomposition.h */; };
-		42E407D2184FD28D006F8761 /* Decomposition.m in Sources */ = {isa = PBXBuildFile; fileRef = 42E407D0184FD28D006F8761 /* Decomposition.m */; };
+		42E407D2184FD28D006F8761 /* Decomposition.mm in Sources */ = {isa = PBXBuildFile; fileRef = 42E407D0184FD28D006F8761 /* Decomposition.mm */; };
 		42EA17E817E0E640001103A9 /* libopencv_ml.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 42EA17E717E0E640001103A9 /* libopencv_ml.a */; };
 		42EA17EE17E0E728001103A9 /* retina.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 42EA17ED17E0E728001103A9 /* retina.hpp */; };
 		42EA17F017E0E733001103A9 /* openfabmap.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 42EA17EF17E0E733001103A9 /* openfabmap.hpp */; };
@@ -106,8 +104,6 @@
 		4239E98F1767B7A4007F35EE /* ml.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = ml.hpp; sourceTree = "<group>"; };
 		4239E99F1767B7A4007F35EE /* opencv.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = opencv.hpp; sourceTree = "<group>"; };
 		423C12C71724DFAD00297C18 /* Constants.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Constants.h; sourceTree = "<group>"; };
-		423C12D41725B9BA00297C18 /* Array2D.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Array2D.h; sourceTree = "<group>"; };
-		423C12D51725B9BA00297C18 /* Array2D.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Array2D.m; sourceTree = "<group>"; };
 		424C5E441884A3F100017F25 /* Utilities.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Utilities.h; sourceTree = "<group>"; };
 		424C5E451884A3F100017F25 /* Utilities.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Utilities.m; sourceTree = "<group>"; };
 		4283EA7F1880BAD6000BD73F /* Archivable.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Archivable.h; sourceTree = "<group>"; };
@@ -123,7 +119,7 @@
 		42E1C89F1731AB40000D102A /* Pheromone.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Pheromone.h; sourceTree = "<group>"; };
 		42E1C8A01731AB40000D102A /* Pheromone.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Pheromone.m; sourceTree = "<group>"; };
 		42E407CF184FD28D006F8761 /* Decomposition.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Decomposition.h; sourceTree = "<group>"; };
-		42E407D0184FD28D006F8761 /* Decomposition.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Decomposition.m; sourceTree = "<group>"; };
+		42E407D0184FD28D006F8761 /* Decomposition.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = Decomposition.mm; sourceTree = "<group>"; };
 		42EA17E717E0E640001103A9 /* libopencv_ml.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libopencv_ml.a; sourceTree = "<group>"; };
 		42EA17ED17E0E728001103A9 /* retina.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = retina.hpp; sourceTree = "<group>"; };
 		42EA17EF17E0E733001103A9 /* openfabmap.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = openfabmap.hpp; sourceTree = "<group>"; };
@@ -206,14 +202,12 @@
 				40ED65C216DABD31006F8494 /* Sim.h */,
 				423C12C71724DFAD00297C18 /* Constants.h */,
 				4283EA7F1880BAD6000BD73F /* Archivable.h */,
-				423C12D41725B9BA00297C18 /* Array2D.h */,
-				423C12D51725B9BA00297C18 /* Array2D.m */,
 				42A63E111826A49200DA3751 /* Cell.h */,
 				42A63E121826A49200DA3751 /* Cell.m */,
 				D024DB6B1823006200FF83E3 /* Cluster.h */,
 				D024DB6C1823006200FF83E3 /* Cluster.m */,
 				42E407CF184FD28D006F8761 /* Decomposition.h */,
-				42E407D0184FD28D006F8761 /* Decomposition.m */,
+				42E407D0184FD28D006F8761 /* Decomposition.mm */,
 				42307A5A176D262A005BB34B /* GA.h */,
 				42307A5B176D262A005BB34B /* GA.m */,
 				42E1C89F1731AB40000D102A /* Pheromone.h */,
@@ -368,7 +362,6 @@
 				40ED661E16DABE50006F8494 /* Tag.h in Headers */,
 				40ED662116DABE8F006F8494 /* Sim.h in Headers */,
 				423C12C91724DFAD00297C18 /* Constants.h in Headers */,
-				423C12D61725B9BA00297C18 /* Array2D.h in Headers */,
 				42E1C8A11731AB40000D102A /* Pheromone.h in Headers */,
 				4239E9E21767B7A4007F35EE /* calib3d.hpp in Headers */,
 				4239E9E91767B7A4007F35EE /* contrib.hpp in Headers */,
@@ -467,11 +460,10 @@
 				40ED661916DABE50006F8494 /* Team.m in Sources */,
 				40ED661B16DABE50006F8494 /* Simulation.mm in Sources */,
 				40ED661F16DABE50006F8494 /* Tag.m in Sources */,
-				423C12D71725B9BA00297C18 /* Array2D.m in Sources */,
 				42E1C8A21731AB40000D102A /* Pheromone.m in Sources */,
 				424C5E471884A3F100017F25 /* Utilities.m in Sources */,
 				42307A5D176D262A005BB34B /* GA.m in Sources */,
-				42E407D2184FD28D006F8761 /* Decomposition.m in Sources */,
+				42E407D2184FD28D006F8761 /* Decomposition.mm in Sources */,
 				422F6EEB187FD099008486DD /* SensorError.m in Sources */,
 				D024DB6E1823006200FF83E3 /* Cluster.m in Sources */,
 				D01FF18517F9F7B10010C1BC /* QuadTree.m in Sources */,

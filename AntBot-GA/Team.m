@@ -42,45 +42,27 @@
 #pragma Archivable methods
 
 -(NSMutableDictionary*) getParameters {
-    return [[NSMutableDictionary alloc] initWithObjects:
-            [NSArray arrayWithObjects:
-             [NSNumber numberWithFloat:pheromoneDecayRate],
-             [NSNumber numberWithFloat:travelGiveUpProbability],
-             [NSNumber numberWithFloat:searchGiveUpProbability],
-             [NSNumber numberWithFloat:decompositionAllocProbability],
-             [NSNumber numberWithFloat:uninformedSearchCorrelation],
-             [NSNumber numberWithFloat:informedSearchCorrelationDecayRate],
-             [NSNumber numberWithFloat:stepSizeVariation],
-             [NSNumber numberWithFloat:pheromoneLayingRate],
-             [NSNumber numberWithFloat:siteFidelityRate],
-             [NSNumber numberWithFloat:decompositionAllocProbability], nil] forKeys:
-            [NSArray arrayWithObjects:
-             @"pheromoneDecayRate",
-             @"travelGiveUpProbability",
-             @"searchGiveUpProbability",
-             @"decompositionAllocProbability",
-             @"uninformedSearchCorrelation",
-             @"informedSearchCorrelationDecayRate",
-             @"stepSizeVariation",
-             @"pheromoneLayingRate",
-             @"siteFidelityRate",
-             @"decompositionAllocProbability", nil]];
+    return [@{@"pheromoneDecayRate" : @(pheromoneDecayRate),
+              @"travelGiveUpProbability" : @(travelGiveUpProbability),
+              @"searchGiveUpProbability" : @(searchGiveUpProbability),
+              @"decompositionAllocProbability" : @(decompositionAllocProbability),
+              @"uninformedSearchCorrelation" : @(uninformedSearchCorrelation),
+              @"informedSearchCorrelationDecayRate" : @(informedSearchCorrelationDecayRate),
+              @"stepSizeVariation" : @(stepSizeVariation),
+              @"pheromoneLayingRate" : @(pheromoneLayingRate),
+              @"siteFidelityRate" : @(siteFidelityRate)} mutableCopy];
 }
 
 -(void) setParameters:(NSDictionary *)parameters {
     pheromoneDecayRate = [[parameters objectForKey:@"pheromoneDecayRate"] floatValue];
-    
     travelGiveUpProbability = [[parameters objectForKey:@"travelGiveUpProbability"] floatValue];
     searchGiveUpProbability = [[parameters objectForKey:@"searchGiveUpProbability"] floatValue];
     decompositionAllocProbability = [[parameters objectForKey:@"decompositionAllocProbability"] floatValue];
-    
     uninformedSearchCorrelation = [[parameters objectForKey:@"uninformedSearchCorrelation"] floatValue];
     informedSearchCorrelationDecayRate = [[parameters objectForKey:@"informedSearchCorrelationDecayRate"] floatValue];
     stepSizeVariation = [[parameters objectForKey:@"stepSizeVariation"] floatValue];
-    
     pheromoneLayingRate = [[parameters objectForKey:@"pheromoneLayingRate"] floatValue];
     siteFidelityRate = [[parameters objectForKey:@"siteFidelityRate"] floatValue];
-    decompositionAllocProbability = [[parameters objectForKey:@"siteFidelityRate"] floatValue];
 }
 
 -(void) writeParametersToFile:(NSString *)file {

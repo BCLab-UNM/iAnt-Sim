@@ -276,21 +276,14 @@ using namespace cv;
                  * and may change the robot/world state based on certain criteria (i.e. it reaches its destination).
                  */
             case ROBOT_STATUS_DEPARTING: {
-                if (tick >= exploreTime && [team explorePhase]) {
+                if ([team explorePhase] && tick >= exploreTime) {
                     [robot setStatus:ROBOT_STATUS_RETURNING];
                     [robot setTarget:nest];
                     break;
                 }
-                if([robot informed] == ROBOT_INFORMED_DECOMPOSITION && (NSEqualPoints([robot position], [robot target]))) {
-                    [robot setStatus:ROBOT_STATUS_SEARCHING];
-                    [robot setInformed:ROBOT_INFORMED_NONE];
-                    [robot turn:uniformDirection withParameters:team];
-                    [robot setLastTurned:(tick + [robot delay] + 1)];
-                    [robot setLastMoved:tick];
-                    break;
-                }
                 if((![robot informed] && (randomFloat(1.) < team.travelGiveUpProbability)) || (NSEqualPoints([robot position], [robot target]))) {
                     [robot setStatus:([team explorePhase] ? ROBOT_STATUS_EXPLORING : ROBOT_STATUS_SEARCHING)];
+                    [robot setInformed:([robot informed] == ROBOT_INFORMED_DECOMPOSITION) ? ROBOT_INFORMED_NONE : [robot informed]];
                     [robot turn:uniformDirection withParameters:team];
                     [robot setLastTurned:(tick + [robot delay] + 1)];
                     [robot setLastMoved:tick];
@@ -512,6 +505,14 @@ using namespace cv;
                         BOOL decompositionAllocFlag = randomFloat(1.) > [team decompositionAllocProbability];
                         NSPoint pheromone = [Pheromone getPheromone:pheromones atTick:tick];
                         
+                        //Update unexplored regions if running decomposition algorithm
+                        if (decompose) {
+                            @autoreleasepool {
+                                [decomp reset];
+                                [unexploredRegions setArray:[decomp runDecomposition:unexploredRegions]];
+                            }
+                        }
+                        
                         //If a tag was found, decide whether to return to its location
                         if(foundTag && siteFidelityFlag) {
                             [robot setTarget:[error perturbTargetPosition:[foundTag position] withGridSize:gridSize andGridCenter:nest]];
@@ -535,9 +536,7 @@ using namespace cv;
                         else if(([unexploredRegions count] > 0) && decompositionAllocFlag) {
                             int regionChoice = arc4random() % [unexploredRegions count];
                             QuadTree* tree = [unexploredRegions objectAtIndex:regionChoice];
-                            NSPoint target;
-                            target.x = [tree shape].origin.x + [tree shape].size.width / 2;
-                            target.y = [tree shape].origin.y + [tree shape].size.height / 2;
+                            NSPoint target = NSMakePoint([tree shape].origin.x + [tree shape].size.width / 2, [tree shape].origin.y + [tree shape].size.height / 2);
                             [robot setTarget:[error perturbTargetPosition:target withGridSize:gridSize andGridCenter:nest]];
                             [robot setInformed:ROBOT_INFORMED_DECOMPOSITION];
                         }
@@ -552,14 +551,6 @@ using namespace cv;
                         [robot setDiscoveredTags:nil];
                         [robot setSearchTime:0];
                         [robot setStatus:ROBOT_STATUS_DEPARTING];
-                        
-                        
-                        if (decompose) {
-                            @autoreleasepool {
-                                [decomp reset];
-                                [unexploredRegions setArray:[decomp runDecomposition:unexploredRegions]];
-                            }
-                        }
                     }
                 }
                 break;

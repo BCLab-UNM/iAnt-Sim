@@ -10,6 +10,6 @@
 @property (nonatomic) NSRect shape;
 @property (nonatomic) int area;
 @property (nonatomic) double percentExplored;
-@property (nonatomic) BOOL needsDecomposition;
+@property (nonatomic) BOOL dirty;
 
 @end

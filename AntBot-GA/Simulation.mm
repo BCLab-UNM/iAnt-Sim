@@ -348,6 +348,7 @@ using namespace cv;
                     [currentCell setIsExplored:YES];
                     if ([currentCell region]) {
                         [[currentCell region] setDirty:YES];
+                    }
                 }
                 
                 //Turn

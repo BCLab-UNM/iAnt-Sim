@@ -2,13 +2,13 @@
 
 @implementation Cell
 
-@synthesize tag;
-@synthesize isClustered;
-@synthesize isExplored;
+@synthesize tag, region;
+@synthesize isClustered, isExplored;
 
 -(id)init {
     if (self = [super init]) {
         tag = nil;
+        region = nil;
         isClustered = NO;
         isExplored = NO;
     }

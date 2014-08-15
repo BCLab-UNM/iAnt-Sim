@@ -66,7 +66,7 @@ using namespace cv;
         
         observedError = YES;
         
-        decompose = YES;
+        decompose = NO;
     }
     return self;
 }
@@ -343,8 +343,12 @@ using namespace cv;
                 
                 //Move one cell
                 [robot moveWithin:gridSize];
-                [grid[[robot position].y][[robot position].x] setIsExplored:YES];
-                
+                Cell* currentCell = grid[[robot position].y][[robot position].x];
+                if (![currentCell isExplored]) {
+                    [currentCell setIsExplored:YES];
+                    if ([currentCell region]) {
+                        [[currentCell region] setDirty:YES];
+                }
                 
                 //Turn
                 if(stepsRemaining <= 1) {
@@ -579,7 +583,13 @@ using namespace cv;
                 }
                 
                 [robot moveWithin:gridSize];
-                [grid[[robot position].y][[robot position].x] setIsExplored:YES];
+                Cell* currentCell = grid[[robot position].y][[robot position].x];
+                if (![currentCell isExplored]) {
+                    [currentCell setIsExplored:YES];
+                    if ([currentCell region]) {
+                        [[currentCell region] setDirty:YES];
+                    }
+                }
                 
                 if(stepsRemaining <= 1) {
                     [robot setStepSize:(int)round(randomLogNormal(0, [team stepSizeVariation]))];

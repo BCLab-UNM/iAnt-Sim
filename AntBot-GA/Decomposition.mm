@@ -7,13 +7,8 @@
 -(id) initWithGrid:(std::vector<std::vector<Cell*>>)_grid {
     if(self = [super init]) {
         grid = _grid;
-        unexploredRegions = [[NSMutableArray alloc] init];
     }
     return self;
-}
-
--(void) reset {
-    [unexploredRegions removeAllObjects];
 }
 
 /*
@@ -23,7 +18,7 @@
 -(NSMutableArray*) runDecomposition:(NSMutableArray*)regions {
     int width1, width2, height1, height2;
     NSMutableArray* parents = [[NSMutableArray alloc] init];
-    NSMutableArray* allChildren = [[NSMutableArray alloc] init];
+    NSMutableArray* unexploredRegions = [[NSMutableArray alloc] init];
     
     for(QuadTree* region in regions) {
         if ([region dirty]) {
@@ -39,6 +34,8 @@
             [unexploredRegions addObject:region];
         }
     }
+    
+    NSMutableArray* children = [[NSMutableArray alloc] init];
     
     for(QuadTree* parent in parents) {
         if(fmod([parent shape].size.width, 2) == 0) {
@@ -56,22 +53,20 @@
             height2 = ([parent shape].size.height / 2) + 1;
         }
         
-        QuadTree* northWest = [[QuadTree alloc] initWithRect:NSMakeRect([parent shape].origin.x, [parent shape].origin.y, width1, height1)];
-        QuadTree* northEast = [[QuadTree alloc] initWithRect:NSMakeRect([parent shape].origin.x + width1, [parent shape].origin.y, width2, height1)];
-        QuadTree* southWest = [[QuadTree alloc] initWithRect:NSMakeRect([parent shape].origin.x, [parent shape].origin.y + height1, width1, height2)];
-        QuadTree* southEast = [[QuadTree alloc] initWithRect:NSMakeRect([parent shape].origin.x + width1, [parent shape].origin.y + height1, width2, height2)];
-        
-        [allChildren addObject:northWest];
-        [allChildren addObject:northEast];
-        [allChildren addObject:southWest];
-        [allChildren addObject:southEast];
+        [children addObject:[[QuadTree alloc] initWithRect:NSMakeRect([parent shape].origin.x, [parent shape].origin.y, width1, height1)]];
+        [children addObject:[[QuadTree alloc] initWithRect:NSMakeRect([parent shape].origin.x + width1, [parent shape].origin.y, width2, height1)]];
+        [children addObject:[[QuadTree alloc] initWithRect:NSMakeRect([parent shape].origin.x, [parent shape].origin.y + height1, width1, height2)]];
+        [children addObject:[[QuadTree alloc] initWithRect:NSMakeRect([parent shape].origin.x + width1, [parent shape].origin.y + height1, width2, height2)]];
     }
     
-    if ([allChildren count]) {
-        [self runDecomposition:allChildren];
+    //Recursive case
+    if ([children count]) {
+        return [[unexploredRegions arrayByAddingObjectsFromArray:[self runDecomposition:children]] mutableCopy];
     }
-    
-    return unexploredRegions;
+    //Base case
+    else {
+        return unexploredRegions;
+    }
 }
 
 /*

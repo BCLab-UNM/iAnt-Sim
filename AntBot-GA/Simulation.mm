@@ -221,7 +221,6 @@ using namespace cv;
         [unexploredRegions removeAllObjects];
         [clusters removeAllObjects];
         [foundTags removeAllObjects];
-        [decomp reset];
         
         for(int tick = 0; tick < tickCount; tick++) {
             
@@ -282,7 +281,13 @@ using namespace cv;
                     break;
                 }
                 if((![robot informed] && (randomFloat(1.) < team.travelGiveUpProbability)) || (NSEqualPoints([robot position], [robot target]))) {
-                    [robot setStatus:([team explorePhase] ? ROBOT_STATUS_EXPLORING : ROBOT_STATUS_SEARCHING)];
+                    if ([team explorePhase]) {
+                        [robot setStatus:ROBOT_STATUS_EXPLORING];
+                        [robot setDiscoveredTags:[[NSMutableArray alloc] init]];
+                    }
+                    else {
+                        [robot setStatus:ROBOT_STATUS_SEARCHING];
+                    }
                     [robot setInformed:([robot informed] == ROBOT_INFORMED_DECOMPOSITION) ? ROBOT_INFORMED_NONE : [robot informed]];
                     [robot turn:uniformDirection withParameters:team];
                     [robot setLastTurned:(tick + [robot delay] + 1)];
@@ -475,6 +480,7 @@ using namespace cv;
                             }
                             
                             for (Robot* r in robots) {
+                                [r setDiscoveredTags:nil];
                                 [r setStatus:ROBOT_STATUS_RETURNING];
                             }
                             
@@ -507,13 +513,11 @@ using namespace cv;
                         
                         //Set required local variables
                         BOOL siteFidelityFlag = randomFloat(1.) < poissonCDF([[robot discoveredTags] count], [team siteFidelityRate]);
-                        BOOL decompositionAllocFlag = randomFloat(1.) > [team decompositionAllocProbability];
                         NSPoint pheromone = [Pheromone getPheromone:pheromones atTick:tick];
                         
                         //Update unexplored regions if running decomposition algorithm
                         if (decompose) {
                             @autoreleasepool {
-                                [decomp reset];
                                 [unexploredRegions setArray:[decomp runDecomposition:unexploredRegions]];
                             }
                         }
@@ -538,7 +542,7 @@ using namespace cv;
                             [robot setInformed:ROBOT_INFORMED_PHEROMONE];
                         }
                         
-                        else if(([unexploredRegions count] > 0) && decompositionAllocFlag) {
+                        else if([unexploredRegions count] > 0) {
                             int regionChoice = arc4random() % [unexploredRegions count];
                             QuadTree* tree = [unexploredRegions objectAtIndex:regionChoice];
                             NSPoint target = NSMakePoint([tree shape].origin.x + [tree shape].size.width / 2, [tree shape].origin.y + [tree shape].size.height / 2);

@@ -3,7 +3,7 @@
 @implementation Team
 
 @synthesize travelGiveUpProbability, searchGiveUpProbability;
-@synthesize uninformedSearchCorrelation, informedSearchCorrelationDecayRate, stepSizeVariation;
+@synthesize uninformedSearchCorrelation, informedSearchCorrelationDecayRate;
 @synthesize pheromoneDecayRate, pheromoneLayingRate, siteFidelityRate;
 @synthesize fitness, explorePhase;
 
@@ -14,7 +14,6 @@
         
         uninformedSearchCorrelation = randomFloat(2 * M_2PI);
         informedSearchCorrelationDecayRate = randomExponential(5.0);
-        stepSizeVariation = randomExponential(1.0);
         
         pheromoneDecayRate = randomExponential(10.0);
         pheromoneLayingRate = randomFloat(20.);
@@ -44,7 +43,6 @@
               @"searchGiveUpProbability" : @(searchGiveUpProbability),
               @"uninformedSearchCorrelation" : @(uninformedSearchCorrelation),
               @"informedSearchCorrelationDecayRate" : @(informedSearchCorrelationDecayRate),
-              @"stepSizeVariation" : @(stepSizeVariation),
               @"pheromoneDecayRate" : @(pheromoneDecayRate),
               @"pheromoneLayingRate" : @(pheromoneLayingRate),
               @"siteFidelityRate" : @(siteFidelityRate)} mutableCopy];
@@ -55,20 +53,18 @@
     searchGiveUpProbability = [[parameters objectForKey:@"searchGiveUpProbability"] floatValue];
     uninformedSearchCorrelation = [[parameters objectForKey:@"uninformedSearchCorrelation"] floatValue];
     informedSearchCorrelationDecayRate = [[parameters objectForKey:@"informedSearchCorrelationDecayRate"] floatValue];
-    stepSizeVariation = [[parameters objectForKey:@"stepSizeVariation"] floatValue];
     pheromoneDecayRate = [[parameters objectForKey:@"pheromoneDecayRate"] floatValue];
     pheromoneLayingRate = [[parameters objectForKey:@"pheromoneLayingRate"] floatValue];
     siteFidelityRate = [[parameters objectForKey:@"siteFidelityRate"] floatValue];
 }
 
 -(void) writeParametersToFile:(NSString *)file {
-    [Utilities appendText:[NSString stringWithFormat:@"%f,%f,%f,%f,%f,%f,%f,%f,%f\n",
+    [Utilities appendText:[NSString stringWithFormat:@"%f,%f,%f,%f,%f,%f,%f,%f\n",
                            [self pheromoneDecayRate],
                            [self travelGiveUpProbability],
                            [self searchGiveUpProbability],
                            [self uninformedSearchCorrelation],
                            [self informedSearchCorrelationDecayRate],
-                           [self stepSizeVariation],
                            [self pheromoneLayingRate],
                            [self siteFidelityRate],
                            [self fitness]]
@@ -82,7 +78,6 @@
     @"searchGiveUpProbability,"
     @"uninformedSearchCorrelation,"
     @"informedSearchCorrelationDecayRate,"
-    @"stepSizeVariation,"
     @"pheromoneDecayRate,"
     @"pheromoneLayingRate,"
     @"siteFidelityRate,"

@@ -16,7 +16,7 @@
 @class Tag;
 
 @interface NSObject(SimulationViewNotifications)
- #ifdef __cplusplus
+#ifdef __cplusplus
 -(void) updateDisplayWindowWithRobots:(NSMutableArray*)_robots team:(Team*)_team grid:(std::vector<std::vector<Cell*>>&)_grid pheromones:(NSMutableArray*)_pheromones regions:(NSMutableArray*)_regions clusters:(NSMutableArray*)_clusters;
 #endif
 @end
@@ -73,13 +73,6 @@
 
 @property (nonatomic) NSSize gridSize;
 @property (nonatomic) NSPoint nest;
-
-@property (nonatomic) BOOL variableStepSize;
-@property (nonatomic) BOOL uniformDirection;
-@property (nonatomic) BOOL adaptiveWalk;
-
-@property (nonatomic) BOOL decentralizedPheromones;
-@property (nonatomic) int wirelessRange;
 
 @property (nonatomic) BOOL decompose;
 

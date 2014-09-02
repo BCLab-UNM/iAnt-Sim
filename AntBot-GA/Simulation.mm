@@ -20,8 +20,6 @@ using namespace cv;
 @synthesize pileRadius;
 @synthesize crossoverRate, mutationRate, selectionOperator, crossoverOperator, mutationOperator, elitism;
 @synthesize gridSize, nest;
-@synthesize variableStepSize, uniformDirection, adaptiveWalk;
-@synthesize decentralizedPheromones, wirelessRange;
 @synthesize parameterFile;
 @synthesize error, observedError;
 @synthesize decompose;
@@ -51,16 +49,9 @@ using namespace cv;
         crossoverOperator = UniformPointCrossId;
         mutationOperator = FixedVarMutId;
         elitism = YES;
-
+        
         gridSize = NSMakeSize(125, 125);
         nest = NSMakePoint(62, 62);
-
-        variableStepSize = NO;
-        uniformDirection = NO;
-        adaptiveWalk = YES;
-        
-        decentralizedPheromones = NO;
-        wirelessRange = 10;
         
         parameterFile = nil;
         
@@ -88,7 +79,7 @@ using namespace cv;
             [teams addObject:[[Team alloc] initRandom]];
         }
     }
-
+    
     //Allocate and initialize error model
     if (observedError) {
         error = [[SensorError alloc] initObserved];
@@ -96,7 +87,7 @@ using namespace cv;
     else {
         error = [[SensorError alloc] init];
     }
-
+    
     //Initialize average and best teams
     [self setAverageTeamFrom:teams];
     [self setBestTeamFrom:teams];
@@ -197,7 +188,7 @@ using namespace cv;
     NSMutableArray* foundTags = [[NSMutableArray alloc] init];
     for(int i = 0; i < robotCount; i++){[robots addObject:[[Robot alloc] init]];}
     Decomposition* decomp = [[Decomposition alloc] initWithGrid:grid];
-
+    
     for(Team* team in teams) {
         for (vector<Cell*> v : grid) {
             for (Cell* cell : v) {
@@ -212,9 +203,6 @@ using namespace cv;
         
         for(Robot* robot in robots) {
             [robot reset];
-            if (variableStepSize) {
-                [robot setStepSize:(int)round(randomLogNormal(0, [team stepSizeVariation]))];
-            }
         }
         
         [pheromones removeAllObjects];
@@ -289,7 +277,7 @@ using namespace cv;
                         [robot setStatus:ROBOT_STATUS_SEARCHING];
                     }
                     [robot setInformed:([robot informed] == ROBOT_INFORMED_DECOMPOSITION) ? ROBOT_INFORMED_NONE : [robot informed]];
-                    [robot turn:uniformDirection withParameters:team];
+                    [robot turnWithParameters:team];
                     [robot setLastTurned:(tick + [robot delay] + 1)];
                     [robot setLastMoved:tick];
                     break;
@@ -316,28 +304,13 @@ using namespace cv;
                 
                 //Probabilistically give up searching and return to the nest
                 if(randomFloat(1.) < [team searchGiveUpProbability]) {
-                    if(decentralizedPheromones && !NSEqualPoints([robot localPheromone], NSNullPoint)) {
-                        [robot setTarget:[robot localPheromone]];
-                        [robot setInformed:ROBOT_INFORMED_PHEROMONE];
-                        [robot setStatus:ROBOT_STATUS_DEPARTING];
-                    }
-                    else {
-                        [robot setTarget:nest];
-                        [robot setStatus:ROBOT_STATUS_RETURNING];
-                    }
-                    [robot setLocalPheromone:NSNullPoint];
-                    [robot setRecruitmentTarget:NSNullPoint];
+                    [robot setTarget:nest];
+                    [robot setStatus:ROBOT_STATUS_RETURNING];
                     break;
                 }
                 
-                //Broadcast decentralized pheromones if using them
-                if(decentralizedPheromones && ([robot informed] == ROBOT_INFORMED_MEMORY) && [robot recruitmentTarget].x > 0) {
-                    [robot broadcastPheromone:[robot recruitmentTarget] toRobots:robots atRange:wirelessRange];
-                }
-                
-                //Calculate end point based on step size
-                int stepsRemaining = [robot stepSize] - (tick - [robot lastTurned]);
-                [robot setTarget:NSMakePoint(roundf([robot position].x + (cos(robot.direction) * stepsRemaining)), roundf([robot position].y + (sin([robot direction]) * stepsRemaining)))];
+                //Calculate end point
+                [robot setTarget:NSMakePoint(roundf([robot position].x + (cos(robot.direction))), roundf([robot position].y + (sin([robot direction]))))];
                 
                 //If our current direction takes us outside the world, frantically spin around until this isn't the case.
                 while([robot target].x < 0 || [robot target].y < 0 || [robot target].x >= gridSize.width || [robot target].y >= gridSize.height) {
@@ -357,14 +330,8 @@ using namespace cv;
                 }
                 
                 //Turn
-                if(stepsRemaining <= 1) {
-                    if (variableStepSize) {
-                        [robot setStepSize:(int)round(randomLogNormal(0, [team stepSizeVariation]))];
-                    }
-                    
-                    [robot turn:uniformDirection withParameters:team];
-                    [robot setLastTurned:(tick + [robot delay] + 1)];
-                }
+                [robot turnWithParameters:team];
+                [robot setLastTurned:(tick + [robot delay] + 1)];
                 
                 //After we've moved 1 square ahead, check one square ahead for a tag.
                 //Reusing robot.target here (without consequence, it just gets overwritten when moving).
@@ -404,8 +371,6 @@ using namespace cv;
                         [robot setStatus:ROBOT_STATUS_RETURNING];
                         [robot setDelay:9];
                         [robot setTarget:nest];
-                        [robot setLocalPheromone:NSNullPoint];
-                        [robot setRecruitmentTarget:NSNullPoint];
                     }
                 }
                 
@@ -502,10 +467,8 @@ using namespace cv;
                             tagsFound++;
                         }
                         
-                        //Add (perturbed) tag position to global pheromone array if using centralized pheromones
-                        //Use of *decentralized pheromones* guarantees that the pheromones array will always be empty, which means robots will only be recruited from the nest when using *centralized pheromones*
-                        if (foundTag && !decentralizedPheromones &&
-                            (randomFloat(1.) < poissonCDF([[robot discoveredTags] count], [team pheromoneLayingRate]))) {
+                        //Add (perturbed) tag position to global pheromone array
+                        if (foundTag && (randomFloat(1.) < poissonCDF([[robot discoveredTags] count], [team pheromoneLayingRate]))) {
                             Pheromone* p = [[Pheromone alloc] initWithPosition:[foundTag position] weight:1. decayRate:[team pheromoneDecayRate] andUpdatedTick:tick];
                             [pheromones addObject:p];
                         }
@@ -526,14 +489,6 @@ using namespace cv;
                         if(foundTag && siteFidelityFlag) {
                             [robot setTarget:[error perturbTargetPosition:[foundTag position] withGridSize:gridSize andGridCenter:nest]];
                             [robot setInformed:ROBOT_INFORMED_MEMORY];
-                            //Decide whether to broadcast pheromones locally
-                            if(decentralizedPheromones &&
-                               (randomFloat(1.) < exponentialCDF([[robot discoveredTags] count], [team pheromoneLayingRate]))) {
-                                [robot setRecruitmentTarget:[foundTag position]];
-                            }
-                            else {
-                                [robot setRecruitmentTarget:NSNullPoint];
-                            }
                         }
                         
                         //If no pheromones exist, pheromone will be (-1, -1)
@@ -567,7 +522,6 @@ using namespace cv;
             case ROBOT_STATUS_EXPLORING: {
                 if (tick >= exploreTime) {
                     robot.status = ROBOT_STATUS_RETURNING;
-                    [robot setStepSize:(variableStepSize ? (int)round(randomLogNormal(0, team.stepSizeVariation)) : 1)];
                     [robot setTarget:nest];
                     break;
                 }
@@ -577,8 +531,7 @@ using namespace cv;
                 }
                 [robot setDelay:0];
                 
-                int stepsRemaining = [robot stepSize] - (tick - [robot lastTurned]);
-                [robot setTarget:NSMakePoint(roundf([robot position].x+(cos(robot.direction)*stepsRemaining)),roundf([robot position].y+(sin([robot direction])*stepsRemaining)))];
+                [robot setTarget:NSMakePoint(roundf([robot position].x+(cos(robot.direction))),roundf([robot position].y+(sin([robot direction]))))];
                 
                 //If our current direction takes us outside the world, frantically spin around until this isn't the case.
                 while([robot target].x < 0 || [robot target].y < 0 || [robot target].x >= gridSize.width || [robot target].y >= gridSize.height) {
@@ -595,11 +548,8 @@ using namespace cv;
                     }
                 }
                 
-                if(stepsRemaining <= 1) {
-                    [robot setStepSize:(int)round(randomLogNormal(0, [team stepSizeVariation]))];
-                    [robot turn:TRUE withParameters:team];
-                    [robot setLastTurned:(tick + robot.delay + 1)];
-                }
+                [robot turnWithParameters:team];
+                [robot setLastTurned:(tick + robot.delay + 1)];
                 
                 //After we've moved 1 square ahead, check one square ahead for a tag.
                 //Reusing robot.target here (without consequence, it just gets overwritten when moving).
@@ -672,7 +622,7 @@ using namespace cv;
             aggregate.at<double>(counter, 1) = [tag position].y;
             counter++;
         }
-
+        
         //Train EM
         em.train(aggregate);
     }
@@ -829,12 +779,7 @@ using namespace cv;
               @"mutationRate" : @(mutationRate),
               @"elitism" : @(elitism),
               @"gridSize" : NSStringFromSize(gridSize),
-              @"nest" : NSStringFromPoint(nest),
-              @"variableStepSize" : @(variableStepSize),
-              @"uniformDirection" : @(uniformDirection),
-              @"adaptiveWalk" : @(adaptiveWalk),
-              @"decentralizedPheromones" : @(decentralizedPheromones),
-              @"wirelessRange" : @(wirelessRange)} mutableCopy];
+              @"nest" : NSStringFromPoint(nest)} mutableCopy];
 }
 
 /*
@@ -857,11 +802,6 @@ using namespace cv;
     elitism = [[parameters objectForKey:@"elitism"] boolValue];
     gridSize = NSSizeFromString([parameters objectForKey:@"gridSize"]);
     nest = NSPointFromString([parameters objectForKey:@"nest"]);
-    variableStepSize = [[parameters objectForKey:@"variableStepSize"] boolValue];
-    uniformDirection = [[parameters objectForKey:@"uniformDirection"] boolValue];
-    adaptiveWalk = [[parameters objectForKey:@"adaptiveWalk"] boolValue];
-    decentralizedPheromones = [[parameters objectForKey:@"decentralizedPheromones"] boolValue];
-    wirelessRange = [[parameters objectForKey:@"wirelessRange"] boolValue];
 }
 
 -(void)writeParametersToFile:(NSString *)file {

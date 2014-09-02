@@ -542,10 +542,9 @@ using namespace cv;
                             [robot setInformed:ROBOT_INFORMED_PHEROMONE];
                         }
                         
-                        else if([unexploredRegions count] > 0) {
-                            int regionChoice = arc4random() % [unexploredRegions count];
-                            QuadTree* tree = [unexploredRegions objectAtIndex:regionChoice];
-                            NSPoint target = NSMakePoint([tree shape].origin.x + [tree shape].size.width / 2, [tree shape].origin.y + [tree shape].size.height / 2);
+                        else if(decompose && [unexploredRegions count]) {
+                            NSRect targetRegion = [[unexploredRegions firstObject] shape];
+                            NSPoint target = NSMakePoint(targetRegion.origin.x + targetRegion.size.width / 2, targetRegion.origin.y + targetRegion.size.height / 2);
                             [robot setTarget:[error perturbTargetPosition:target withGridSize:gridSize andGridCenter:nest]];
                             [robot setInformed:ROBOT_INFORMED_DECOMPOSITION];
                         }

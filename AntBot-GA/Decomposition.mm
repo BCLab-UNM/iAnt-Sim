@@ -2,11 +2,13 @@
 
 @implementation Decomposition
 
+@synthesize exploredCutoff;
 @synthesize grid;
 
--(id) initWithGrid:(std::vector<std::vector<Cell*>>)_grid {
+-(id) initWithGrid:(std::vector<std::vector<Cell*>>)_grid andExploredCutoff:(float)_exploredCutoff {
     if(self = [super init]) {
         grid = _grid;
+        exploredCutoff = _exploredCutoff;
     }
     return self;
 }
@@ -26,7 +28,7 @@
             if([region percentExplored] == 0 && ([region area] >= 4)) {
                 [unexploredRegions addObject:region];
             }
-            else if(([region percentExplored] <= .5) && ([region area] >= 4)){
+            else if(([region percentExplored] <= exploredCutoff) && ([region area] >= 4)){
                 [parents addObject:region];
             }
         }

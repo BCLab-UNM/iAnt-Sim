@@ -5,7 +5,7 @@
 @synthesize travelGiveUpProbability, searchGiveUpProbability;
 @synthesize uninformedSearchCorrelation, informedSearchCorrelationDecayRate;
 @synthesize pheromoneDecayRate, pheromoneLayingRate, siteFidelityRate;
-@synthesize fitness, explorePhase;
+@synthesize fitness, timeToCompleteCollection, explorePhase;
 
 -(id) initRandom {
     if(self = [super init]) {

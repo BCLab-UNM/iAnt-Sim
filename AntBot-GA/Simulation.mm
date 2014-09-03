@@ -14,7 +14,7 @@ using namespace cv;
 
 @implementation Simulation
 
-@synthesize teamCount, generationCount, robotCount, tagCount, evaluationCount, evaluationLimit, tickCount, exploreTime;
+@synthesize teamCount, generationCount, robotCount, tagCount, evaluationCount, evaluationLimit, tickCount, exploreTime, exploredCutoff;
 @synthesize distributionRandom, distributionPowerlaw, distributionClustered;
 @synthesize averageTeam, bestTeam;
 @synthesize pileRadius;
@@ -22,7 +22,6 @@ using namespace cv;
 @synthesize gridSize, nest;
 @synthesize parameterFile;
 @synthesize error, observedError;
-@synthesize decompose;
 @synthesize delegate, viewDelegate;
 @synthesize tickRate;
 
@@ -36,6 +35,7 @@ using namespace cv;
         evaluationLimit = -1;
         tickCount = 7200;
         exploreTime = 0;
+        exploredCutoff = 0.;
         
         distributionClustered = 1.;
         distributionPowerlaw = 0.;
@@ -56,8 +56,6 @@ using namespace cv;
         parameterFile = nil;
         
         observedError = YES;
-        
-        decompose = NO;
     }
     return self;
 }
@@ -65,7 +63,7 @@ using namespace cv;
 /*
  * Starts the simulation run.
  */
--(NSMutableArray*) run {
+-(NSMutableDictionary*) run {
     
     srandomdev(); //Seed random number generator.
     
@@ -130,6 +128,7 @@ using namespace cv;
     for(int generation = 0; generation < generationCount && evalCount < evaluationLimit; generation++) {
         for(Team* team in teams) {
             [team setFitness:0.];
+            [team setTimeToCompleteCollection:0.];
             if (exploreTime > 0) {
                 [team setExplorePhase:YES];
             }
@@ -187,7 +186,7 @@ using namespace cv;
     NSMutableArray* clusters = [[NSMutableArray alloc] init];
     NSMutableArray* foundTags = [[NSMutableArray alloc] init];
     for(int i = 0; i < robotCount; i++){[robots addObject:[[Robot alloc] init]];}
-    Decomposition* decomp = [[Decomposition alloc] initWithGrid:grid];
+    Decomposition* decomp = [[Decomposition alloc] initWithGrid:grid andExploredCutoff:exploredCutoff];
     
     for(Team* team in teams) {
         for (vector<Cell*> v : grid) {
@@ -210,11 +209,16 @@ using namespace cv;
         [clusters removeAllObjects];
         [foundTags removeAllObjects];
         
-        for(int tick = 0; tick < tickCount; tick++) {
+        for(int tick = 0; tickCount >= 0 ? tick < tickCount : YES; tick++) {
             
             int tagsFound = [self stateTransition:robots inTeam:team atTick:tick onGrid:grid withDecomp:decomp withPheromones:pheromones clusters:clusters foundTags:foundTags unexploredRegions:unexploredRegions];
             
             [team setFitness:[team fitness] + tagsFound];
+            
+            if ([team fitness] == [self tagCount]) {
+                [team setTimeToCompleteCollection:tick];
+                break;
+            }
             
             if(tickRate != 0.f){[NSThread sleepForTimeInterval:tickRate];}
             if(viewDelegate != nil) {
@@ -428,19 +432,10 @@ using namespace cv;
                                 }
                             }
                             
-                            //Calculate determinants of covs
-                            //Store results in covDeterminants
-                            double determinantSum = 0;
-                            vector<double> covDeterminants;
-                            for(Mat cov : covs) {
-                                covDeterminants.push_back(determinant(cov));
-                                determinantSum += covDeterminants.back();
-                            }
-                            
                             //Iterate through clusters
                             for(int i = 0; i < em.get<int>("nclusters"); i++) {
                                 //Create pheromone at centroid location
-                                Pheromone* p = [[Pheromone alloc] initWithPosition:NSMakePoint(means.at<double>(i,0), means.at<double>(i,1)) weight:1 - covDeterminants[i]/determinantSum decayRate:[team pheromoneDecayRate] andUpdatedTick:tick];
+                                Pheromone* p = [[Pheromone alloc] initWithPosition:NSMakePoint(means.at<double>(i,0), means.at<double>(i,1)) weight:1 decayRate:[team pheromoneDecayRate] andUpdatedTick:tick];
                                 [pheromones addObject:p];
                             }
                             
@@ -450,11 +445,10 @@ using namespace cv;
                             }
                             
                             [team setExplorePhase:NO];
-                            if (decompose) {
-                                @autoreleasepool {
-                                    QuadTree* seedRegion = [[QuadTree alloc] initWithRect:NSMakeRect(0., 0., gridSize.width, gridSize.height)];
-                                    [unexploredRegions setArray:[decomp runDecomposition:[NSMutableArray arrayWithObject:seedRegion]]];
-                                }
+                            
+                            @autoreleasepool {
+                                QuadTree* seedRegion = [[QuadTree alloc] initWithRect:NSMakeRect(0., 0., gridSize.width, gridSize.height)];
+                                [unexploredRegions setArray:[decomp runDecomposition:[NSMutableArray arrayWithObject:seedRegion]]];
                             }
                         }
                     }
@@ -479,7 +473,7 @@ using namespace cv;
                         NSPoint pheromone = [Pheromone getPheromone:pheromones atTick:tick];
                         
                         //Update unexplored regions if running decomposition algorithm
-                        if (decompose) {
+                        if ([unexploredRegions count]) {
                             @autoreleasepool {
                                 [unexploredRegions setArray:[decomp runDecomposition:unexploredRegions]];
                             }
@@ -497,7 +491,7 @@ using namespace cv;
                             [robot setInformed:ROBOT_INFORMED_PHEROMONE];
                         }
                         
-                        else if(decompose && [unexploredRegions count]) {
+                        else if([unexploredRegions count]) {
                             NSRect targetRegion = [[unexploredRegions firstObject] shape];
                             NSPoint target = NSMakePoint(targetRegion.origin.x + targetRegion.size.width / 2, targetRegion.origin.y + targetRegion.size.height / 2);
                             [robot setTarget:[error perturbTargetPosition:target withGridSize:gridSize andGridCenter:nest]];
@@ -579,14 +573,16 @@ using namespace cv;
 /*
  * Run 100 post evaluations of the average team from the final generation (i.e. generationCount)
  */
--(NSMutableArray*) evaluateTeam:(Team*)team onGrid:(vector<vector<Cell*>>)grid{
+-(NSMutableDictionary*) evaluateTeam:(Team*)team onGrid:(vector<vector<Cell*>>)grid{
     NSMutableArray* fitness = [[NSMutableArray alloc] init];
+    NSMutableArray* time = [[NSMutableArray alloc] init];
     NSMutableArray* teams = [[NSMutableArray alloc] initWithObjects:averageTeam, nil];
     
     for (int i = 0; i < 100; i++) {
         
         //Reset
         [averageTeam setFitness:0.];
+        [averageTeam setTimeToCompleteCollection:0.];
         if (exploreTime > 0) {
             [team setExplorePhase:YES];
         }
@@ -597,9 +593,10 @@ using namespace cv;
         //Evaluate
         [self evaluateTeams:teams onGrid:grid];
         [fitness addObject:@([averageTeam fitness])];
+        [time addObject:@([averageTeam timeToCompleteCollection])];
     }
     
-    return fitness;
+    return [@{@"fitness":fitness, @"time":time} mutableCopy];
 }
 
 /*

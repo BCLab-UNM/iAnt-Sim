@@ -30,11 +30,11 @@
     GA* ga;
 }
 
--(NSMutableArray*) run;
+-(NSMutableDictionary*) run;
 
 #ifdef __cplusplus
 -(void) evaluateTeams:(NSMutableArray*)teams onGrid:(std::vector<std::vector<Cell*>>)grid;
--(NSMutableArray*) evaluateTeam:(Team*)team onGrid:(std::vector<std::vector<Cell*>>)grid;
+-(NSMutableDictionary*) evaluateTeam:(Team*)team onGrid:(std::vector<std::vector<Cell*>>)grid;
 -(int) stateTransition:(NSMutableArray*)robots inTeam:(Team*)team atTick:(int)tick onGrid:(std::vector<std::vector<Cell*>>&)grid withDecomp:(Decomposition*)decomp
         withPheromones:(NSMutableArray*)pheromones
               clusters:(NSMutableArray*)clusters
@@ -57,6 +57,7 @@
 @property (nonatomic) int evaluationLimit;
 @property (nonatomic) int tickCount;
 @property (nonatomic) int exploreTime;
+@property (nonatomic) float exploredCutoff;
 
 @property (nonatomic) float distributionRandom;
 @property (nonatomic) float distributionPowerlaw;
@@ -73,8 +74,6 @@
 
 @property (nonatomic) NSSize gridSize;
 @property (nonatomic) NSPoint nest;
-
-@property (nonatomic) BOOL decompose;
 
 @property (nonatomic) NSString* parameterFile;
 

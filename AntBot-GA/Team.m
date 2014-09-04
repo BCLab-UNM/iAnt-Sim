@@ -74,11 +74,11 @@
 
 +(void) writeParameterNamesToFile:(NSString *)file {
     NSString* headers =
+    @"pheromoneDecayRate,"
     @"travelGiveUpProbability,"
     @"searchGiveUpProbability,"
     @"uninformedSearchCorrelation,"
     @"informedSearchCorrelationDecayRate,"
-    @"pheromoneDecayRate,"
     @"pheromoneLayingRate,"
     @"siteFidelityRate,"
     @"fitness\n";

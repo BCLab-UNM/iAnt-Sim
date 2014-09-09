@@ -208,6 +208,7 @@ using namespace cv;
         [unexploredRegions removeAllObjects];
         [clusters removeAllObjects];
         [foundTags removeAllObjects];
+        [decomp setUnexploredArea:(grid.size() * grid.at(0).size())];
         
         for(int tick = 0; tickCount >= 0 ? tick < tickCount : YES; tick++) {
             
@@ -478,7 +479,7 @@ using namespace cv;
                                 [unexploredRegions setArray:[decomp runDecomposition:unexploredRegions]];
                             }
                         }
-                        
+
                         //If a tag was found, decide whether to return to its location
                         if(foundTag && siteFidelityFlag) {
                             [robot setTarget:[error perturbTargetPosition:[foundTag position] withGridSize:gridSize andGridCenter:nest]];
@@ -490,14 +491,24 @@ using namespace cv;
                             [robot setTarget:[error perturbTargetPosition:pheromone withGridSize:gridSize andGridCenter:nest]];
                             [robot setInformed:ROBOT_INFORMED_PHEROMONE];
                         }
-                        
+
                         else if([unexploredRegions count]) {
-                            NSRect targetRegion = [[unexploredRegions firstObject] shape];
-                            NSPoint target = NSMakePoint(targetRegion.origin.x + targetRegion.size.width / 2, targetRegion.origin.y + targetRegion.size.height / 2);
+                            int r = randomInt((int)[decomp unexploredArea]);
+                            NSPoint target = NSMakePoint(0, 0);
+                            
+                            for(QuadTree* region in unexploredRegions) {
+                                if(r < [region area]) {
+                                    //Pick random point in region
+                                    target = NSMakePoint(randomIntRange([region shape].origin.x, [region shape].origin.x + [region shape].size.width),
+                                                         randomIntRange([region shape].origin.y, [region shape].origin.y + [region shape].size.height));
+                                    break;
+                                }
+                                r -= [region area];
+                            }
+                            
                             [robot setTarget:[error perturbTargetPosition:target withGridSize:gridSize andGridCenter:nest]];
                             [robot setInformed:ROBOT_INFORMED_DECOMPOSITION];
                         }
-                        
                         
                         //If no pheromones and no tag and no partitioning knowledge, go to a random location
                         else {

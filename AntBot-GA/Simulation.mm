@@ -779,15 +779,22 @@ using namespace cv;
               @"evaluationCount" : @(evaluationCount),
               @"tickCount" : @(tickCount),
               @"exploreTime" : @(exploreTime),
+              @"exploredCutoff" : @(exploredCutoff),
+              
               @"distributionRandom" : @(distributionRandom),
               @"distributionPowerlaw" : @(distributionPowerlaw),
               @"distributionClustered" : @(distributionClustered),
+              
               @"pileRadius" : @(pileRadius),
+              
               @"crossoverRate" : @(crossoverRate),
               @"mutationRate" : @(mutationRate),
               @"elitism" : @(elitism),
+              
               @"gridSize" : NSStringFromSize(gridSize),
-              @"nest" : NSStringFromPoint(nest)} mutableCopy];
+              @"nest" : NSStringFromPoint(nest),
+              
+              @"observedError" : @(observedError)} mutableCopy];
 }
 
 /*
@@ -801,15 +808,23 @@ using namespace cv;
     evaluationCount = [[parameters objectForKey:@"evaluationCount"] intValue];
     tickCount = [[parameters objectForKey:@"tickCount"] intValue];
     exploreTime = [[parameters objectForKey:@"exploreTime"] intValue];
+    exploredCutoff = [[parameters objectForKey:@"exploredCutoff"] floatValue];
+    
     distributionRandom = [[parameters objectForKey:@"distributionRandom"] floatValue];
     distributionPowerlaw = [[parameters objectForKey:@"distributionPowerlaw"] floatValue];
     distributionClustered = [[parameters objectForKey:@"distributionClustered"] floatValue];
+    
+    
     pileRadius = [[parameters objectForKey:@"pileRadius"] intValue];
+    
     crossoverRate = [[parameters objectForKey:@"crossoverRate"] floatValue];
     mutationRate = [[parameters objectForKey:@"mutationRate"] floatValue];
     elitism = [[parameters objectForKey:@"elitism"] boolValue];
+    
     gridSize = NSSizeFromString([parameters objectForKey:@"gridSize"]);
     nest = NSPointFromString([parameters objectForKey:@"nest"]);
+    
+    observedError = [[parameters objectForKey:@"observedError"] boolValue];
 }
 
 -(void)writeParametersToFile:(NSString *)file {

@@ -5,6 +5,7 @@
 @interface Decomposition : NSObject
 
 @property (nonatomic) float exploredCutoff;
+@property (nonatomic) long unexploredArea;
 
 #ifdef __cplusplus
 

@@ -2,12 +2,13 @@
 
 @implementation Decomposition
 
-@synthesize exploredCutoff;
+@synthesize exploredCutoff, unexploredArea;
 @synthesize grid;
 
 -(id) initWithGrid:(std::vector<std::vector<Cell*>>)_grid andExploredCutoff:(float)_exploredCutoff {
     if(self = [super init]) {
         grid = _grid;
+        unexploredArea = grid.size() * grid.at(0).size();
         exploredCutoff = _exploredCutoff;
     }
     return self;
@@ -25,11 +26,19 @@
     for(QuadTree* region in regions) {
         if ([region dirty]) {
             [region setPercentExplored:[self checkExploredness:region]];
-            if([region percentExplored] == 0 && ([region area] >= 4)) {
+            if([region percentExplored] == 0) {
                 [unexploredRegions addObject:region];
             }
-            else if(([region percentExplored] <= exploredCutoff) && ([region area] >= 4)){
-                [parents addObject:region];
+            else if([region percentExplored] < exploredCutoff){
+                if ([region area] >= 16) {
+                    [parents addObject:region];
+                }
+                else {
+                    [unexploredRegions addObject:region];
+                }
+            }
+            else {
+                [self setUnexploredArea:unexploredArea - [region area]];
             }
         }
         else {

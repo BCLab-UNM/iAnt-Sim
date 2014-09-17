@@ -81,4 +81,7 @@
 @property (nonatomic) NSObject* viewDelegate;
 @property (nonatomic) float tickRate;
 
+@property (nonatomic) NSString* pheromoneFilename;
+@property (nonatomic) NSString* tagFilename;
+
 @end

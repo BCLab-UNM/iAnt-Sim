@@ -206,6 +206,7 @@ using namespace cv;
         
         [pheromones removeAllObjects];
         [unexploredRegions removeAllObjects];
+        [unexploredRegions addObject:[[QuadTree alloc] initWithRect:NSMakeRect(0., 0., gridSize.width, gridSize.height)]];
         [clusters removeAllObjects];
         [foundTags removeAllObjects];
         [decomp setUnexploredArea:(grid.size() * grid.at(0).size())];
@@ -446,11 +447,6 @@ using namespace cv;
                             }
                             
                             [team setExplorePhase:NO];
-                            
-                            @autoreleasepool {
-                                QuadTree* seedRegion = [[QuadTree alloc] initWithRect:NSMakeRect(0., 0., gridSize.width, gridSize.height)];
-                                [unexploredRegions setArray:[decomp runDecomposition:[NSMutableArray arrayWithObject:seedRegion]]];
-                            }
                         }
                     }
                     
@@ -473,13 +469,9 @@ using namespace cv;
                         BOOL siteFidelityFlag = randomFloat(1.) < poissonCDF([[robot discoveredTags] count], [team siteFidelityRate]);
                         NSPoint pheromone = [Pheromone getPheromone:pheromones atTick:tick];
                         
-                        //Update unexplored regions if running decomposition algorithm
-                        if ([unexploredRegions count]) {
-                            @autoreleasepool {
-                                [unexploredRegions setArray:[decomp runDecomposition:unexploredRegions]];
-                            }
-                        }
-
+                        //Update unexplored regions
+                        [unexploredRegions setArray:[decomp runDecomposition:unexploredRegions]];
+                        
                         //If a tag was found, decide whether to return to its location
                         if(foundTag && siteFidelityFlag) {
                             [robot setTarget:[error perturbTargetPosition:[foundTag position] withGridSize:gridSize andGridCenter:nest]];
@@ -491,7 +483,7 @@ using namespace cv;
                             [robot setTarget:[error perturbTargetPosition:pheromone withGridSize:gridSize andGridCenter:nest]];
                             [robot setInformed:ROBOT_INFORMED_PHEROMONE];
                         }
-
+                        
                         else if([unexploredRegions count]) {
                             int r = randomInt((int)[decomp unexploredArea]);
                             NSPoint target = NSMakePoint(0, 0);

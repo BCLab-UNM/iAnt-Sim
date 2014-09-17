@@ -271,6 +271,9 @@ using namespace cv;
             fprintf(tagFile, "\n");
         }
     }
+
+    fclose(pheromoneFile);
+    fclose(tagFile);
 }
 
 /*

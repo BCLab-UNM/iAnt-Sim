@@ -264,7 +264,7 @@ using namespace cv;
             for(int y = 0; y < h; y++) {
                 fprintf(tagFile, "%d", [grid[y][0] tag] != nil);
                 for(int x = 1; x < w; x++) {
-                    fprintf(tagFile, ",%d", [grid[y][x] tag] != nil);
+                    fprintf(tagFile, ",%d", ([grid[y][x] tag] != nil && ![[grid[y][x] tag] pickedUp]));
                 }
                 fprintf(tagFile, "\n");
             }

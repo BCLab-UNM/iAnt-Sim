@@ -26,6 +26,7 @@ using namespace cv;
 @synthesize delegate, viewDelegate;
 @synthesize tickRate;
 
+@synthesize logPheromones, logTags;
 @synthesize pheromoneFilename, tagFilename;
 
 -(id) init {
@@ -191,8 +192,14 @@ using namespace cv;
     for(int i = 0; i < robotCount; i++){[robots addObject:[[Robot alloc] init]];}
     Decomposition* decomp = [[Decomposition alloc] initWithGrid:grid andExploredCutoff:exploredCutoff];
 
-    FILE* pheromoneFile = fopen([pheromoneFilename UTF8String], "w");
-    FILE* tagFile = fopen([tagFilename UTF8String], "w");
+    FILE *pheromoneFile, *tagFile;
+    if(logPheromones) {
+        pheromoneFile = fopen([pheromoneFilename UTF8String], "w");
+    }
+
+    if(logTags) {
+        tagFile = fopen([tagFilename UTF8String], "w");
+    }
     
     for(Team* team in teams) {
         for (vector<Cell*> v : grid) {
@@ -237,43 +244,52 @@ using namespace cv;
             }
 
             // Tatiana end-of-tick dump
-
-            // Create a scratch grid to mark pheromones in
             int h = (int)grid.size(), w = (int)grid.at(0).size();
             size_t size = w * h;
-            char scratch[h][w];
-            memset(scratch, 0, size);
 
-            // Loop over pheromones, marking them in the scratch grid
-            for(Pheromone* pheromone in pheromones) {
-                NSPoint position = [pheromone position];
-                scratch[(int)position.y][(int)position.x] = 1;
-            }
+            // Create a scratch grid to mark pheromones in
+            if(logPheromones) {
+                char scratch[h][w];
+                memset(scratch, 0, size);
 
-            // Dump the scratch grid (i.e. pheromone locations) to a file.
-            for(int y = 0; y < h; y++) {
-                fprintf(pheromoneFile, "%d", scratch[y][0]);
-                for(int x = 1; x < w; x++) {
-                    fprintf(pheromoneFile, ",%d", scratch[y][x]);
+                // Loop over pheromones, marking them in the scratch grid
+                for(Pheromone* pheromone in pheromones) {
+                    NSPoint position = [pheromone position];
+                    scratch[(int)position.y][(int)position.x] = 1;
+                }
+
+                // Dump the scratch grid (i.e. pheromone locations) to a file.
+                for(int y = 0; y < h; y++) {
+                    fprintf(pheromoneFile, "%d", scratch[y][0]);
+                    for(int x = 1; x < w; x++) {
+                        fprintf(pheromoneFile, ",%d", scratch[y][x]);
+                    }
+                    fprintf(pheromoneFile, "\n");
                 }
                 fprintf(pheromoneFile, "\n");
             }
-            fprintf(pheromoneFile, "\n");
 
-            // Loop over grid, dumping CSV of tag locations.
-            for(int y = 0; y < h; y++) {
-                fprintf(tagFile, "%d", [grid[y][0] tag] != nil);
-                for(int x = 1; x < w; x++) {
-                    fprintf(tagFile, ",%d", ([grid[y][x] tag] != nil && ![[grid[y][x] tag] pickedUp]));
+            if(logTags) {
+                // Loop over grid, dumping CSV of tag locations.
+                for(int y = 0; y < h; y++) {
+                    fprintf(tagFile, "%d", [grid[y][0] tag] != nil);
+                    for(int x = 1; x < w; x++) {
+                        fprintf(tagFile, ",%d", ([grid[y][x] tag] != nil && ![[grid[y][x] tag] pickedUp]));
+                    }
+                    fprintf(tagFile, "\n");
                 }
                 fprintf(tagFile, "\n");
             }
-            fprintf(tagFile, "\n");
         }
     }
 
-    fclose(pheromoneFile);
-    fclose(tagFile);
+    if(logPheromones) {
+        fclose(pheromoneFile);
+    }
+
+    if(logTags) {
+        fclose(tagFile);
+    }
 }
 
 /*

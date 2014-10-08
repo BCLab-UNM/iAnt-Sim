@@ -64,6 +64,7 @@
 @property (nonatomic) float distributionClustered;
 
 @property (nonatomic) int pileRadius;
+@property (nonatomic) int numberOfClusteredPiles;
 
 @property (nonatomic) float crossoverRate;
 @property (nonatomic) float mutationRate;

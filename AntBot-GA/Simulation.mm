@@ -17,7 +17,7 @@ using namespace cv;
 @synthesize teamCount, generationCount, robotCount, tagCount, evaluationCount, evaluationLimit, tickCount, exploreTime, exploredCutoff;
 @synthesize distributionRandom, distributionPowerlaw, distributionClustered;
 @synthesize averageTeam, bestTeam;
-@synthesize pileRadius;
+@synthesize pileRadius, numberOfClusteredPiles;
 @synthesize crossoverRate, mutationRate, selectionOperator, crossoverOperator, mutationOperator, elitism;
 @synthesize gridSize, nest;
 @synthesize parameterFile;
@@ -42,6 +42,7 @@ using namespace cv;
         distributionRandom = 0.;
         
         pileRadius = 2;
+        numberOfClusteredPiles = 4;
         
         crossoverRate = 1.0;
         mutationRate = 0.1;
@@ -679,7 +680,7 @@ using namespace cv;
     pilesOf[1] = roundf(((tagCount / 4) * distributionPowerlaw) + (tagCount * distributionRandom));
     pilesOf[(tagCount / 64)] = roundf((tagCount / 16) * distributionPowerlaw);
     pilesOf[(tagCount / 16)] = roundf((tagCount / 64) * distributionPowerlaw);
-    pilesOf[(tagCount / 4)] = roundf(distributionPowerlaw + (4 * distributionClustered));
+    pilesOf[(tagCount / numberOfClusteredPiles)] = roundf(distributionPowerlaw + (numberOfClusteredPiles * distributionClustered));
     
     int pileCount = 0;
     NSPoint pilePoints[64]; //64 piles as a loose upper bound on number of piles.

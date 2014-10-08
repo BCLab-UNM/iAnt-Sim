@@ -185,6 +185,7 @@ using namespace cv;
     NSMutableArray* unexploredRegions = [[NSMutableArray alloc] init];
     NSMutableArray* clusters = [[NSMutableArray alloc] init];
     NSMutableArray* foundTags = [[NSMutableArray alloc] init];
+    NSMutableArray* totalCollectedTags = [[NSMutableArray alloc] init];
     for(int i = 0; i < robotCount; i++){[robots addObject:[[Robot alloc] init]];}
     Decomposition* decomp = [[Decomposition alloc] initWithGrid:grid andExploredCutoff:exploredCutoff];
     
@@ -209,13 +210,33 @@ using namespace cv;
         [unexploredRegions addObject:[[QuadTree alloc] initWithRect:NSMakeRect(0., 0., gridSize.width, gridSize.height)]];
         [clusters removeAllObjects];
         [foundTags removeAllObjects];
+        [totalCollectedTags removeAllObjects];
         [decomp setUnexploredArea:(grid.size() * grid.at(0).size())];
+        BOOL clustered = NO;
         
         for(int tick = 0; tickCount >= 0 ? tick < tickCount : YES; tick++) {
             
-            int tagsFound = [self stateTransition:robots inTeam:team atTick:tick onGrid:grid withDecomp:decomp withPheromones:pheromones clusters:clusters foundTags:foundTags unexploredRegions:unexploredRegions];
+            NSMutableArray* collectedTags = [self stateTransition:robots inTeam:team atTick:tick onGrid:grid withDecomp:decomp withPheromones:pheromones clusters:clusters foundTags:foundTags unexploredRegions:unexploredRegions];
             
-            [team setFitness:[team fitness] + tagsFound];
+            [team setFitness:[team fitness] + [collectedTags count]];
+            [totalCollectedTags addObjectsFromArray:collectedTags];
+            
+            if (([totalCollectedTags count] > [self tagCount]) && !clustered) {
+                EM em = [self clusterTags:totalCollectedTags];
+                Mat means = em.get<Mat>("means");
+                vector<Mat> covs = em.get<vector<Mat>>("covs");
+                
+                cv::Size meansSize = means.size();
+                
+                for(int i = 0; i < meansSize.height; i++) {
+                    NSPoint p = NSMakePoint(round(means.at<double>(i,0)), round(means.at<double>(i,1)));
+                    double width = ceil(covs[i].at<double>(0,0) * 2);
+                    double height = ceil(covs[i].at<double>(1,1) * 2);
+                    Cluster* c = [[Cluster alloc] initWithCenter:p width:width andHeight:height];
+                    [clusters addObject:c];
+                }
+                clustered = YES;
+            }
             
             if ([team fitness] == [self tagCount]) {
                 [team setTimeToCompleteCollection:tick];
@@ -236,13 +257,13 @@ using namespace cv;
 /*
  * State transition case statement for robots using central-place foraging algorithm
  */
--(int) stateTransition:(NSMutableArray*)robots inTeam:(Team*)team atTick:(int)tick onGrid:(vector<vector<Cell*>>&)grid withDecomp:(Decomposition *)decomp
-        withPheromones:(NSMutableArray*)pheromones
-              clusters:(NSMutableArray*)clusters
-             foundTags:(NSMutableArray *)foundTags
-     unexploredRegions:(NSMutableArray*)unexploredRegions {
+-(NSMutableArray*) stateTransition:(NSMutableArray*)robots inTeam:(Team*)team atTick:(int)tick onGrid:(vector<vector<Cell*>>&)grid withDecomp:(Decomposition *)decomp
+                    withPheromones:(NSMutableArray*)pheromones
+                          clusters:(NSMutableArray*)clusters
+                         foundTags:(NSMutableArray *)foundTags
+                 unexploredRegions:(NSMutableArray*)unexploredRegions {
     
-    int tagsFound = 0;
+    NSMutableArray* collectedTags = [[NSMutableArray alloc] init];
     
     for (Robot* robot in robots) {
         switch([robot status]) {
@@ -455,7 +476,7 @@ using namespace cv;
                         Tag* foundTag = nil;
                         if ([[robot discoveredTags] count] > 0) {
                             foundTag = [[robot discoveredTags] objectAtIndex:0];
-                            tagsFound++;
+                            [collectedTags addObject:foundTag];
                         }
                         
                         //Add (perturbed) tag position to global pheromone array
@@ -472,8 +493,17 @@ using namespace cv;
                         //Update unexplored regions
                         [unexploredRegions setArray:[decomp runDecomposition:unexploredRegions]];
                         
+                        if([clusters count]) {
+                            int r = randomInt((int)[clusters count]);
+                            Cluster* target = [clusters objectAtIndex:r];
+                            int x = clip(randomIntRange([target center].x - [target width]/2, [target center].x + [target width]/2), 0, gridSize.width - 1);
+                            int y = clip(randomIntRange([target center].y - [target height]/2, [target center].y + [target height]/2), 0, gridSize.height - 1);
+                            [robot setTarget:NSMakePoint(x, y)];
+                            [robot setInformed:ROBOT_INFORMED_PHEROMONE];
+                        }
+                        
                         //If a tag was found, decide whether to return to its location
-                        if(foundTag && siteFidelityFlag) {
+                        else if(foundTag && siteFidelityFlag) {
                             [robot setTarget:[error perturbTargetPosition:[foundTag position] withGridSize:gridSize andGridCenter:nest]];
                             [robot setInformed:ROBOT_INFORMED_MEMORY];
                         }
@@ -570,7 +600,7 @@ using namespace cv;
         }
     }
     
-    return tagsFound;
+    return collectedTags;
 }
 
 /*
@@ -642,8 +672,8 @@ using namespace cv;
         }
     }
     
-    int pilesOf[tagCount]; //Key is size of pile.  Value is number of piles with this many tags.
-    for(int i = 0; i < tagCount; i++){pilesOf[i]=0;}
+    int pilesOf[tagCount + 1]; //Key is size of pile.  Value is number of piles with this many tags.
+    for(int i = 0; i <= tagCount; i++){pilesOf[i]=0;}
     
     //Needs to be adjusted if doing a powerlaw distribution with tagCount != 256.
     pilesOf[1] = roundf(((tagCount / 4) * distributionPowerlaw) + (tagCount * distributionRandom));
@@ -654,11 +684,7 @@ using namespace cv;
     int pileCount = 0;
     NSPoint pilePoints[64]; //64 piles as a loose upper bound on number of piles.
     
-    for(int size = 1; size <= (tagCount / 4); size++) { //For each distinct size of pile.
-        if (size >= tagCount) {
-            break;
-        }
-        
+    for(int size = 1; size <= tagCount; size++) { //For each distinct size of pile.
         if(pilesOf[size] == 0) {
             continue;
         }

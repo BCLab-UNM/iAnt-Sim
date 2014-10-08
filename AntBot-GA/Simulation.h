@@ -35,11 +35,11 @@
 #ifdef __cplusplus
 -(void) evaluateTeams:(NSMutableArray*)teams onGrid:(std::vector<std::vector<Cell*>>)grid;
 -(NSMutableDictionary*) evaluateTeam:(Team*)team onGrid:(std::vector<std::vector<Cell*>>)grid;
--(int) stateTransition:(NSMutableArray*)robots inTeam:(Team*)team atTick:(int)tick onGrid:(std::vector<std::vector<Cell*>>&)grid withDecomp:(Decomposition*)decomp
-        withPheromones:(NSMutableArray*)pheromones
-              clusters:(NSMutableArray*)clusters
-             foundTags:(NSMutableArray*)foundTags
-     unexploredRegions:(NSMutableArray*)unexploredRegions;
+-(NSMutableArray*) stateTransition:(NSMutableArray*)robots inTeam:(Team*)team atTick:(int)tick onGrid:(std::vector<std::vector<Cell*>>&)grid withDecomp:(Decomposition*)decomp
+                    withPheromones:(NSMutableArray*)pheromones
+                          clusters:(NSMutableArray*)clusters
+                         foundTags:(NSMutableArray*)foundTags
+                 unexploredRegions:(NSMutableArray*)unexploredRegions;
 -(void) initDistributionForArray:(std::vector<std::vector<Cell*>>&)grid;
 #endif
 

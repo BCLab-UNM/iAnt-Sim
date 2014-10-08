@@ -33,7 +33,7 @@ static inline int randomInt(int x) {
  * Returns a random integer in the range [x,y).
  */
 static inline int randomIntRange(int x, int y) {
-    return randomInt(y - x) + x;
+    return y - x ? randomInt(y - x) + x : x;
 }
 
 /*

@@ -805,6 +805,7 @@ using namespace cv;
               @"distributionClustered" : @(distributionClustered),
               
               @"pileRadius" : @(pileRadius),
+              @"numberOfClusteredPiles": @(numberOfClusteredPiles),
               
               @"crossoverRate" : @(crossoverRate),
               @"mutationRate" : @(mutationRate),
@@ -835,6 +836,7 @@ using namespace cv;
     
     
     pileRadius = [[parameters objectForKey:@"pileRadius"] intValue];
+    numberOfClusteredPiles = [[parameters objectForKey:@"numberOfClusteredPiles"] intValue];
     
     crossoverRate = [[parameters objectForKey:@"crossoverRate"] floatValue];
     mutationRate = [[parameters objectForKey:@"mutationRate"] floatValue];

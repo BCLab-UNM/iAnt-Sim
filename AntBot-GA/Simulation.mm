@@ -683,7 +683,7 @@ using namespace cv;
     pilesOf[(tagCount / numberOfClusteredPiles)] = roundf(distributionPowerlaw + (numberOfClusteredPiles * distributionClustered));
     
     int pileCount = 0;
-    NSPoint pilePoints[64]; //64 piles as a loose upper bound on number of piles.
+    NSPoint pilePoints[tagCount + 1];
     
     for(int size = 1; size <= tagCount; size++) { //For each distinct size of pile.
         if(pilesOf[size] == 0) {

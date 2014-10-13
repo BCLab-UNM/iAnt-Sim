@@ -14,7 +14,7 @@ using namespace cv;
 
 @implementation Simulation
 
-@synthesize teamCount, generationCount, robotCount, tagCount, evaluationCount, evaluationLimit, tickCount, exploreTime, exploredCutoff;
+@synthesize teamCount, generationCount, robotCount, tagCount, evaluationCount, evaluationLimit, tickCount, exploreTime, clusteringTagCutoff;
 @synthesize distributionRandom, distributionPowerlaw, distributionClustered;
 @synthesize averageTeam, bestTeam;
 @synthesize pileRadius, numberOfClusteredPiles;
@@ -35,7 +35,7 @@ using namespace cv;
         evaluationLimit = -1;
         tickCount = 7200;
         exploreTime = 0;
-        exploredCutoff = 0.;
+        clusteringTagCutoff = [self tagCount];
         
         distributionClustered = 1.;
         distributionPowerlaw = 0.;
@@ -188,7 +188,7 @@ using namespace cv;
     NSMutableArray* foundTags = [[NSMutableArray alloc] init];
     NSMutableArray* totalCollectedTags = [[NSMutableArray alloc] init];
     for(int i = 0; i < robotCount; i++){[robots addObject:[[Robot alloc] init]];}
-    Decomposition* decomp = [[Decomposition alloc] initWithGrid:grid andExploredCutoff:exploredCutoff];
+    Decomposition* decomp = [[Decomposition alloc] initWithGrid:grid andExploredCutoff:0.5];
     
     for(Team* team in teams) {
         for (vector<Cell*> v : grid) {
@@ -222,7 +222,7 @@ using namespace cv;
             [team setFitness:[team fitness] + [collectedTags count]];
             [totalCollectedTags addObjectsFromArray:collectedTags];
             
-            if (([totalCollectedTags count] > [self tagCount]) && !clustered) {
+            if (([totalCollectedTags count] > [self clusteringTagCutoff]) && !clustered) {
                 EM em = [self clusterTags:totalCollectedTags];
                 Mat means = em.get<Mat>("means");
                 vector<Mat> covs = em.get<vector<Mat>>("covs");
@@ -798,7 +798,7 @@ using namespace cv;
               @"evaluationCount" : @(evaluationCount),
               @"tickCount" : @(tickCount),
               @"exploreTime" : @(exploreTime),
-              @"exploredCutoff" : @(exploredCutoff),
+              @"clusteringTagCutoff" : @(clusteringTagCutoff),
               
               @"distributionRandom" : @(distributionRandom),
               @"distributionPowerlaw" : @(distributionPowerlaw),
@@ -828,7 +828,7 @@ using namespace cv;
     evaluationCount = [[parameters objectForKey:@"evaluationCount"] intValue];
     tickCount = [[parameters objectForKey:@"tickCount"] intValue];
     exploreTime = [[parameters objectForKey:@"exploreTime"] intValue];
-    exploredCutoff = [[parameters objectForKey:@"exploredCutoff"] floatValue];
+    clusteringTagCutoff = [[parameters objectForKey:@"clusteringTagCutoff"] intValue];
     
     distributionRandom = [[parameters objectForKey:@"distributionRandom"] floatValue];
     distributionPowerlaw = [[parameters objectForKey:@"distributionPowerlaw"] floatValue];

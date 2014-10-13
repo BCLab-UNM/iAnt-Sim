@@ -57,7 +57,7 @@
 @property (nonatomic) int evaluationLimit;
 @property (nonatomic) int tickCount;
 @property (nonatomic) int exploreTime;
-@property (nonatomic) float exploredCutoff;
+@property (nonatomic) int clusteringTagCutoff;
 
 @property (nonatomic) float distributionRandom;
 @property (nonatomic) float distributionPowerlaw;

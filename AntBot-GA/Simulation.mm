@@ -188,7 +188,7 @@ using namespace cv;
     NSMutableArray* foundTags = [[NSMutableArray alloc] init];
     NSMutableArray* totalCollectedTags = [[NSMutableArray alloc] init];
     for(int i = 0; i < robotCount; i++){[robots addObject:[[Robot alloc] init]];}
-    Decomposition* decomp = [[Decomposition alloc] initWithGrid:grid andExploredCutoff:0.5];
+    Decomposition* decomp = [[Decomposition alloc] initWithGrid:grid andExploredCutoff:0.];
     
     for(Team* team in teams) {
         for (vector<Cell*> v : grid) {
@@ -639,7 +639,7 @@ using namespace cv;
  */
 -(cv::EM) clusterTags:(NSMutableArray*)foundTags {
     //Construct EM for k clusters, where k = sqrt(num points / 2)
-    int k = round(sqrt((double)[foundTags count] / 2));
+    int k = 4;
     EM em = EM(k);
     
     //Run EM on aggregate tag array

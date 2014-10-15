@@ -1,5 +1,6 @@
 #import <Foundation/Foundation.h>
 #import "Team.h"
+#import "Cell.h"
 
 #define ROBOT_STATUS_INACTIVE 0
 #define ROBOT_STATUS_DEPARTING 1
@@ -19,6 +20,12 @@
 
 -(void) reset;
 -(void) moveWithin:(NSSize)bounds;
+
+#ifdef __cplusplus
+
+-(void) moveWithObstacle:(std::vector<std::vector<Cell*>>&)grid;
+
+#endif
 -(void) turnWithParameters:(Team*)params;
 
 @property (nonatomic) int status; //Indicates what state the robot is in (see #define'd above).

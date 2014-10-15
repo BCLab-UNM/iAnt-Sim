@@ -31,7 +31,7 @@ using namespace cv;
     if(self = [super init]) {
         teamCount = 100;                // number of "individuals"
         generationCount = 50;           // generations show convergence around 20-30 so shrinking from 100
-        robotCount = 6;                 // lets leave this at 6 for now
+        robotCount = 1;                 // lets leave this at 6 for now
         tagCount = 256;                 // hold steady
         evaluationCount = 12;           // more for Maricopa
         evaluationLimit = -1;
@@ -51,8 +51,8 @@ using namespace cv;
         obstacleRandom = 0.;
         
         obstacleCount = 256;
-        obstacleRadius = 2;
-        numberOfClusteredObstacles = 4;
+        obstacleRadius = 6;
+        numberOfClusteredObstacles = 10;
         
         crossoverRate = 1.0;
         mutationRate = 0.1;
@@ -189,8 +189,9 @@ using namespace cv;
  * Run a single evaluation
  */
 -(void) evaluateTeams:(NSMutableArray*)teams onGrid:(vector<vector<Cell*>>)grid{
-    [self initDistributionForArray:grid];
+    
     [self initObstaclesForArray:grid];
+    [self initDistributionForArray:grid];
     
     NSMutableArray* robots = [[NSMutableArray alloc] initWithCapacity:robotCount];
     NSMutableArray* pheromones = [[NSMutableArray alloc] init];
@@ -280,6 +281,8 @@ using namespace cv;
     for (Robot* robot in robots) {
         switch([robot status]) {
                 
+                [NSThread sleepForTimeInterval:1.0];
+                
                 /*
                  * The robot hasn't been initialized yet.
                  * Give it some basic starting values and then fall-through to the next state.
@@ -307,6 +310,9 @@ using namespace cv;
                     [robot setTarget:nest];
                     break;
                 }
+                
+                NSLog(@"                                        Departing");
+                
                 if((![robot informed] && (randomFloat(1.) < team.travelGiveUpProbability)) || (NSEqualPoints([robot position], [robot target]))) {
                     if ([team explorePhase]) {
                         [robot setStatus:ROBOT_STATUS_EXPLORING];
@@ -323,7 +329,7 @@ using namespace cv;
                     
                 }
                 
-                [robot moveWithin:gridSize];
+                [robot moveWithObstacle:grid];
                 break;
             }
                 
@@ -340,6 +346,8 @@ using namespace cv;
                     break;
                 }
                 [robot setDelay:0];
+                
+                NSLog(@"                                        Searching");
                 
                 //Probabilistically give up searching and return to the nest
                 if(randomFloat(1.) < [team searchGiveUpProbability]) {
@@ -359,7 +367,7 @@ using namespace cv;
                 
                 
                 //Move one cell
-                [robot moveWithin:gridSize];
+                [robot moveWithObstacle:grid];
                 Cell* currentCell = grid[[robot position].y][[robot position].x];
                 if (![currentCell isExplored]) {
                     [currentCell setIsExplored:YES];
@@ -423,12 +431,15 @@ using namespace cv;
                  * Stuff like laying/assigning of pheromones is handled here.
                  */
             case ROBOT_STATUS_RETURNING: {
+                
                 if(tick - [robot lastMoved] <= [robot delay]) {
                     break;
                 }
                 
+                NSLog(@"                                        Returning");
+                
                 [robot setDelay:0];
-                [robot moveWithin:gridSize];
+                [robot moveWithObstacle:grid];
                 
                 if(NSEqualPoints(robot.position, nest)) {
                     if ([team explorePhase]){
@@ -578,7 +589,7 @@ using namespace cv;
                     [robot setTarget:NSMakePoint(roundf([robot position].x+cos([robot direction])),roundf([robot position].y+sin([robot direction])))];
                 }
                 
-                [robot moveWithin:gridSize];
+                [robot moveWithObstacle:grid];
                 Cell* currentCell = grid[[robot position].y][[robot position].x];
                 if (![currentCell isExplored]) {
                     [currentCell setIsExplored:YES];

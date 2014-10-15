@@ -10,7 +10,7 @@
 		168799AD19EEF76D002E87DF /* Obstacle.m in Sources */ = {isa = PBXBuildFile; fileRef = 168799AC19EEF76D002E87DF /* Obstacle.m */; };
 		40ED65BA16DABD31006F8494 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 40ED65B916DABD31006F8494 /* Cocoa.framework */; };
 		40ED661616DABE50006F8494 /* Robot.h in Headers */ = {isa = PBXBuildFile; fileRef = 40ED660B16DABE50006F8494 /* Robot.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		40ED661716DABE50006F8494 /* Robot.m in Sources */ = {isa = PBXBuildFile; fileRef = 40ED660C16DABE50006F8494 /* Robot.m */; };
+		40ED661716DABE50006F8494 /* Robot.mm in Sources */ = {isa = PBXBuildFile; fileRef = 40ED660C16DABE50006F8494 /* Robot.mm */; };
 		40ED661816DABE50006F8494 /* Team.h in Headers */ = {isa = PBXBuildFile; fileRef = 40ED660D16DABE50006F8494 /* Team.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		40ED661916DABE50006F8494 /* Team.m in Sources */ = {isa = PBXBuildFile; fileRef = 40ED660E16DABE50006F8494 /* Team.m */; };
 		40ED661A16DABE50006F8494 /* Simulation.h in Headers */ = {isa = PBXBuildFile; fileRef = 40ED660F16DABE50006F8494 /* Simulation.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -83,7 +83,7 @@
 		40ED65C116DABD31006F8494 /* AntBot-GA-Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "AntBot-GA-Prefix.pch"; sourceTree = "<group>"; };
 		40ED65C216DABD31006F8494 /* Sim.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Sim.h; sourceTree = "<group>"; };
 		40ED660B16DABE50006F8494 /* Robot.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Robot.h; sourceTree = "<group>"; };
-		40ED660C16DABE50006F8494 /* Robot.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Robot.m; sourceTree = "<group>"; };
+		40ED660C16DABE50006F8494 /* Robot.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = Robot.mm; sourceTree = "<group>"; };
 		40ED660D16DABE50006F8494 /* Team.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Team.h; sourceTree = "<group>"; };
 		40ED660E16DABE50006F8494 /* Team.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Team.m; sourceTree = "<group>"; };
 		40ED660F16DABE50006F8494 /* Simulation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Simulation.h; sourceTree = "<group>"; };
@@ -220,7 +220,7 @@
 				168799AE19EEF783002E87DF /* Obstacle.h */,
 				168799AC19EEF76D002E87DF /* Obstacle.m */,
 				40ED660B16DABE50006F8494 /* Robot.h */,
-				40ED660C16DABE50006F8494 /* Robot.m */,
+				40ED660C16DABE50006F8494 /* Robot.mm */,
 				422F6EE8187FD099008486DD /* SensorError.h */,
 				422F6EE9187FD099008486DD /* SensorError.m */,
 				40ED660F16DABE50006F8494 /* Simulation.h */,
@@ -461,7 +461,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				40ED661716DABE50006F8494 /* Robot.m in Sources */,
+				40ED661716DABE50006F8494 /* Robot.mm in Sources */,
 				40ED661916DABE50006F8494 /* Team.m in Sources */,
 				40ED661B16DABE50006F8494 /* Simulation.mm in Sources */,
 				168799AD19EEF76D002E87DF /* Obstacle.m in Sources */,

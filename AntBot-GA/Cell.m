@@ -4,6 +4,7 @@
 
 @synthesize tag, region;
 @synthesize isClustered, isExplored;
+@synthesize obstacle;
 
 -(id)init {
     if (self = [super init]) {
@@ -11,6 +12,8 @@
         region = nil;
         isClustered = NO;
         isExplored = NO;
+        
+        obstacle = nil;
     }
     return self;
 }

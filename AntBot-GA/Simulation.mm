@@ -24,16 +24,18 @@ using namespace cv;
 @synthesize error, observedError;
 @synthesize delegate, viewDelegate;
 @synthesize tickRate;
+@synthesize obstacleClustered, obstaclePowerlaw, obstacleRandom;
+@synthesize obstacleRadius, numberOfClusteredObstacles, obstacleCount;
 
 -(id) init {
     if(self = [super init]) {
-        teamCount = 100;
-        generationCount = 100;
-        robotCount = 6;
-        tagCount = 256;
-        evaluationCount = 8;
+        teamCount = 100;                // number of "individuals"
+        generationCount = 50;           // generations show convergence around 20-30 so shrinking from 100
+        robotCount = 6;                 // lets leave this at 6 for now
+        tagCount = 256;                 // hold steady
+        evaluationCount = 12;           // more for Maricopa
         evaluationLimit = -1;
-        tickCount = 7200;
+        tickCount = 7200;               // 1 hour (two ticks per second)
         exploreTime = 0;
         clusteringTagCutoff = [self tagCount];
         
@@ -43,6 +45,14 @@ using namespace cv;
         
         pileRadius = 2;
         numberOfClusteredPiles = 4;
+        
+        obstacleClustered = 1.;
+        obstaclePowerlaw = 0.;
+        obstacleRandom = 0.;
+        
+        obstacleCount = 256;
+        obstacleRadius = 2;
+        numberOfClusteredObstacles = 4;
         
         crossoverRate = 1.0;
         mutationRate = 0.1;
@@ -180,6 +190,7 @@ using namespace cv;
  */
 -(void) evaluateTeams:(NSMutableArray*)teams onGrid:(vector<vector<Cell*>>)grid{
     [self initDistributionForArray:grid];
+    [self initObstaclesForArray:grid];
     
     NSMutableArray* robots = [[NSMutableArray alloc] initWithCapacity:robotCount];
     NSMutableArray* pheromones = [[NSMutableArray alloc] init];
@@ -854,6 +865,84 @@ using namespace cv;
 
 +(void)writeParameterNamesToFile:(NSString *)file {
     //unused
+}
+
+
+
+
+-(void) initObstaclesForArray:(vector<vector<Cell*>>&)grid {
+    
+    for(vector<Cell*> v : grid) {
+        for (Cell* cell : v) {
+            [cell setObstacle:nil];
+        }
+    }
+    
+    int pilesOf[obstacleCount + 1]; //Key is size of pile.  Value is number of piles with this many tags.
+    for(int i = 0; i <= obstacleCount; i++){pilesOf[i]=0;}
+    
+    //Needs to be adjusted if doing a powerlaw distribution with tagCount != 256.
+    pilesOf[1] = roundf(((tagCount / 4) * obstaclePowerlaw) + (tagCount * obstacleRandom));
+    pilesOf[(obstacleCount / 64)] = roundf((obstacleCount / 16) * obstaclePowerlaw);
+    pilesOf[(obstacleCount / 16)] = roundf((obstacleCount / 64) * obstaclePowerlaw);
+    pilesOf[(obstacleCount / numberOfClusteredObstacles)] = roundf(obstaclePowerlaw + (numberOfClusteredObstacles * obstacleClustered));
+    
+    int pileCount = 0;
+    NSPoint pilePoints[obstacleCount + 1];
+    
+    for(int size = 1; size <= obstacleCount; size++) { //For each distinct size of pile.
+        if(pilesOf[size] == 0) {
+            continue;
+        }
+        
+        if(size == 1) {
+            for(int i = 0; i < pilesOf[1]; i++) {
+                int obsX, obsY;
+                do {
+                    obsX = randomInt(gridSize.width);
+                    obsY = randomInt(gridSize.height);
+                } while([grid[obsY][obsX] obstacle]);
+                
+                [grid[obsY][obsX] setObstacle:[[Obstacle alloc] initWithX:obsX andY:obsY]];
+            }
+        }
+        else {
+            for(int i = 0; i < pilesOf[size]; i++) { //Place each pile.
+                int pileX,pileY;
+                
+                int overlapping = 1;
+                while(overlapping) {
+                    pileX = randomIntRange(obstacleRadius, gridSize.width - (obstacleRadius * 2));
+                    pileY = randomIntRange(obstacleRadius, gridSize.height - (obstacleRadius * 2));
+                    
+                    //Make sure the place we picked isn't close to another pile.  Pretty naive.
+                    overlapping = 0;
+                    for(int j = 0; j < pileCount; j++) {
+                        if(pointDistance(pilePoints[j].x, pilePoints[j].y, pileX, pileY) < obstacleRadius){overlapping = 1; break;}
+                    }
+                }
+                
+                pilePoints[pileCount++] = NSMakePoint(pileX, pileY);
+                
+                //Place each individual tag in the pile.
+                for(int j = 0; j < size; j++) {
+                    float maxRadius = obstacleRadius;
+                    int obsX, obsY;
+                    do {
+                        float rad = randomFloat(maxRadius);
+                        float dir = randomFloat(M_2PI);
+                        
+                        obsX = clip(roundf(pileX + (rad * cos(dir))), 0, gridSize.width - 1);
+                        obsY = clip(roundf(pileY + (rad * sin(dir))), 0, gridSize.height - 1);
+                        
+                        maxRadius += 1;
+                    } while([grid[obsY][obsX] obstacle]);
+                    
+                    [grid[obsY][obsX] setObstacle:[[Obstacle alloc] initWithX:obsX andY:obsY]];
+                }
+            }
+        }
+    }
 }
 
 @end

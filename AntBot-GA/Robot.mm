@@ -56,8 +56,8 @@
         for(int dy = dyMin; dy <= dyMax; dy++) {
             if(dx || dy) {
                 if(x + dx == target.x && y + dy == target.y){
-                    // LEAVE THIS ALONE RIGHT NOW
-                    while([grid[x+dx][y+dy] obstacle]){
+                    // SEARCHING
+                    if([grid[y+dy][x+dx] obstacle]){
                         printf("Obstacle\n");
                     }
                     position = target;
@@ -81,7 +81,7 @@
             if(r < improvements[dx + 1][dy + 1]){
                 //
                 //NSLog(@"%f, %d, %d", self.direction, dx, dy);
-//                if([grid[x+dx][y+dy] obstacle]){
+//                if([grid[y+dy][x+dx] obstacle]){
 //                    printf("Obstacle\n");
 //                }
                 position = NSMakePoint(x + dx, y + dy);

@@ -929,7 +929,9 @@ using namespace cv;
                     //Make sure the place we picked isn't close to another pile.  Pretty naive.
                     overlapping = 0;
                     for(int j = 0; j < pileCount; j++) {
-                        if(pointDistance(pilePoints[j].x, pilePoints[j].y, pileX, pileY) < obstacleRadius){overlapping = 1; break;}
+                        if(pointDistance(pilePoints[j].x, pilePoints[j].y, pileX, pileY) < obstacleRadius){
+                            overlapping = 1;
+                            break;}
                     }
                 }
                 

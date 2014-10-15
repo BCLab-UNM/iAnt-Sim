@@ -23,7 +23,8 @@
 
 #ifdef __cplusplus
 
--(void) moveWithObstacle:(std::vector<std::vector<Cell*>>&)grid;
+-(void) moveWithObstacle:(std::vector<std::vector<Cell*>>&)_grid;
+@property (nonatomic) std::vector<std::vector<Cell*>> grid;
 
 #endif
 -(void) turnWithParameters:(Team*)params;

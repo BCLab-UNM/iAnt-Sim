@@ -1,6 +1,12 @@
 #import "Robot.h"
 #import "Utilities.h"
 
+@interface Robot()
+
+-(void) avoidObstacle:(std::vector<std::vector<Cell*>>&)grid;
+
+@end
+
 @implementation Robot
 
 @synthesize status, informed;
@@ -50,8 +56,11 @@
         for(int dy = dyMin; dy <= dyMax; dy++) {
             if(dx || dy) {
                 if(x + dx == target.x && y + dy == target.y){
+                    // LEAVE THIS ALONE RIGHT NOW
+                    while([grid[x+dx][y+dy] obstacle]){
+                        printf("Obstacle\n");
+                    }
                     position = target;
-                    NSLog(@"%f", self.direction);
                     return;
                 }
                 float improvement = dis - pointDistance(x + dx, y + dy, target.x, target.y);
@@ -70,14 +79,23 @@
     for(int dx = dxMin; dx <= dxMax; dx++) {
         for(int dy = dyMin; dy <= dyMax; dy++) {
             if(r < improvements[dx + 1][dy + 1]){
-                // checking
-                NSLog(@"%f", self.direction);
+                //
+                //NSLog(@"%f, %d, %d", self.direction, dx, dy);
+//                if([grid[x+dx][y+dy] obstacle]){
+//                    printf("Obstacle\n");
+//                }
                 position = NSMakePoint(x + dx, y + dy);
                 return;
             }
             r -= improvements[dx + 1][dy + 1];
         }
     }
+    
+}
+
+
+-(void) avoidObstacle:(std::vector<std::vector<Cell*>>&)grid{
+    
 }
 
 /*

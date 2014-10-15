@@ -52,7 +52,7 @@ using namespace cv;
         
         obstacleCount = 256;
         obstacleRadius = 6;
-        numberOfClusteredObstacles = 10;
+        numberOfClusteredObstacles = 4;
         
         crossoverRate = 1.0;
         mutationRate = 0.1;
@@ -66,7 +66,7 @@ using namespace cv;
         
         parameterFile = nil;
         
-        observedError = YES;
+        observedError = NO;
     }
     return self;
 }
@@ -278,10 +278,10 @@ using namespace cv;
     
     NSMutableArray* collectedTags = [[NSMutableArray alloc] init];
     
+    //[NSThread sleepForTimeInterval:0.1];
+    
     for (Robot* robot in robots) {
         switch([robot status]) {
-                
-                [NSThread sleepForTimeInterval:1.0];
                 
                 /*
                  * The robot hasn't been initialized yet.
@@ -311,7 +311,7 @@ using namespace cv;
                     break;
                 }
                 
-                NSLog(@"                                        Departing");
+                //NSLog(@"                                        Departing");
                 
                 if((![robot informed] && (randomFloat(1.) < team.travelGiveUpProbability)) || (NSEqualPoints([robot position], [robot target]))) {
                     if ([team explorePhase]) {
@@ -347,7 +347,7 @@ using namespace cv;
                 }
                 [robot setDelay:0];
                 
-                NSLog(@"                                        Searching");
+                //NSLog(@"                                        Searching");
                 
                 //Probabilistically give up searching and return to the nest
                 if(randomFloat(1.) < [team searchGiveUpProbability]) {
@@ -436,7 +436,7 @@ using namespace cv;
                     break;
                 }
                 
-                NSLog(@"                                        Returning");
+                //NSLog(@"                                        Returning");
                 
                 [robot setDelay:0];
                 [robot moveWithObstacle:grid];

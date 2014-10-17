@@ -64,7 +64,7 @@
                     //printf("current position x %f y %f  and current target x %f y %f\n", position.x, position.y, target.x, target.y);
                     while([grid[y+dy][x+dx] obstacle]){
                         NSPoint tp;
-                        //printf("current position x %f y %f      obstacle at x %f y %f\n", position.x, position.y, target.x, target.y);
+                        printf("current position x %f y %f      obstacle at x %f y %f\n", position.x, position.y, target.x, target.y);
                         //printf("dx dy %d %d\n", dx, dy);
                         tp = [self avoidObstacle: NSMakePoint(dx, dy)];
                         if(position.x + tp.x < 0 || position.y + tp.y < 0 || position.x + tp.x > 124 || position.y + tp.y > 124){
@@ -73,7 +73,7 @@
                         dx = tp.x;
                         dy = tp.y;
                         [self setTarget:NSMakePoint(position.x + dx, position.y + dy)];
-                        //printf("current position x %f y %f      new target loc set x %f  y %f\n", position.x, position.y, target.x, target.y);
+                        printf("current position x %f y %f      new target loc set x %f  y %f\n", position.x, position.y, target.x, target.y);
                     }
                     //printf("moving to new position x %f y %f\n\n", target.x, target.y);
                     collisionCount = 0;

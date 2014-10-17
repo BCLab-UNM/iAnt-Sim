@@ -51,7 +51,7 @@ using namespace cv;
         obstaclePowerlaw = 0.;
         obstacleRandom = 1.;
         
-        obstacleCount = 32;
+        obstacleCount = 48;
         obstacleRadius = 12;
         numberOfClusteredObstacles = 4;
         

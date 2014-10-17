@@ -62,7 +62,7 @@
                 if(x + dx == target.x && y + dy == target.y){
                     // SEARCHING
                     //printf("current position x %f y %f  and current target x %f y %f\n", position.x, position.y, target.x, target.y);
-                    while([grid[target.y][target.x] obstacle]){
+                    while([grid[y+dy][x+dx] obstacle]){
                         NSPoint tp;
                         //printf("current position x %f y %f      obstacle at x %f y %f\n", position.x, position.y, target.x, target.y);
                         //printf("dx dy %d %d\n", dx, dy);

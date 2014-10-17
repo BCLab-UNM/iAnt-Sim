@@ -47,11 +47,11 @@ using namespace cv;
         pileRadius = 2;
         numberOfClusteredPiles = 4;
         
-        obstacleClustered = 0.;
+        obstacleClustered = 1.;
         obstaclePowerlaw = 0.;
-        obstacleRandom = 1.;
+        obstacleRandom = 0.;
         
-        obstacleCount = 256;
+        obstacleCount = 1024;
         obstacleRadius = 12;
         numberOfClusteredObstacles = 4;
         

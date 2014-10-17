@@ -69,7 +69,9 @@
                         tp = [self avoidObstacle: NSMakePoint(dx, dy)];
                         dx = tp.x;
                         dy = tp.y;
-                        [self setTarget:NSMakePoint(position.x + dx, position.y + dy)];
+                        if(position.x + dx >= 0 && position.y + dy >= 0 && position.x + dx < 125 && position.y + dy < 125){
+                            [self setTarget:NSMakePoint(position.x + dx, position.y + dy)];
+                        }
                         //printf("current position x %f y %f      new target loc set x %f  y %f\n", position.x, position.y, target.x, target.y);
                     }
                     //printf("moving to new position x %f y %f\n\n", target.x, target.y);

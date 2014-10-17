@@ -29,9 +29,10 @@ using namespace cv;
 
 -(id) init {
     if(self = [super init]) {
+        
         teamCount = 100;                // number of "individuals"
         generationCount = 50;           // generations show convergence around 20-30 so shrinking from 100
-        robotCount = 1;                 // lets leave this at 6 for now
+        robotCount = 6;                 // lets leave this at 6 for now
         tagCount = 256;                 // hold steady
         evaluationCount = 12;           // more for Maricopa
         evaluationLimit = -1;
@@ -46,13 +47,13 @@ using namespace cv;
         pileRadius = 2;
         numberOfClusteredPiles = 4;
         
-        obstacleClustered = 1.;
+        obstacleClustered = 0.;
         obstaclePowerlaw = 0.;
-        obstacleRandom = 0.;
+        obstacleRandom = 1.;
         
-        obstacleCount = 1024;
-        obstacleRadius = 2;
-        numberOfClusteredObstacles = 8;
+        obstacleCount = 32;
+        obstacleRadius = 12;
+        numberOfClusteredObstacles = 4;
         
         crossoverRate = 1.0;
         mutationRate = 0.1;
@@ -893,7 +894,7 @@ using namespace cv;
     for(int i = 0; i <= obstacleCount; i++){pilesOf[i]=0;}
     
     //Needs to be adjusted if doing a powerlaw distribution with tagCount != 256.
-    pilesOf[1] = roundf(((tagCount / 4) * obstaclePowerlaw) + (tagCount * obstacleRandom));
+    pilesOf[1] = roundf(((obstacleCount / 4) * obstaclePowerlaw) + (obstacleCount * obstacleRandom));
     pilesOf[(obstacleCount / 64)] = roundf((obstacleCount / 16) * obstaclePowerlaw);
     pilesOf[(obstacleCount / 16)] = roundf((obstacleCount / 64) * obstaclePowerlaw);
     pilesOf[(obstacleCount / numberOfClusteredObstacles)] = roundf(obstaclePowerlaw + (numberOfClusteredObstacles * obstacleClustered));

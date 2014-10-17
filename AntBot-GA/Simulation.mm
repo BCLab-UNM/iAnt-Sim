@@ -50,9 +50,9 @@ using namespace cv;
         obstaclePowerlaw = 0.;
         obstacleRandom = 0.;
         
-        obstacleCount = 256;
-        obstacleRadius = 6;
-        numberOfClusteredObstacles = 4;
+        obstacleCount = 1024;
+        obstacleRadius = 2;
+        numberOfClusteredObstacles = 8;
         
         crossoverRate = 1.0;
         mutationRate = 0.1;
@@ -278,7 +278,7 @@ using namespace cv;
     
     NSMutableArray* collectedTags = [[NSMutableArray alloc] init];
     
-    //[NSThread sleepForTimeInterval:0.1];
+    //[NSThread sleepForTimeInterval:0.2];
     
     for (Robot* robot in robots) {
         switch([robot status]) {

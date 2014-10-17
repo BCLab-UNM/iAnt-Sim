@@ -3,7 +3,7 @@
 
 @interface Robot()
 
--(void) avoidObstacle:(std::vector<std::vector<Cell*>>&)grid;
+-(NSPoint) avoidObstacle:(NSPoint) tp;
 
 @end
 
@@ -13,6 +13,8 @@
 @synthesize position, target;
 @synthesize direction, searchTime, lastMoved, lastTurned, delay;
 @synthesize discoveredTags;
+
+@synthesize collisionCount;
 
 -(id) init {
     if (self = [super init]) {
@@ -34,6 +36,8 @@
     delay = 0;
     
     discoveredTags = nil;
+    
+    collisionCount = 0;
 }
 
 -(void) moveWithObstacle:(std::vector<std::vector<Cell*>>&)grid{
@@ -57,9 +61,22 @@
             if(dx || dy) {
                 if(x + dx == target.x && y + dy == target.y){
                     // SEARCHING
-                    if([grid[y+dy][x+dx] obstacle]){
-                        printf("Obstacle\n");
+                    //printf("current position x %f y %f  and current target x %f y %f\n", position.x, position.y, target.x, target.y);
+                    while([grid[target.y][target.x] obstacle]){
+                        NSPoint tp;
+                        printf("current position x %f y %f      obstacle at x %f y %f\n", position.x, position.y, target.x, target.y);
+                        printf("dx dy %d %d\n", dx, dy);
+                        tp = [self avoidObstacle: NSMakePoint(dx, dy)];
+                        dx = tp.x;
+                        dy = tp.y;
+                        [self setTarget:NSMakePoint(position.x + dx, position.y + dy)];
+                        printf("current position x %f y %f      new target loc set x %f  y %f\n", position.x, position.y, target.x, target.y);
                     }
+                    //printf("moving to new position x %f y %f\n\n", target.x, target.y);
+//                    if(abs(target.x - position.x) > 1 || abs(target.y - position.y) > 1){
+//                        printf("                                                    FUCK ME\n");
+//                    }
+                    collisionCount = 0;
                     position = target;
                     return;
                 }
@@ -79,11 +96,19 @@
     for(int dx = dxMin; dx <= dxMax; dx++) {
         for(int dy = dyMin; dy <= dyMax; dy++) {
             if(r < improvements[dx + 1][dy + 1]){
-                //
-                //NSLog(@"%f, %d, %d", self.direction, dx, dy);
-//                if([grid[y+dy][x+dx] obstacle]){
-//                    printf("Obstacle\n");
-//                }
+                // RETURNING or DEPARTING
+                while([grid[y+dy][x+dx] obstacle]){
+                    NSPoint tp;
+                    printf("Travelling Obstacle %d\n", collisionCount++);
+                    tp = [self avoidObstacle:NSMakePoint(dx, dy)];
+                    dx = tp.x;
+                    dy = tp.y;
+                    if (collisionCount > 20) {
+                        [self setStatus:ROBOT_STATUS_SEARCHING];
+                        [self setTarget:NSMakePoint(position.x + dx, position.y + dy)];
+                        collisionCount = 0;
+                    }
+                }
                 position = NSMakePoint(x + dx, y + dy);
                 return;
             }
@@ -93,9 +118,26 @@
     
 }
 
-
--(void) avoidObstacle:(std::vector<std::vector<Cell*>>&)grid{
-    
+-(NSPoint) avoidObstacle:(NSPoint) tp{
+    NSPoint rp = {0,0};
+    if(tp.x == 1 && tp.y == 0){
+        rp.x = 1; rp.y = -1;
+    } else if (tp.x == 1 && tp.y == -1){
+        rp.x = 0; rp.y = -1;
+    } else if (tp.x == 0 && tp.y == -1){
+        rp.x = -1; rp.y = -1;
+    } else if (tp.x == -1 && tp.y == -1){
+        rp.x = -1; rp.y = 0;
+    } else if (tp.x == -1 && tp.y == 0){
+        rp.x = -1; rp.y = 1;
+    } else if (tp.x == -1 && tp.y == 1){
+        rp.x = 0; rp.y = 1;
+    } else if (tp.x == 0 && tp.y == 1){
+        rp.x = 1; rp.y = 1;
+    } else {
+        rp.x = 1; rp.y = 0;
+    }
+    return rp;
 }
 
 /*

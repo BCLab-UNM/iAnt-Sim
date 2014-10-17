@@ -1,6 +1,7 @@
 #import <Foundation/Foundation.h>
 #import "Team.h"
 #import "Cell.h"
+#import "Utilities.h"
 
 #define ROBOT_STATUS_INACTIVE 0
 #define ROBOT_STATUS_DEPARTING 1
@@ -23,8 +24,7 @@
 
 #ifdef __cplusplus
 
--(void) moveWithObstacle:(std::vector<std::vector<Cell*>>&)_grid;
-@property (nonatomic) std::vector<std::vector<Cell*>> grid;
+-(void) moveWithObstacle:(std::vector<std::vector<Cell*>>&)grid;
 
 #endif
 -(void) turnWithParameters:(Team*)params;
@@ -43,5 +43,7 @@
 @property (nonatomic) int delay; //Number of ticks the robot is penalized to emulate physical robots (used in random walk).
 
 @property (nonatomic) NSMutableArray* discoveredTags; //Tags discovered by robot while searching
+
+@property (nonatomic) int collisionCount;
 
 @end

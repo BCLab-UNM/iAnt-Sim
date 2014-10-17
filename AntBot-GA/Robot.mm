@@ -69,7 +69,11 @@
                         tp = [self avoidObstacle: NSMakePoint(dx, dy)];
                         dx = tp.x;
                         dy = tp.y;
+<<<<<<< HEAD
                         if(position.x + dx >= 0 && position.y + dy >= 0){
+=======
+                        if(position.x + dx >= 0 && position.y + dy >= 0 && position.x + dx < 125 && position.y + dy < 125){
+>>>>>>> 06e9794ec1e228468d612b98f6d42a44699df89d
                             [self setTarget:NSMakePoint(position.x + dx, position.y + dy)];
                         }
                         //printf("current position x %f y %f      new target loc set x %f  y %f\n", position.x, position.y, target.x, target.y);

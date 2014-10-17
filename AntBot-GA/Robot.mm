@@ -109,11 +109,11 @@
                     dx = tp.x;
                     dy = tp.y;
                     delay ++;
-//                    if (collisionCount > 20) {
-//                        [self setStatus:ROBOT_STATUS_SEARCHING];
-//                        [self setTarget:NSMakePoint(position.x + dx, position.y + dy)];
-//                        collisionCount = 0;
-//                    }
+                    if (collisionCount > 20) {
+                        [self setStatus:ROBOT_STATUS_SEARCHING];
+                        [self setTarget:NSMakePoint(position.x + dx, position.y + dy)];
+                        collisionCount = 0;
+                    }
                 }
                 position = NSMakePoint(x + dx, y + dy);
                 return;

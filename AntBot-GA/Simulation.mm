@@ -24,8 +24,7 @@ using namespace cv;
 @synthesize error, observedError;
 @synthesize delegate, viewDelegate;
 @synthesize tickRate;
-@synthesize obstacleClustered, obstaclePowerlaw, obstacleRandom;
-@synthesize obstacleRadius, numberOfClusteredObstacles, obstacleCount;
+@synthesize obstacleCount;
 
 -(id) init {
     if(self = [super init]) {
@@ -47,13 +46,7 @@ using namespace cv;
         pileRadius = 2;
         numberOfClusteredPiles = 4;
         
-        obstacleClustered = 0.;
-        obstaclePowerlaw = 1.;
-        obstacleRandom = 0.;
-        
-        obstacleCount = 128;
-        obstacleRadius = 2;
-        numberOfClusteredObstacles = 4;
+        obstacleCount = 10;
         
         crossoverRate = 1.0;
         mutationRate = 0.1;
@@ -280,7 +273,7 @@ using namespace cv;
     
     NSMutableArray* collectedTags = [[NSMutableArray alloc] init];
     
-    [NSThread sleepForTimeInterval:0.00001];
+    //[NSThread sleepForTimeInterval:0.00001];
     
     for (Robot* robot in robots) {
         switch([robot status]) {
@@ -885,79 +878,112 @@ using namespace cv;
 
 -(void) initObstaclesForArray:(vector<vector<Cell*>>&)grid {
     
+    int gridWidth = (int)grid[0].size();
+    int gridHeight = (int)grid.size();
+    int homex = gridWidth / 2;
+    int homey = gridHeight / 2;
+    
+    int edgeCushion = 5;
+    int obstacleSize = 6;
+    
     for(vector<Cell*> v : grid) {
         for (Cell* cell : v) {
             [cell setObstacle:nil];
         }
     }
     
-    int pilesOf[obstacleCount + 1]; //Key is size of pile.  Value is number of piles with this many tags.
-    for(int i = 0; i <= obstacleCount; i++){pilesOf[i]=0;}
-    
-    //Needs to be adjusted if doing a powerlaw distribution with tagCount != 256.
-    pilesOf[1] = roundf(((obstacleCount / 4) * obstaclePowerlaw) + (obstacleCount * obstacleRandom));
-    pilesOf[(obstacleCount / 64)] = roundf((obstacleCount / 16) * obstaclePowerlaw);
-    pilesOf[(obstacleCount / 16)] = roundf((obstacleCount / 64) * obstaclePowerlaw);
-    pilesOf[(obstacleCount / numberOfClusteredObstacles)] = roundf(obstaclePowerlaw + (numberOfClusteredObstacles * obstacleClustered));
-    
-    int pileCount = 0;
-    NSPoint pilePoints[obstacleCount + 1];
-    
-    for(int size = 1; size <= obstacleCount; size++) { //For each distinct size of pile.
-        if(pilesOf[size] == 0) {
-            continue;
+    for(int i = 0; i < obstacleCount; i++){
+        int xone = randomIntRange(edgeCushion, homex - (edgeCushion + obstacleSize));
+        int yone = randomIntRange(edgeCushion, homey - (edgeCushion + obstacleSize));
+        int xtwo = randomIntRange(homex + (edgeCushion + obstacleSize), gridWidth - (edgeCushion + obstacleSize));
+        int ytwo = randomIntRange(homey + (edgeCushion + obstacleSize), gridWidth - (edgeCushion + obstacleSize));
+        int xchoice = round(randomFloatRange(0, 1));
+        int ychoice = round(randomFloatRange(0, 1));
+        int originx;
+        int originy;
+        if(xchoice == 0){
+            originx = xone;
+        } else {
+            originx = xtwo;
         }
-        
-        if(size == 1) {
-            for(int i = 0; i < pilesOf[1]; i++) {
-                int obsX, obsY;
-                do {
-                    obsX = randomInt(gridSize.width);
-                    obsY = randomInt(gridSize.height);
-                } while([grid[obsY][obsX] obstacle]);
-                
-                [grid[obsY][obsX] setObstacle:[[Obstacle alloc] initWithX:obsX andY:obsY]];
-            }
+        if(ychoice == 0){
+            originy = yone;
+        } else {
+            originy = ytwo;
         }
-        else {
-            for(int i = 0; i < pilesOf[size]; i++) { //Place each pile.
-                int pileX,pileY;
-                
-                int overlapping = 1;
-                while(overlapping) {
-                    pileX = randomIntRange(obstacleRadius, gridSize.width - (obstacleRadius * 2));
-                    pileY = randomIntRange(obstacleRadius, gridSize.height - (obstacleRadius * 2));
-                    
-                    //Make sure the place we picked isn't close to another pile.  Pretty naive.
-                    overlapping = 0;
-                    for(int j = 0; j < pileCount; j++) {
-                        if(pointDistance(pilePoints[j].x, pilePoints[j].y, pileX, pileY) < obstacleRadius){
-                            overlapping = 1;
-                            break;}
+        int rotation = randomIntRange(0, 4);
+        if(rotation == 0){
+            for(int i = 0; i < 6; i++){
+                if(i == 2){
+                    for(int j = 0; j < 2; j++){
+                        [grid[originy+i][originx+j] setObstacle:[[Obstacle alloc] initWithX:originx+j andY:originy+i]];
+                    }
+                } else if  (i == 3){
+                    for(int j = 0; j < 2; j++){
+                        [grid[originy+i][originx+j] setObstacle:[[Obstacle alloc] initWithX:originx+j andY:originy+i]];
+                    }
+                } else {
+                    for(int j = 0; j < 6; j++){
+                        [grid[originy+i][originx+j] setObstacle:[[Obstacle alloc] initWithX:originx+j andY:originy+i]];
                     }
                 }
                 
-                pilePoints[pileCount++] = NSMakePoint(pileX, pileY);
-                
-                //Place each individual tag in the pile.
-                for(int j = 0; j < size; j++) {
-                    float maxRadius = obstacleRadius;
-                    int obsX, obsY;
-                    do {
-                        float rad = randomFloat(maxRadius);
-                        float dir = randomFloat(M_2PI);
-                        
-                        obsX = clip(roundf(pileX + (rad * cos(dir))), 0, gridSize.width - 1);
-                        obsY = clip(roundf(pileY + (rad * sin(dir))), 0, gridSize.height - 1);
-                        
-                        maxRadius += 1;
-                    } while([grid[obsY][obsX] obstacle]);
-                    
-                    [grid[obsY][obsX] setObstacle:[[Obstacle alloc] initWithX:obsX andY:obsY]];
+            }
+        } else if (rotation == 1){
+            for(int i = 0; i < 6; i++){
+                if(i == 2){
+                    for(int j = 4; j < 6; j++){
+                        [grid[originy+i][originx+j] setObstacle:[[Obstacle alloc] initWithX:originx+j andY:originy+i]];
+                    }
+                } else if  (i == 3){
+                    for(int j = 4; j < 6; j++){
+                        [grid[originy+i][originx+j] setObstacle:[[Obstacle alloc] initWithX:originx+j andY:originy+i]];
+                    }
+                } else {
+                    for(int j = 0; j < 6; j++){
+                        [grid[originy+i][originx+j] setObstacle:[[Obstacle alloc] initWithX:originx+j andY:originy+i]];
+                    }
                 }
+                
+            }
+        } else if (rotation == 2){
+            for(int i = 0; i < 6; i++){
+                if(i == 2){
+                    for(int j = 0; j < 2; j++){
+                        [grid[originy+j][originx+i] setObstacle:[[Obstacle alloc] initWithX:originx+i andY:originy+j]];
+                    }
+                } else if  (i == 3){
+                    for(int j = 0; j < 2; j++){
+                        [grid[originy+j][originx+i] setObstacle:[[Obstacle alloc] initWithX:originx+i andY:originy+j]];
+                    }
+                } else {
+                    for(int j = 0; j < 6; j++){
+                        [grid[originy+j][originx+i] setObstacle:[[Obstacle alloc] initWithX:originx+i andY:originy+j]];
+                    }
+                }
+                
+            }
+        } else {
+            for(int i = 0; i < 6; i++){
+                if(i == 2){
+                    for(int j = 4; j < 6; j++){
+                        [grid[originy+j][originx+i] setObstacle:[[Obstacle alloc] initWithX:originx+i andY:originy+j]];
+                    }
+                } else if  (i == 3){
+                    for(int j = 4; j < 6; j++){
+                        [grid[originy+j][originx+i] setObstacle:[[Obstacle alloc] initWithX:originx+i andY:originy+j]];
+                    }
+                } else {
+                    for(int j = 0; j < 6; j++){
+                        [grid[originy+j][originx+i] setObstacle:[[Obstacle alloc] initWithX:originx+i andY:originy+j]];
+                    }
+                }
+                
             }
         }
+        
     }
+
 }
 
 @end

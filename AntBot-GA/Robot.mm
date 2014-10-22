@@ -70,7 +70,7 @@
                         //printf("current position x %f y %f      obstacle at x %f y %f\n", position.x, position.y, target.x, target.y);
                         //printf("dx dy %d %d\n", dx, dy);
                         tp = [self avoidObstacle: NSMakePoint(dx, dy)];
-                        if(position.x + tp.x < 0 || position.y + tp.y < 0 || position.x + tp.x > 124 || position.y + tp.y > 124){
+                        if(position.x + tp.x < 0 || position.y + tp.y < 0 || position.x + tp.x > grid[0].size()-1 || position.y + tp.y > grid.size()-1){
                             break;
                         }
 
@@ -109,7 +109,7 @@
                     NSPoint tp;
                     //printf("Travelling Obstacle %d\n", collisionCount++);
                     tp = [self avoidObstacle:NSMakePoint(dx, dy)];
-                    if(position.x + tp.x < 0 || position.y + tp.y < 0 || position.x + tp.x > 124 || position.y + tp.y > 124){
+                    if(position.x + tp.x < 0 || position.y + tp.y < 0 || position.x + tp.x > grid[0].size()-1 || position.y + tp.y > grid.size()-1){
                         break;
                     }
                     dx = tp.x;

@@ -30,11 +30,11 @@ using namespace cv;
 -(id) init {
     if(self = [super init]) {
         
-        teamCount = 100;                // number of "individuals"
+        teamCount = 1;                // number of "individuals"
         generationCount = 50;           // generations show convergence around 20-30 so shrinking from 100
         robotCount = 6;                 // lets leave this at 6 for now
         tagCount = 256;                 // hold steady
-        evaluationCount = 12;           // more for Maricopa
+        evaluationCount = 1;           // more for Maricopa
         evaluationLimit = -1;
         tickCount = 7200;               // 1 hour (two ticks per second)
         exploreTime = 0;
@@ -51,7 +51,7 @@ using namespace cv;
         obstaclePowerlaw = 1.;
         obstacleRandom = 0.;
         
-        obstacleCount = 256;
+        obstacleCount = 128;
         obstacleRadius = 2;
         numberOfClusteredObstacles = 4;
         
@@ -138,15 +138,16 @@ using namespace cv;
     
     //Main loop
     for(int generation = 0; generation < generationCount && evalCount < evaluationLimit; generation++) {
+        printf("starting generation %d\n", generation);
         for(Team* team in teams) {
             [team setFitness:0.];
             [team setTimeToCompleteCollection:0.];
-            if (exploreTime > 0) {
-                [team setExplorePhase:YES];
-            }
-            else {
-                [team setExplorePhase:NO];
-            }
+//            if (exploreTime > 0) {
+//                [team setExplorePhase:YES];
+//            }
+//            else {
+//                [team setExplorePhase:NO];
+//            }
         }
         
         if (evaluationCount > 1) {
@@ -279,7 +280,7 @@ using namespace cv;
     
     NSMutableArray* collectedTags = [[NSMutableArray alloc] init];
     
-    //[NSThread sleepForTimeInterval:0.2];
+    [NSThread sleepForTimeInterval:0.00001];
     
     for (Robot* robot in robots) {
         switch([robot status]) {

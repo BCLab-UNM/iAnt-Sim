@@ -41,8 +41,10 @@
 }
 
 -(void) moveWithObstacle:(std::vector<std::vector<Cell*>>&)grid{
+    //printf("start\n");
     
     if(NSEqualPoints(position, target)){
+        //printf("first return\n");
         return;
     }
     
@@ -63,6 +65,7 @@
                     // SEARCHING
                     //printf("current position x %f y %f  and current target x %f y %f\n", position.x, position.y, target.x, target.y);
                     while([grid[y+dy][x+dx] obstacle]){
+                        //printf("while one \n");
                         NSPoint tp;
                         //printf("current position x %f y %f      obstacle at x %f y %f\n", position.x, position.y, target.x, target.y);
                         //printf("dx dy %d %d\n", dx, dy);
@@ -70,6 +73,7 @@
                         if(position.x + tp.x < 0 || position.y + tp.y < 0 || position.x + tp.x > 124 || position.y + tp.y > 124){
                             break;
                         }
+
                         dx = tp.x;
                         dy = tp.y;
                         delay ++;
@@ -80,6 +84,7 @@
                     //printf("delay %d\n", delay);
                     collisionCount = 0;
                     position = target;
+                    
                     return;
                 }
                 float improvement = dis - pointDistance(x + dx, y + dy, target.x, target.y);
@@ -100,6 +105,7 @@
             if(r < improvements[dx + 1][dy + 1]){
                 // RETURNING or DEPARTING
                 while([grid[y+dy][x+dx] obstacle]){
+                    //printf("while one \n");
                     NSPoint tp;
                     //printf("Travelling Obstacle %d\n", collisionCount++);
                     tp = [self avoidObstacle:NSMakePoint(dx, dy)];
@@ -109,11 +115,11 @@
                     dx = tp.x;
                     dy = tp.y;
                     delay ++;
-                    if (collisionCount > 20) {
-                        [self setStatus:ROBOT_STATUS_SEARCHING];
-                        [self setTarget:NSMakePoint(position.x + dx, position.y + dy)];
-                        collisionCount = 0;
-                    }
+//                    if (collisionCount > 20) {
+//                        [self setStatus:ROBOT_STATUS_SEARCHING];
+//                        [self setTarget:NSMakePoint(position.x + dx, position.y + dy)];
+//                        collisionCount = 0;
+//                    }
                 }
                 position = NSMakePoint(x + dx, y + dy);
                 return;

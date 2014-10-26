@@ -37,7 +37,7 @@ using namespace cv;
         evaluationLimit = -1;
         tickCount = 7200;               // 1 hour (two ticks per second)
         exploreTime = 0;
-        clusteringTagCutoff = [self tagCount];
+        clusteringTagCutoff = -1;
         
         distributionClustered = 1.;
         distributionPowerlaw = 0.;
@@ -229,7 +229,7 @@ using namespace cv;
             [team setFitness:[team fitness] + [collectedTags count]];
             [totalCollectedTags addObjectsFromArray:collectedTags];
             
-            if (([totalCollectedTags count] > [self clusteringTagCutoff]) && !clustered) {
+            if ((clusteringTagCutoff >= 0) && ([totalCollectedTags count] > [self clusteringTagCutoff]) && !clustered) {
                 EM em = [self clusterTags:totalCollectedTags];
                 Mat means = em.get<Mat>("means");
                 vector<Mat> covs = em.get<vector<Mat>>("covs");
@@ -246,7 +246,7 @@ using namespace cv;
                 clustered = YES;
             }
             
-            if ([team fitness] == [self tagCount]) {
+            if ((evaluationCount == 1) && ([team fitness] == [self tagCount])) {
                 [team setTimeToCompleteCollection:tick];
                 break;
             }
@@ -507,9 +507,6 @@ using namespace cv;
                         //Set required local variables
                         BOOL siteFidelityFlag = randomFloat(1.) < poissonCDF([[robot discoveredTags] count], [team siteFidelityRate]);
                         NSPoint pheromone = [Pheromone getPheromone:pheromones atTick:tick];
-                        
-                        //Update unexplored regions
-                        [unexploredRegions setArray:[decomp runDecomposition:unexploredRegions]];
                         
                         if([clusters count]) {
                             int r = randomInt((int)[clusters count]);

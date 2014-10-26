@@ -29,11 +29,11 @@ using namespace cv;
 -(id) init {
     if(self = [super init]) {
         
-        teamCount = 1;                // number of "individuals"
+        teamCount = 100;                // number of "individuals"
         generationCount = 50;           // generations show convergence around 20-30 so shrinking from 100
         robotCount = 6;                 // lets leave this at 6 for now
         tagCount = 256;                 // hold steady
-        evaluationCount = 1;           // more for Maricopa
+        evaluationCount = 12;           // more for Maricopa
         evaluationLimit = -1;
         tickCount = 7200;               // 1 hour (two ticks per second)
         exploreTime = 0;
@@ -46,7 +46,7 @@ using namespace cv;
         pileRadius = 2;
         numberOfClusteredPiles = 4;
         
-        obstacleCount = 10;
+        obstacleCount = 20;
         
         crossoverRate = 1.0;
         mutationRate = 0.1;

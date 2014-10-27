@@ -48,6 +48,11 @@
         return;
     }
     
+    if([grid[target.y][target.x] obstacle]){
+        target.x = position.x;
+        target.y = position.y;
+    }
+    
     //Calculate the highest distance improvement we can get for every neighboring cell.  Ugly but optimized.
     float x = position.x;
     float y = position.y;
@@ -105,9 +110,7 @@
             if(r < improvements[dx + 1][dy + 1]){
                 // RETURNING or DEPARTING
                 while([grid[y+dy][x+dx] obstacle]){
-                    //printf("while one \n");
                     NSPoint tp;
-                    //printf("Travelling Obstacle %d\n", collisionCount++);
                     tp = [self avoidObstacle:NSMakePoint(dx, dy)];
                     if(position.x + tp.x < 0 || position.y + tp.y < 0 || position.x + tp.x > grid[0].size()-1 || position.y + tp.y > grid.size()-1){
                         break;
@@ -131,6 +134,7 @@
 }
 
 -(NSPoint) avoidObstacle:(NSPoint) tp{
+    //printf("target %f %f\n", target.x, target.y);
     NSPoint rp = {0,0};
     if(tp.x == 1 && tp.y == 0){
         rp.x = 1; rp.y = -1;

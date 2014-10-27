@@ -31,7 +31,7 @@ using namespace cv;
         
         teamCount = 1;                // number of "individuals"
         generationCount = 50;           // generations show convergence around 20-30 so shrinking from 100
-        robotCount = 6;                 // lets leave this at 6 for now
+        robotCount = 1;                 // lets leave this at 6 for now
         tagCount = 256;                 // hold steady
         evaluationCount = 1;           // more for Maricopa
         evaluationLimit = -1;
@@ -46,7 +46,7 @@ using namespace cv;
         pileRadius = 2;
         numberOfClusteredPiles = 4;
         
-        obstacleCount = 10;
+        obstacleCount = 64;
         
         crossoverRate = 1.0;
         mutationRate = 0.1;
@@ -131,7 +131,7 @@ using namespace cv;
     
     //Main loop
     for(int generation = 0; generation < generationCount && evalCount < evaluationLimit; generation++) {
-        printf("starting generation %d\n", generation);
+        //printf("starting generation %d\n", generation);
         for(Team* team in teams) {
             [team setFitness:0.];
             [team setTimeToCompleteCollection:0.];
@@ -185,8 +185,8 @@ using namespace cv;
  */
 -(void) evaluateTeams:(NSMutableArray*)teams onGrid:(vector<vector<Cell*>>)grid{
     
-    [self initObstaclesForArray:grid];
     [self initDistributionForArray:grid];
+    [self initObstaclesForArray:grid];
     
     NSMutableArray* robots = [[NSMutableArray alloc] initWithCapacity:robotCount];
     NSMutableArray* pheromones = [[NSMutableArray alloc] init];
@@ -273,7 +273,7 @@ using namespace cv;
     
     NSMutableArray* collectedTags = [[NSMutableArray alloc] init];
     
-    //[NSThread sleepForTimeInterval:0.00001];
+    //[NSThread sleepForTimeInterval:0.005];
     
     for (Robot* robot in robots) {
         switch([robot status]) {
@@ -727,7 +727,10 @@ using namespace cv;
                     //Make sure the place we picked isn't close to another pile.  Pretty naive.
                     overlapping = 0;
                     for(int j = 0; j < pileCount; j++) {
-                        if(pointDistance(pilePoints[j].x, pilePoints[j].y, pileX, pileY) < pileRadius){overlapping = 1; break;}
+                        if(pointDistance(pilePoints[j].x, pilePoints[j].y, pileX, pileY) < pileRadius){
+                            overlapping = 1;
+                            break;
+                        }
                     }
                 }
                 
@@ -880,8 +883,8 @@ using namespace cv;
     int homex = gridWidth / 2;
     int homey = gridHeight / 2;
     
-    int edgeCushion = 5;
-    int obstacleSize = 6;
+    int edgeCushion = 2;
+    int obstacleSize = 4;
     
     for(vector<Cell*> v : grid) {
         for (Cell* cell : v) {
@@ -908,76 +911,88 @@ using namespace cv;
         } else {
             originy = ytwo;
         }
-        int rotation = randomIntRange(0, 4);
-        if(rotation == 0){
-            for(int i = 0; i < 6; i++){
-                if(i == 2){
-                    for(int j = 0; j < 2; j++){
-                        [grid[originy+i][originx+j] setObstacle:[[Obstacle alloc] initWithX:originx+j andY:originy+i]];
-                    }
-                } else if  (i == 3){
-                    for(int j = 0; j < 2; j++){
-                        [grid[originy+i][originx+j] setObstacle:[[Obstacle alloc] initWithX:originx+j andY:originy+i]];
-                    }
-                } else {
-                    for(int j = 0; j < 6; j++){
-                        [grid[originy+i][originx+j] setObstacle:[[Obstacle alloc] initWithX:originx+j andY:originy+i]];
-                    }
+        
+        // square obstacles
+        for(int i = 0; i < obstacleSize; i++){
+            for(int j = 0; j < obstacleSize; j++){
+                if(![grid[originy+i][originx+j] tag]){
+                    [grid[originy+i][originx+j] setObstacle:[[Obstacle alloc] initWithX:originx+j andY:originy+i]];
                 }
-                
-            }
-        } else if (rotation == 1){
-            for(int i = 0; i < 6; i++){
-                if(i == 2){
-                    for(int j = 4; j < 6; j++){
-                        [grid[originy+i][originx+j] setObstacle:[[Obstacle alloc] initWithX:originx+j andY:originy+i]];
-                    }
-                } else if  (i == 3){
-                    for(int j = 4; j < 6; j++){
-                        [grid[originy+i][originx+j] setObstacle:[[Obstacle alloc] initWithX:originx+j andY:originy+i]];
-                    }
-                } else {
-                    for(int j = 0; j < 6; j++){
-                        [grid[originy+i][originx+j] setObstacle:[[Obstacle alloc] initWithX:originx+j andY:originy+i]];
-                    }
-                }
-                
-            }
-        } else if (rotation == 2){
-            for(int i = 0; i < 6; i++){
-                if(i == 2){
-                    for(int j = 0; j < 2; j++){
-                        [grid[originy+j][originx+i] setObstacle:[[Obstacle alloc] initWithX:originx+i andY:originy+j]];
-                    }
-                } else if  (i == 3){
-                    for(int j = 0; j < 2; j++){
-                        [grid[originy+j][originx+i] setObstacle:[[Obstacle alloc] initWithX:originx+i andY:originy+j]];
-                    }
-                } else {
-                    for(int j = 0; j < 6; j++){
-                        [grid[originy+j][originx+i] setObstacle:[[Obstacle alloc] initWithX:originx+i andY:originy+j]];
-                    }
-                }
-                
-            }
-        } else {
-            for(int i = 0; i < 6; i++){
-                if(i == 2){
-                    for(int j = 4; j < 6; j++){
-                        [grid[originy+j][originx+i] setObstacle:[[Obstacle alloc] initWithX:originx+i andY:originy+j]];
-                    }
-                } else if  (i == 3){
-                    for(int j = 4; j < 6; j++){
-                        [grid[originy+j][originx+i] setObstacle:[[Obstacle alloc] initWithX:originx+i andY:originy+j]];
-                    }
-                } else {
-                    for(int j = 0; j < 6; j++){
-                        [grid[originy+j][originx+i] setObstacle:[[Obstacle alloc] initWithX:originx+i andY:originy+j]];
-                    }
-                }
-                
             }
         }
+        
+        // bug traps
+        //   NEED TO CHANGE THESE TO NOT BLOCK TAGS LIKE THE SQUARE OBSTACLE
+//        int rotation = randomIntRange(0, 4);
+//        if(rotation == 0){
+//            for(int i = 0; i < obstacleSize; i++){
+//                if(i == 2){
+//                    for(int j = 0; j < 2; j++){
+//                        [grid[originy+i][originx+j] setObstacle:[[Obstacle alloc] initWithX:originx+j andY:originy+i]];
+//                    }
+//                } else if  (i == 3){
+//                    for(int j = 0; j < 2; j++){
+//                        [grid[originy+i][originx+j] setObstacle:[[Obstacle alloc] initWithX:originx+j andY:originy+i]];
+//                    }
+//                } else {
+//                    for(int j = 0; j < obstacleSize; j++){
+//                        [grid[originy+i][originx+j] setObstacle:[[Obstacle alloc] initWithX:originx+j andY:originy+i]];
+//                    }
+//                }
+//                
+//            }
+//        } else if (rotation == 1){
+//            for(int i = 0; i < obstacleSize; i++){
+//                if(i == 2){
+//                    for(int j = 4; j < obstacleSize; j++){
+//                        [grid[originy+i][originx+j] setObstacle:[[Obstacle alloc] initWithX:originx+j andY:originy+i]];
+//                    }
+//                } else if  (i == 3){
+//                    for(int j = 4; j < obstacleSize; j++){
+//                        [grid[originy+i][originx+j] setObstacle:[[Obstacle alloc] initWithX:originx+j andY:originy+i]];
+//                    }
+//                } else {
+//                    for(int j = 0; j < obstacleSize; j++){
+//                        [grid[originy+i][originx+j] setObstacle:[[Obstacle alloc] initWithX:originx+j andY:originy+i]];
+//                    }
+//                }
+//                
+//            }
+//        } else if (rotation == 2){
+//            for(int i = 0; i < obstacleSize; i++){
+//                if(i == 2){
+//                    for(int j = 0; j < 2; j++){
+//                        [grid[originy+j][originx+i] setObstacle:[[Obstacle alloc] initWithX:originx+i andY:originy+j]];
+//                    }
+//                } else if  (i == 3){
+//                    for(int j = 0; j < 2; j++){
+//                        [grid[originy+j][originx+i] setObstacle:[[Obstacle alloc] initWithX:originx+i andY:originy+j]];
+//                    }
+//                } else {
+//                    for(int j = 0; j < obstacleSize; j++){
+//                        [grid[originy+j][originx+i] setObstacle:[[Obstacle alloc] initWithX:originx+i andY:originy+j]];
+//                    }
+//                }
+//                
+//            }
+//        } else {
+//            for(int i = 0; i < obstacleSize; i++){
+//                if(i == 2){
+//                    for(int j = 4; j < obstacleSize; j++){
+//                        [grid[originy+j][originx+i] setObstacle:[[Obstacle alloc] initWithX:originx+i andY:originy+j]];
+//                    }
+//                } else if  (i == 3){
+//                    for(int j = 4; j < obstacleSize; j++){
+//                        [grid[originy+j][originx+i] setObstacle:[[Obstacle alloc] initWithX:originx+i andY:originy+j]];
+//                    }
+//                } else {
+//                    for(int j = 0; j < obstacleSize; j++){
+//                        [grid[originy+j][originx+i] setObstacle:[[Obstacle alloc] initWithX:originx+i andY:originy+j]];
+//                    }
+//                }
+//                
+//            }
+//        }
         
     }
 

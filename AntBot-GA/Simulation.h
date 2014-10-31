@@ -2,11 +2,9 @@
 #import "Archivable.h"
 #import "Cell.h"
 #import "Cluster.h"
-#import "Decomposition.h"
 #import "SensorError.h"
 #import "GA.h"
 #import "Pheromone.h"
-#import "QuadTree.h"
 #import "Team.h"
 #import "Robot.h"
 #import "Tag.h"
@@ -17,7 +15,7 @@
 
 @interface NSObject(SimulationViewNotifications)
 #ifdef __cplusplus
--(void) updateDisplayWindowWithRobots:(NSMutableArray*)_robots team:(Team*)_team grid:(std::vector<std::vector<Cell*>>&)_grid pheromones:(NSMutableArray*)_pheromones regions:(NSMutableArray*)_regions clusters:(NSMutableArray*)_clusters;
+-(void) updateDisplayWindowWithRobots:(NSMutableArray*)_robots team:(Team*)_team grid:(std::vector<std::vector<Cell*>>&)_grid pheromones:(NSMutableArray*)_pheromones clusters:(NSMutableArray*)_clusters;
 #endif
 @end
 
@@ -35,11 +33,10 @@
 #ifdef __cplusplus
 -(void) evaluateTeams:(NSMutableArray*)teams onGrid:(std::vector<std::vector<Cell*>>)grid;
 -(NSMutableDictionary*) evaluateTeam:(Team*)team onGrid:(std::vector<std::vector<Cell*>>)grid;
--(NSMutableArray*) stateTransition:(NSMutableArray*)robots inTeam:(Team*)team atTick:(int)tick onGrid:(std::vector<std::vector<Cell*>>&)grid withDecomp:(Decomposition*)decomp
+-(NSMutableArray*) stateTransition:(NSMutableArray*)robots inTeam:(Team*)team atTick:(int)tick onGrid:(std::vector<std::vector<Cell*>>&)grid
                     withPheromones:(NSMutableArray*)pheromones
                           clusters:(NSMutableArray*)clusters
-                         foundTags:(NSMutableArray*)foundTags
-                 unexploredRegions:(NSMutableArray*)unexploredRegions;
+                         foundTags:(NSMutableArray*)foundTags;
 -(void) initDistributionForArray:(std::vector<std::vector<Cell*>>&)grid;
 #endif
 
@@ -56,7 +53,6 @@
 @property (nonatomic) int evaluationCount;
 @property (nonatomic) int evaluationLimit;
 @property (nonatomic) int tickCount;
-@property (nonatomic) int exploreTime;
 @property (nonatomic) int clusteringTagCutoff;
 
 @property (nonatomic) float distributionRandom;

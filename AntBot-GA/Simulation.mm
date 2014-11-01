@@ -31,7 +31,7 @@ using namespace cv;
         
         teamCount = 100;                // number of "individuals"
         generationCount = 50;           // generations show convergence around 20-30 so shrinking from 100
-        robotCount = 1;                 // lets leave this at 6 for now
+        robotCount = 6;                 // lets leave this at 6 for now
         tagCount = 256;                 // hold steady
         evaluationCount = 12;           // more for Maricopa
         evaluationLimit = -1;
@@ -45,7 +45,7 @@ using namespace cv;
         pileRadius = 2;
         numberOfClusteredPiles = 4;
 
-        obstacleCount = 256;
+        obstacleCount = 1024;
         
         crossoverRate = 1.0;
         mutationRate = 0.1;
@@ -743,10 +743,7 @@ using namespace cv;
         while(originx > (homex - homeCushion) && originx < (homex + homeCushion) && originy > (homey - homeCushion) && originy < (homey + homeCushion)){
             originx = randomIntRange(edgeCushion, gridWidth - (edgeCushion + obstacleSize));
             originy = randomIntRange(edgeCushion, gridHeight - (edgeCushion + obstacleSize));
-            //printf("origin issue\n");
         }
-        
-        //printf("x %d y %d\n", originx, originy);
         
         // square obstacles
         for(int i = 0; i < obstacleSize; i++){

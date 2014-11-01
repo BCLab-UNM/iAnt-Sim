@@ -45,7 +45,7 @@ using namespace cv;
         pileRadius = 2;
         numberOfClusteredPiles = 4;
 
-        obstacleCount = 128;
+        obstacleCount = 256;
         
         crossoverRate = 1.0;
         mutationRate = 0.1;
@@ -726,6 +726,7 @@ using namespace cv;
     int homey = gridHeight / 2;
     
     int edgeCushion = 2;
+    int homeCushion = 8;
     int obstacleSize = 4;
     
     for(vector<Cell*> v : grid) {
@@ -735,24 +736,17 @@ using namespace cv;
     }
     
     for(int i = 0; i < obstacleCount; i++){
-        int xone = randomIntRange(edgeCushion, homex - (edgeCushion + obstacleSize));
-        int yone = randomIntRange(edgeCushion, homey - (edgeCushion + obstacleSize));
-        int xtwo = randomIntRange(homex + (edgeCushion + obstacleSize), gridWidth - (edgeCushion + obstacleSize));
-        int ytwo = randomIntRange(homey + (edgeCushion + obstacleSize), gridWidth - (edgeCushion + obstacleSize));
-        int xchoice = round(randomFloatRange(0, 1));
-        int ychoice = round(randomFloatRange(0, 1));
-        int originx;
-        int originy;
-        if(xchoice == 0){
-            originx = xone;
-        } else {
-            originx = xtwo;
+        
+        int originx = randomIntRange(edgeCushion, gridWidth - (edgeCushion + obstacleSize));
+        int originy = randomIntRange(edgeCushion, gridHeight - (edgeCushion + obstacleSize));
+        
+        while(originx > (homex - homeCushion) && originx < (homex + homeCushion) && originy > (homey - homeCushion) && originy < (homey + homeCushion)){
+            originx = randomIntRange(edgeCushion, gridWidth - (edgeCushion + obstacleSize));
+            originy = randomIntRange(edgeCushion, gridHeight - (edgeCushion + obstacleSize));
+            //printf("origin issue\n");
         }
-        if(ychoice == 0){
-            originy = yone;
-        } else {
-            originy = ytwo;
-        }
+        
+        //printf("x %d y %d\n", originx, originy);
         
         // square obstacles
         for(int i = 0; i < obstacleSize; i++){

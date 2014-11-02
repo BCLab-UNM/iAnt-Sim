@@ -45,7 +45,7 @@ using namespace cv;
         pileRadius = 2;
         numberOfClusteredPiles = 4;
 
-        obstacleCount = 1024;
+        obstacleCount = 300;
         
         crossoverRate = 1.0;
         mutationRate = 0.1;

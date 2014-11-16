@@ -372,7 +372,7 @@ using namespace cv;
                                    ([foundTag position].y + dy >= 0 && [foundTag position].y + dy < gridSize.height))
                                 {
                                     //Look up tag in tags array
-                                    Cell* cell = grid[[foundTag position].y][[foundTag position].x + dx];
+                                    Cell* cell = grid[[foundTag position].y + dy][[foundTag position].x + dx];
                                     
                                     //If tag exists and is detectable
                                     if (([cell tag]) && !([[cell tag] pickedUp]) && [error detectTag]) {

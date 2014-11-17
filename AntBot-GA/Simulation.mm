@@ -29,11 +29,11 @@ using namespace cv;
 -(id) init {
     if(self = [super init]) {
         
-        teamCount = 100;                // number of "individuals"
-        generationCount = 50;           // generations show convergence around 20-30 so shrinking from 100
+        teamCount = 1;                // number of "individuals"
+        generationCount = 10;           // generations show convergence around 20-30 so shrinking from 100
         robotCount = 6;                 // lets leave this at 6 for now
         tagCount = 256;                 // hold steady
-        evaluationCount = 12;           // more for Maricopa
+        evaluationCount = 1;           // more for Maricopa
         evaluationLimit = -1;
         tickCount = 7200;               // 1 hour (two ticks per second)
         clusteringTagCutoff = -1;
@@ -45,7 +45,7 @@ using namespace cv;
         pileRadius = 2;
         numberOfClusteredPiles = 4;
 
-        obstacleCount = 256;
+        obstacleCount = 128;
         
         crossoverRate = 1.0;
         mutationRate = 0.1;
@@ -215,6 +215,8 @@ using namespace cv;
         for(int tick = 0; tickCount >= 0 ? tick < tickCount : YES; tick++) {
             
             NSMutableArray* collectedTags = [self stateTransition:robots inTeam:team atTick:tick onGrid:grid withPheromones:pheromones clusters:clusters foundTags:foundTags];
+            
+            //printf("%d\n", team.collisions);
             
             [team setFitness:[team fitness] + [collectedTags count]];
             [totalCollectedTags addObjectsFromArray:collectedTags];
@@ -403,8 +405,6 @@ using namespace cv;
                 if(tick - [robot lastMoved] <= [robot delay]) {
                     break;
                 }
-                
-                //NSLog(@"                                        Returning");
                 
                 [robot setDelay:0];
                 [robot moveWithObstacle:grid];

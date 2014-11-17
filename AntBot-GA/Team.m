@@ -71,6 +71,7 @@
                            [self fitness],
                            [self collisions]]
                    toFile:file];
+        //printf("%d\n", self.collisions);
 }
 
 
@@ -83,8 +84,8 @@
     @"informedSearchCorrelationDecayRate,"
     @"pheromoneLayingRate,"
     @"siteFidelityRate,"
-    @"collisions,"
-    @"fitness\n";
+    @"fitness,"
+    @"collisions\n";
     
     [Utilities appendText:headers toFile :file];
 }

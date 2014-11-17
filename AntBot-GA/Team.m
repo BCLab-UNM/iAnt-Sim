@@ -6,6 +6,7 @@
 @synthesize uninformedSearchCorrelation, informedSearchCorrelationDecayRate;
 @synthesize pheromoneDecayRate, pheromoneLayingRate, siteFidelityRate;
 @synthesize fitness, timeToCompleteCollection;
+@synthesize collisions;
 
 -(id) initRandom {
     if(self = [super init]) {
@@ -59,7 +60,7 @@
 }
 
 -(void) writeParametersToFile:(NSString *)file {
-    [Utilities appendText:[NSString stringWithFormat:@"%f,%f,%f,%f,%f,%f,%f,%f\n",
+    [Utilities appendText:[NSString stringWithFormat:@"%f,%f,%f,%f,%f,%f,%f,%f,%d\n",
                            [self pheromoneDecayRate],
                            [self travelGiveUpProbability],
                            [self searchGiveUpProbability],
@@ -67,7 +68,8 @@
                            [self informedSearchCorrelationDecayRate],
                            [self pheromoneLayingRate],
                            [self siteFidelityRate],
-                           [self fitness]]
+                           [self fitness],
+                           [self collisions]]
                    toFile:file];
 }
 
@@ -81,6 +83,7 @@
     @"informedSearchCorrelationDecayRate,"
     @"pheromoneLayingRate,"
     @"siteFidelityRate,"
+    @"collisions,"
     @"fitness\n";
     
     [Utilities appendText:headers toFile :file];

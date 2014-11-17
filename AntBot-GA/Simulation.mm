@@ -612,10 +612,12 @@ using namespace cv;
     averageTeam = [[Team alloc] init];
     NSMutableDictionary* parameterSums = [[NSMutableDictionary alloc] init];
     float tagSum = 0.f;
+    float collisionSum = 0.f;
     
     for(Team* team in teams) {
         NSMutableDictionary* parameters = [team getParameters];
         tagSum += [team fitness];
+        collisionSum += [team collisions];
         for(NSString* key in parameters) {
             float val = [[parameterSums objectForKey:key] floatValue] + [[parameters objectForKey:key] floatValue];
             [parameterSums setObject:@(val) forKey:key];
@@ -629,6 +631,7 @@ using namespace cv;
     
     [averageTeam setFitness:(tagSum / teamCount) / evaluationCount];
     [averageTeam setParameters:parameterSums];
+    [averageTeam setCollisions:(collisionSum / teamCount) / evaluationCount];
 }
 
 
@@ -643,6 +646,7 @@ using namespace cv;
         if([team fitness] > maxTags) {
             maxTags = [team fitness];
             [bestTeam setParameters:[team getParameters]];
+            [bestTeam setCollisions:[team collisions]];
         }
     }
     

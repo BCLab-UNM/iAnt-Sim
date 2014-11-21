@@ -15,9 +15,8 @@ using namespace cv;
 @implementation Simulation
 
 @synthesize teamCount, generationCount, robotCount, tagCount, evaluationCount, evaluationLimit, tickCount, clusteringTagCutoff;
-@synthesize distributionRandom, distributionPowerlaw, distributionClustered;
 @synthesize averageTeam, bestTeam;
-@synthesize pileRadius, numberOfClusteredPiles;
+@synthesize pileRadius, pileCount, tagDistribution;
 @synthesize crossoverRate, mutationRate, selectionOperator, crossoverOperator, mutationOperator, elitism;
 @synthesize gridSize, nest;
 @synthesize parameterFile;
@@ -36,12 +35,10 @@ using namespace cv;
         tickCount = 7200;
         clusteringTagCutoff = -1;
         
-        distributionClustered = 1.;
-        distributionPowerlaw = 0.;
-        distributionRandom = 0.;
-        
         pileRadius = 2;
-        numberOfClusteredPiles = 4;
+        pileCount = 4;
+        
+        tagDistribution = @{@(pileCount): @(tagCount / pileCount)};
         
         crossoverRate = 1.0;
         mutationRate = 0.1;
@@ -515,25 +512,12 @@ using namespace cv;
         }
     }
     
-    int pilesOf[tagCount + 1]; //Key is size of pile.  Value is number of piles with this many tags.
-    for(int i = 0; i <= tagCount; i++){pilesOf[i]=0;}
-    
-    //Needs to be adjusted if doing a powerlaw distribution with tagCount != 256.
-    pilesOf[1] = roundf(((tagCount / 4) * distributionPowerlaw) + (tagCount * distributionRandom));
-    pilesOf[(tagCount / 64)] = roundf((tagCount / 16) * distributionPowerlaw);
-    pilesOf[(tagCount / 16)] = roundf((tagCount / 64) * distributionPowerlaw);
-    pilesOf[(tagCount / numberOfClusteredPiles)] = roundf(distributionPowerlaw + (numberOfClusteredPiles * distributionClustered));
-    
-    int pileCount = 0;
-    NSPoint pilePoints[tagCount + 1];
-    
-    for(int size = 1; size <= tagCount; size++) { //For each distinct size of pile.
-        if(pilesOf[size] == 0) {
-            continue;
-        }
+    for(NSNumber* key in tagDistribution) {
+        int tags = [key intValue];
+        int piles = [[tagDistribution objectForKey:key] intValue];
         
-        if(size == 1) {
-            for(int i = 0; i < pilesOf[1]; i++) {
+        if(tags == 1) {
+            for(int i = 0; i < tags; i++) {
                 int tagX, tagY;
                 do {
                     tagX = randomInt(gridSize.width);
@@ -544,25 +528,31 @@ using namespace cv;
             }
         }
         else {
-            for(int i = 0; i < pilesOf[size]; i++) { //Place each pile.
-                int pileX,pileY;
-                
+            NSPoint pilePoints[piles];
+            
+            for(int pile = 0; pile < piles; pile++) {
+
+                // Find a place for the pile
+                int pileX, pileY;
                 int overlapping = 1;
                 while(overlapping) {
                     pileX = randomIntRange(pileRadius, gridSize.width - (pileRadius * 2));
                     pileY = randomIntRange(pileRadius, gridSize.height - (pileRadius * 2));
                     
-                    //Make sure the place we picked isn't close to another pile.  Pretty naive.
                     overlapping = 0;
-                    for(int j = 0; j < pileCount; j++) {
-                        if(pointDistance(pilePoints[j].x, pilePoints[j].y, pileX, pileY) < pileRadius){overlapping = 1; break;}
+                    for(int other = 0; other < pile; other++) {
+                        if(pointDistance(pilePoints[other].x, pilePoints[other].y, pileX, pileY) < pileRadius) {
+                            overlapping = 1;
+                            break;
+                        }
                     }
                 }
                 
-                pilePoints[pileCount++] = NSMakePoint(pileX, pileY);
+                // Place the pile
+                pilePoints[pile] = NSMakePoint(pileX, pileY);
                 
-                //Place each individual tag in the pile.
-                for(int j = 0; j < size; j++) {
+                // Place the individual tags in the pile
+                for(int tag = 0; tag < tags; tags++) {
                     float maxRadius = pileRadius;
                     int tagX, tagY;
                     do {
@@ -641,12 +631,10 @@ using namespace cv;
               @"tickCount" : @(tickCount),
               @"clusteringTagCutoff" : @(clusteringTagCutoff),
               
-              @"distributionRandom" : @(distributionRandom),
-              @"distributionPowerlaw" : @(distributionPowerlaw),
-              @"distributionClustered" : @(distributionClustered),
+              @"tagDistribution" : tagDistribution,
               
               @"pileRadius" : @(pileRadius),
-              @"numberOfClusteredPiles": @(numberOfClusteredPiles),
+              @"pileCount": @(pileCount),
               
               @"crossoverRate" : @(crossoverRate),
               @"mutationRate" : @(mutationRate),
@@ -670,13 +658,10 @@ using namespace cv;
     tickCount = [[parameters objectForKey:@"tickCount"] intValue];
     clusteringTagCutoff = [[parameters objectForKey:@"clusteringTagCutoff"] intValue];
     
-    distributionRandom = [[parameters objectForKey:@"distributionRandom"] floatValue];
-    distributionPowerlaw = [[parameters objectForKey:@"distributionPowerlaw"] floatValue];
-    distributionClustered = [[parameters objectForKey:@"distributionClustered"] floatValue];
-    
+    tagDistribution = [parameters objectForKey:@"tagDistribution"];
     
     pileRadius = [[parameters objectForKey:@"pileRadius"] intValue];
-    numberOfClusteredPiles = [[parameters objectForKey:@"numberOfClusteredPiles"] intValue];
+    pileCount = [[parameters objectForKey:@"pileCount"] intValue];
     
     crossoverRate = [[parameters objectForKey:@"crossoverRate"] floatValue];
     mutationRate = [[parameters objectForKey:@"mutationRate"] floatValue];

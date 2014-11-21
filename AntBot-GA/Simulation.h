@@ -55,12 +55,9 @@
 @property (nonatomic) int tickCount;
 @property (nonatomic) int clusteringTagCutoff;
 
-@property (nonatomic) float distributionRandom;
-@property (nonatomic) float distributionPowerlaw;
-@property (nonatomic) float distributionClustered;
-
 @property (nonatomic) int pileRadius;
-@property (nonatomic) int numberOfClusteredPiles;
+@property (nonatomic) int pileCount;
+@property (nonatomic) NSDictionary* tagDistribution;
 
 @property (nonatomic) float crossoverRate;
 @property (nonatomic) float mutationRate;

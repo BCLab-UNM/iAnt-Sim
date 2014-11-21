@@ -3,9 +3,9 @@
 @implementation Team
 
 @synthesize travelGiveUpProbability, searchGiveUpProbability;
-@synthesize uninformedSearchCorrelation, informedSearchCorrelationDecayRate, stepSizeVariation;
-@synthesize pheromoneDecayRate, pheromoneLayingRate, siteFidelityRate;//, decompositionAllocProbability;
-@synthesize fitness, explorePhase;
+@synthesize uninformedSearchCorrelation, informedSearchCorrelationDecayRate;
+@synthesize pheromoneDecayRate, pheromoneLayingRate, siteFidelityRate;
+@synthesize fitness, timeToCompleteCollection;
 
 //////////////POWER STUFF///////////////
 //@synthesize powerReturnShift, powerReturnSigma, chargeActiveSigma;
@@ -16,16 +16,13 @@
 
 -(id) initRandom {
     if(self = [super init]) {
-        pheromoneDecayRate = randomExponential(10.0);
-        
         travelGiveUpProbability = randomFloat(1.0);
         searchGiveUpProbability = randomFloat(1.0);
-//        decompositionAllocProbability = randomFloat(1.0);
         
         uninformedSearchCorrelation = randomFloat(2 * M_2PI);
         informedSearchCorrelationDecayRate = randomExponential(5.0);
-        stepSizeVariation = randomExponential(1.0);
         
+        pheromoneDecayRate = randomExponential(10.0);
         pheromoneLayingRate = randomFloat(20.);
         siteFidelityRate = randomFloat(20.);
         
@@ -58,76 +55,47 @@
 #pragma Archivable methods
 
 -(NSMutableDictionary*) getParameters {
-    return [[NSMutableDictionary alloc] initWithObjects:
-            [NSArray arrayWithObjects:
-             [NSNumber numberWithFloat:pheromoneDecayRate],
-             [NSNumber numberWithFloat:travelGiveUpProbability],
-             [NSNumber numberWithFloat:searchGiveUpProbability],
-//             [NSNumber numberWithFloat:decompositionAllocProbability],
-             [NSNumber numberWithFloat:uninformedSearchCorrelation],
-             [NSNumber numberWithFloat:informedSearchCorrelationDecayRate],
-             [NSNumber numberWithFloat:stepSizeVariation],
-             [NSNumber numberWithFloat:pheromoneLayingRate],
-             [NSNumber numberWithFloat:siteFidelityRate],
-//             [NSNumber numberWithFloat:powerReturnShift],
-//             [NSNumber numberWithFloat:powerReturnSigma],
-//             [NSNumber numberWithFloat:chargeActiveSigma],
-             [NSNumber numberWithFloat:batteryReturnVal],
-             [NSNumber numberWithFloat:batteryLeaveVal],
-             nil] forKeys:
-            [NSArray arrayWithObjects:
-             @"pheromoneDecayRate",
-             @"travelGiveUpProbability",
-             @"searchGiveUpProbability",
-//             @"decompositionAllocProbability",
-             @"uninformedSearchCorrelation",
-             @"informedSearchCorrelationDecayRate",
-             @"stepSizeVariation",
-             @"pheromoneLayingRate",
-             @"siteFidelityRate",
-//             @"powerReturnShift",
-//             @"powerReturnSigma",
-//             @"chargeActiveSigma",
-             @"batteryReturnVal",
-             @"batteryLeaveVal",
-             nil]];
+    return [@{@"travelGiveUpProbability" : @(travelGiveUpProbability),
+              @"searchGiveUpProbability" : @(searchGiveUpProbability),
+              @"uninformedSearchCorrelation" : @(uninformedSearchCorrelation),
+              @"informedSearchCorrelationDecayRate" : @(informedSearchCorrelationDecayRate),
+              @"pheromoneDecayRate" : @(pheromoneDecayRate),
+              @"pheromoneLayingRate" : @(pheromoneLayingRate),
+              @"siteFidelityRate" : @(siteFidelityRate),
+              //@"powerReturnShift" : @(powerReturnShift),
+              //@"powerReturnSigma" : @(powerReturnSigma),
+              //@"chargeActiveSigma" : @(chargeActiveSigma),
+              @"batteryReturnVal" : @(batteryReturnVal),
+              @"batteryLeaveVal" : @(batteryLeaveVal)} mutableCopy];
 }
 
 -(void) setParameters:(NSDictionary *)parameters {
-    pheromoneDecayRate = [[parameters objectForKey:@"pheromoneDecayRate"] floatValue];
-    
     travelGiveUpProbability = [[parameters objectForKey:@"travelGiveUpProbability"] floatValue];
     searchGiveUpProbability = [[parameters objectForKey:@"searchGiveUpProbability"] floatValue];
-//    decompositionAllocProbability = [[parameters objectForKey:@"decompositionAllocProbability"] floatValue];
-    
     uninformedSearchCorrelation = [[parameters objectForKey:@"uninformedSearchCorrelation"] floatValue];
     informedSearchCorrelationDecayRate = [[parameters objectForKey:@"informedSearchCorrelationDecayRate"] floatValue];
-    stepSizeVariation = [[parameters objectForKey:@"stepSizeVariation"] floatValue];
-    
+    pheromoneDecayRate = [[parameters objectForKey:@"pheromoneDecayRate"] floatValue];
     pheromoneLayingRate = [[parameters objectForKey:@"pheromoneLayingRate"] floatValue];
     siteFidelityRate = [[parameters objectForKey:@"siteFidelityRate"] floatValue];
-    
-//    powerReturnShift = [[parameters objectForKey:@"powerReturnShift"] floatValue];
-//    powerReturnSigma = [[parameters objectForKey:@"powerReturnSigma"] floatValue];
-//    chargeActiveSigma = [[parameters objectForKey:@"chargeActiveSigma"] floatValue];
+    //powerReturnShift = [[parameters objectForKey:@"powerReturnShift"] floatValue];
+    //powerReturnSigma = [[parameters objectForKey:@"powerReturnSigma"] floatValue];
+    //chargeActiveSigma = [[parameters objectForKey:@"chargeActiveSigma"] floatValue];
     batteryReturnVal = [[parameters objectForKey:@"batteryReturnVal"] floatValue];
     batteryLeaveVal = [[parameters objectForKey:@"batteryLeaveVal"] floatValue];
 }
 
 -(void) writeParametersToFile:(NSString *)file {
-    [Utilities appendText:[NSString stringWithFormat:@"%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f\n",
+    [Utilities appendText:[NSString stringWithFormat:@"%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f\n",
                            [self pheromoneDecayRate],
                            [self travelGiveUpProbability],
                            [self searchGiveUpProbability],
-//                           [self decompositionAllocProbability],
                            [self uninformedSearchCorrelation],
                            [self informedSearchCorrelationDecayRate],
-                           [self stepSizeVariation],
                            [self pheromoneLayingRate],
                            [self siteFidelityRate],
-//                           [self powerReturnShift],
-//                           [self powerReturnSigma],
-//                           [self chargeActiveSigma],
+                           //[self powerReturnShift],
+                           //[self powerReturnSigma],
+                           //[self chargeActiveSigma],
                            [self batteryReturnVal],
                            [self batteryLeaveVal],
                            [self casualties],
@@ -137,23 +105,22 @@
 
 
 +(void) writeParameterNamesToFile:(NSString *)file {
-    NSString* headers = [NSString stringWithFormat:@"%@,%@,%@,%@,%@,%@,%@,%@,%@,%@,%@,%@\n",
-                         @"pheromoneDecayRate",
-                         @"travelGiveUpProbability",
-                         @"searchGiveUpProbability",
-//                         @"decompositionAllocProbability",
-                         @"uninformedSearchCorrelation",
-                         @"informedSearchCorrelationDecayRate",
-                         @"stepSizeVariation",
-                         @"pheromoneLayingRate",
-                         @"siteFidelityRate",
-//                         @"powerReturnShift",
-//                         @"powerReturnSigma",
-//                         @"chargeActiveSigma",
-                         @"batteryReturnVal",
-                         @"batteryLeaveVal",
-                         @"casualties",
-                         @"fitness"];
+    NSString* headers =
+    @"pheromoneDecayRate,"
+    @"travelGiveUpProbability,"
+    @"searchGiveUpProbability,"
+    @"uninformedSearchCorrelation,"
+    @"informedSearchCorrelationDecayRate,"
+    @"pheromoneLayingRate,"
+    @"siteFidelityRate,"
+    //@"powerReturnShift,"
+    //@"powerReturnSigma,"
+    //@"chargeActiveSigma,"
+    @"batteryReturnVal,"
+    @"batteryLeaveVal,"
+    @"casualties,"
+    @"fitness\n";
+    
     [Utilities appendText:headers toFile :file];
 }
 

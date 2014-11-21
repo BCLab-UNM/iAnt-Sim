@@ -1,24 +1,22 @@
 #import <Foundation/Foundation.h>
-#import "Array2D.h"
 #import "Archivable.h"
 #import "Cell.h"
 #import "Cluster.h"
-#import "Decomposition.h"
 #import "SensorError.h"
 #import "GA.h"
 #import "Pheromone.h"
-#import "QuadTree.h"
 #import "Team.h"
 #import "Robot.h"
 #import "Tag.h"
 #import "Utilities.h"
 
-
 @class Team;
 @class Tag;
 
 @interface NSObject(SimulationViewNotifications)
--(void) updateDisplayWindowWithRobots:(NSMutableArray*)_robots team:(Team*)_team grid:(Array2D*)_grid pheromones:(NSMutableArray*)_pheromones regions:(NSMutableArray*)_regions clusters:(NSMutableArray*)_clusters;
+#ifdef __cplusplus
+-(void) updateDisplayWindowWithRobots:(NSMutableArray*)_robots team:(Team*)_team grid:(std::vector<std::vector<Cell*>>&)_grid pheromones:(NSMutableArray*)_pheromones clusters:(NSMutableArray*)_clusters;
+#endif
 @end
 
 @interface NSObject(SimulationNotifications)
@@ -30,15 +28,17 @@
     GA* ga;
 }
 
--(NSMutableArray*) run;
--(void) evaluateTeams:(NSMutableArray*)teams onGrid:(Array2D*)grid;
--(int) stateTransition:(NSMutableArray*)robots inTeam:(Team*)team atTick:(int)tick onGrid:(Array2D*)grid
-         withPheromones:(NSMutableArray*)pheromones
-               clusters:(NSMutableArray*)clusters
-                regions:(NSMutableArray*)regions
-      unexploredRegions:(NSMutableArray*)unexploredRegions;
--(NSMutableArray*) evaluateTeam:(Team*)team onGrid:(Array2D*)grid;
--(void) initDistributionForArray:(Array2D*)grid;
+-(NSMutableDictionary*) run;
+
+#ifdef __cplusplus
+-(void) evaluateTeams:(NSMutableArray*)teams onGrid:(std::vector<std::vector<Cell*>>)grid;
+-(NSMutableDictionary*) evaluateTeam:(Team*)team onGrid:(std::vector<std::vector<Cell*>>)grid;
+-(NSMutableArray*) stateTransition:(NSMutableArray*)robots inTeam:(Team*)team atTick:(int)tick onGrid:(std::vector<std::vector<Cell*>>&)grid
+                    withPheromones:(NSMutableArray*)pheromones
+                          clusters:(NSMutableArray*)clusters
+                         foundTags:(NSMutableArray*)foundTags;
+-(void) initDistributionForArray:(std::vector<std::vector<Cell*>>&)grid;
+#endif
 
 //////////////POWER STUFF///////////////
 //+(int) getSimTicks;
@@ -60,13 +60,14 @@
 @property (nonatomic) int evaluationCount;
 @property (nonatomic) int evaluationLimit;
 @property (nonatomic) int tickCount;
-@property (nonatomic) int exploreTime;
+@property (nonatomic) int clusteringTagCutoff;
 
 @property (nonatomic) float distributionRandom;
 @property (nonatomic) float distributionPowerlaw;
 @property (nonatomic) float distributionClustered;
 
 @property (nonatomic) int pileRadius;
+@property (nonatomic) int numberOfClusteredPiles;
 
 @property (nonatomic) float crossoverRate;
 @property (nonatomic) float mutationRate;
@@ -77,13 +78,6 @@
 
 @property (nonatomic) NSSize gridSize;
 @property (nonatomic) NSPoint nest;
-
-@property (nonatomic) BOOL variableStepSize;
-@property (nonatomic) BOOL uniformDirection;
-@property (nonatomic) BOOL adaptiveWalk;
-
-@property (nonatomic) BOOL decentralizedPheromones;
-@property (nonatomic) int wirelessRange;
 
 @property (nonatomic) NSString* parameterFile;
 

@@ -2,17 +2,18 @@
 
 @implementation QuadTree
 
-@synthesize origin;
-@synthesize width, height;
-@synthesize cells;
+@synthesize shape, area;
+@synthesize percentExplored;
+@synthesize dirty;
 
--(id) initWithHeight:(int)_height width:(int)_width origin:(NSPoint)_origin andCells:(Array2D*)_cells {
+-(id) initWithRect:(NSRect)rect{
     if(self = [super init]) {
-        height = _height;
-        width = _width;
-        origin = _origin;
-        cells = _cells;
+        shape = rect;
+        area = rect.size.height * rect.size.width;
+        percentExplored = 0.;
+        dirty = YES;
     }
     return self;
 }
+
 @end

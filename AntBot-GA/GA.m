@@ -43,7 +43,7 @@
 -(NSMutableArray*)tournamentSelectionOn:(NSMutableArray*)population {
     NSMutableArray* parents = [[NSMutableArray alloc] init];
     int populationSize = (int)[population count];
-
+    
     if (populationSize > 1) {
         for(int j = 0; j < 2; j++) {
             id candidateOne = [population objectAtIndex:randomInt(populationSize)],
@@ -188,7 +188,7 @@
 
 
 /*
- * Gaussian mutation with variance decreasing uniformly from 
+ * Gaussian mutation with variance decreasing uniformly from
  * maxVariance to minVariance based on the fraction of generations elasped.
  */
 -(float)decreasingVarianceMutationForParameter:(float)parameter atGeneration:(int)generation :(int)maxGenerations :(float)maxVariance :(float)minVariance{
@@ -226,9 +226,7 @@
     if ((populationSize > 1) && [populationClass conformsToProtocol:@protocol(Archivable)]) {
         //Sort array smallest to largest
         population = (NSMutableArray*)[population sortedArrayUsingComparator:^NSComparisonResult(id objA, id objB) {
-            NSNumber* fitnessA = [NSNumber numberWithFloat:[objA fitness]];
-            NSNumber* fitnessB = [NSNumber numberWithFloat:[objB fitness]];
-            return [fitnessA compare:fitnessB];
+            return [@([objA fitness]) compare:@([objB fitness])];
         }];
         
         //Elitism
@@ -254,6 +252,7 @@
                     parents = [self rankBasedElististSelectionOn:population withCutoff:0.5];
                     break;
                 default:
+                    [NSException raise:@"Invalid GA selection operator" format:@"Selection operator %d does not exist", selectionOperator];
                     break;
             }
             
@@ -271,6 +270,9 @@
                         break;
                     case TwoPointCross:
                         [self twoPointCrossoverFromParents:parents toChild:child];
+                        break;
+                    default:
+                        [NSException raise:@"Invalid GA crossover operator" format:@"Crossover operator %d does not exist", crossoverOperator];
                         break;
                 }
             }
@@ -300,20 +302,20 @@
                                 return [self fixedVarianceMutationForParameter:value :fixedVarianceSigma];
                             }
                             default: {
-                                NSLog(@"Mutation parameter undefined.");
+                                [NSException raise:@"Invalid GA mutation operator" format:@"Mutation operator %d does not exist", crossoverOperator];
                                 return value;
                             }
                         }
                     };
                     
                     if ([parameter isKindOfClass:[NSNumber class]]) {
-                        parameter = [NSNumber numberWithFloat:mutateParameter([parameter floatValue])];
+                        parameter = @(mutateParameter([parameter floatValue]));
                     }
                     else if ([parameter isKindOfClass:[NSValue class]]) {
                         NSPoint p = [parameter pointValue];
                         parameter = [NSValue valueWithPoint:NSMakePoint(mutateParameter(p.x), mutateParameter(p.y))];
                     }
-
+                    
                     [parameters setObject:parameter forKey:key];
                 }
             }

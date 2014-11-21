@@ -10,12 +10,10 @@
 //Behavior parameters:
 @property (nonatomic) float travelGiveUpProbability;
 @property (nonatomic) float searchGiveUpProbability;
-//@property (nonatomic) float decompositionAllocProbability;
 
 //Random walk parameters:
 @property (nonatomic) float uninformedSearchCorrelation;
 @property (nonatomic) float informedSearchCorrelationDecayRate;
-@property (nonatomic) float stepSizeVariation;
 
 //Information parameters:
 @property (nonatomic) float pheromoneDecayRate;
@@ -33,6 +31,6 @@
 
 //Non-evolved variables:
 @property (nonatomic) float fitness;
-@property (nonatomic) BOOL explorePhase; //Flag denoting whether robot team is currently exploring for tags instead of collecting them
+@property (nonatomic) int timeToCompleteCollection;
 
 @end

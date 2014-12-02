@@ -55,6 +55,12 @@
 @property (nonatomic) int tickCount;
 @property (nonatomic) int clusteringTagCutoff;
 
+@property (nonatomic) BOOL useTravel;
+@property (nonatomic) BOOL useGiveUp;
+@property (nonatomic) BOOL useSiteFidelity;
+@property (nonatomic) BOOL usePheromone;
+@property (nonatomic) BOOL useInformedWalk;
+
 @property (nonatomic) float distributionRandom;
 @property (nonatomic) float distributionPowerlaw;
 @property (nonatomic) float distributionClustered;
@@ -67,7 +73,7 @@
 @property (nonatomic) int selectionOperator;
 @property (nonatomic) int mutationOperator;
 @property (nonatomic) int crossoverOperator;
-@property (nonatomic) bool elitism;
+@property (nonatomic) BOOL elitism;
 
 @property (nonatomic) NSSize gridSize;
 @property (nonatomic) NSPoint nest;

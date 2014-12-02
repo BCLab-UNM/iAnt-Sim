@@ -287,6 +287,7 @@ using namespace cv;
             case ROBOT_STATUS_DEPARTING: {
                 if((![robot informed] && (!useTravel || (randomFloat(1.) < team.travelGiveUpProbability))) || (NSEqualPoints([robot position], [robot target]))) {
                     [robot setStatus:ROBOT_STATUS_SEARCHING];
+                    [robot setInformed:(useInformedWalk & [robot informed])];
                     [robot turnWithParameters:team];
                     [robot setLastTurned:(tick + [robot delay] + 1)];
                     [robot setLastMoved:tick];

@@ -38,14 +38,14 @@ using namespace cv;
         tickCount = 7200;               // 1 hour (two ticks per second)
         clusteringTagCutoff = -1;
         
-        distributionClustered = 1.;
-        distributionPowerlaw = 0.;
+        distributionClustered = 0.;
+        distributionPowerlaw = 1.;
         distributionRandom = 0.;
         
         pileRadius = 2;
         numberOfClusteredPiles = 4;
 
-        obstacleCount = 128;
+        obstacleCount = 0;
         
         crossoverRate = 1.0;
         mutationRate = 0.1;

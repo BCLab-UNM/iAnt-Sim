@@ -483,7 +483,7 @@ using namespace cv;
     NSMutableArray* time = [[NSMutableArray alloc] init];
     NSMutableArray* teams = [[NSMutableArray alloc] initWithObjects:averageTeam, nil];
     
-    for (int i = 0; i < 100; i++) {
+    for (int i = 0; i < 1; i++) {
         
         //Reset
         [averageTeam setFitness:0.];

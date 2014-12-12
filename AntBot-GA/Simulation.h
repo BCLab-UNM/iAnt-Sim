@@ -12,6 +12,8 @@
 
 @class Team;
 @class Tag;
+@class Pheromone;
+@class Simulation;
 
 @interface NSObject(SimulationViewNotifications)
 #ifdef __cplusplus
@@ -20,9 +22,13 @@
 @end
 
 @interface NSObject(SimulationNotifications)
--(void) finishedGeneration:(int)generation atEvaluation:(int)evaluation;
+-(void) simulationDidStart:(Simulation*)simulation;
+-(void) simulationDidFinish:(Simulation*)simulation;
+-(void) simulation:(Simulation*)simulation didFinishGeneration:(int)generation atEvaluation:(int)evaluation;
+-(void) simulation:(Simulation*)simulation didFinishTick:(int)tick;
+-(void) simulation:(Simulation*)simulation didPickupTag:(Tag*)tag atTick:(int)tick;
+-(void) simulation:(Simulation*)simulation didPlacePheromone:(Pheromone*)pheromome atTick:(int)tick;
 @end
-
 
 @interface Simulation : NSObject <Archivable> {
     GA* ga;

@@ -132,6 +132,10 @@ using namespace cv;
         grids.push_back(grid);
     }
     
+    if(delegate && [delegate respondsToSelector:@selector(simulationDidStart:)]) {
+        [delegate simulationDidStart:self];
+    }
+    
     //Main loop
     for(int generation = 0; generation < generationCount && evalCount < evaluationLimit; generation++) {
         for(Team* team in teams) {
@@ -160,13 +164,13 @@ using namespace cv;
             [ga breedPopulation:teams AtGeneration:generation andMaxGeneration:generationCount];
         }
         
-        if(delegate) {
-            
-            //Technically should pass in average and best teams here.
-            if([delegate respondsToSelector:@selector(finishedGeneration:atEvaluation:)]) {
-                [delegate finishedGeneration:generation atEvaluation:evalCount];
-            }
+        if(delegate && [delegate respondsToSelector:@selector(simulation:didFinishGeneration:atEvaluation:)]) {
+            [delegate simulation:self didFinishGeneration:generation atEvaluation:evalCount];
         }
+    }
+    
+    if(delegate && [delegate respondsToSelector:@selector(simulationDidFinish:)]) {
+        [delegate simulationDidFinish:self];
     }
     
     printf("Completed\n");
@@ -241,11 +245,16 @@ using namespace cv;
             }
             
             if(tickRate != 0.f){[NSThread sleepForTimeInterval:tickRate];}
+            
             if(viewDelegate != nil) {
                 if([viewDelegate respondsToSelector:@selector(updateDisplayWindowWithRobots:team:grid:pheromones:clusters:)]) {
                     [Pheromone getPheromone:pheromones atTick:tick];
                     [viewDelegate updateDisplayWindowWithRobots:[robots copy] team:team grid:grid pheromones:[pheromones copy] clusters:[clusters copy]];
                 }
+            }
+            
+            if(delegate && [delegate respondsToSelector:@selector(simulation:didFinishTick:)]) {
+                [delegate simulation:self didFinishTick:tick];
             }
         }
     }
@@ -330,7 +339,6 @@ using namespace cv;
                     [robot setTarget:NSMakePoint(roundf([robot position].x + cos([robot direction])), roundf([robot position].y + sin([robot direction])))];
                 }
                 
-                
                 //Move one cell
                 [robot moveWithin:gridSize];
                 Cell* currentCell = grid[[robot position].y][[robot position].x];
@@ -383,6 +391,10 @@ using namespace cv;
                         [robot setStatus:ROBOT_STATUS_RETURNING];
                         [robot setDelay:9];
                         [robot setTarget:nest];
+                        
+                        if(delegate && [delegate respondsToSelector:@selector(simulation:didPickupTag:atTick:)]) {
+                            [delegate simulation:self didPickupTag:foundTag atTick:tick];
+                        }
                     }
                 }
                 
@@ -413,10 +425,13 @@ using namespace cv;
                     
                     //Add (perturbed) tag position to global pheromone array
                     if (foundTag && (randomFloat(1.) < poissonCDF([[robot discoveredTags] count], [team pheromoneLayingRate]))) {
-                        Pheromone* p = [[Pheromone alloc] initWithPosition:[foundTag position] weight:1. decayRate:[team pheromoneDecayRate] andUpdatedTick:tick];
-                        [pheromones addObject:p];
+                        Pheromone* pheromone = [[Pheromone alloc] initWithPosition:[foundTag position] weight:1. decayRate:[team pheromoneDecayRate] andUpdatedTick:tick];
+                        [pheromones addObject:pheromone];
+                        
+                        if(delegate && [delegate respondsToSelector:@selector(simulation:didPlacePheromone:atTick:)]) {
+                            [delegate simulation:self didPlacePheromone:pheromone atTick:tick];
+                        }
                     }
-                    
                     
                     //Set required local variables
                     BOOL decisionFlag = randomFloat(1.) < poissonCDF([[robot discoveredTags] count], [team siteFidelityRate]);

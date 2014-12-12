@@ -14,7 +14,7 @@ using namespace cv;
 
 @implementation Simulation
 
-@synthesize teamCount, generationCount, robotCount, tagCount, evaluationCount, evaluationLimit, tickCount, clusteringTagCutoff;
+@synthesize teamCount, generationCount, robotCount, tagCount, evaluationCount, evaluationLimit, postEvaluations, tickCount, clusteringTagCutoff;
 @synthesize useTravel, useGiveUp, useSiteFidelity, usePheromone, useInformedWalk;
 @synthesize distributionRandom, distributionPowerlaw, distributionClustered;
 @synthesize averageTeam, bestTeam;
@@ -34,6 +34,7 @@ using namespace cv;
         tagCount = 256;
         evaluationCount = 8;
         evaluationLimit = -1;
+        postEvaluations = 1000;
         tickCount = 7200;
         clusteringTagCutoff = -1;
         
@@ -461,14 +462,14 @@ using namespace cv;
 }
 
 /*
- * Run 100 post evaluations of the average team from the final generation (i.e. generationCount)
+ * Run post evaluations of the average team from the final generation (i.e. generationCount)
  */
 -(NSMutableDictionary*) evaluateTeam:(Team*)team onGrid:(vector<vector<Cell*>>)grid{
     NSMutableArray* fitness = [[NSMutableArray alloc] init];
     NSMutableArray* time = [[NSMutableArray alloc] init];
     NSMutableArray* teams = [[NSMutableArray alloc] initWithObjects:averageTeam, nil];
     
-    for (int i = 0; i < 100; i++) {
+    for (int i = 0; i < postEvaluations; i++) {
         
         //Reset
         [averageTeam setFitness:0.];

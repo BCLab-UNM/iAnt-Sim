@@ -52,6 +52,7 @@
 @property (nonatomic) int tagCount;
 @property (nonatomic) int evaluationCount;
 @property (nonatomic) int evaluationLimit;
+@property (nonatomic) int postEvaluations;
 @property (nonatomic) int tickCount;
 @property (nonatomic) int clusteringTagCutoff;
 

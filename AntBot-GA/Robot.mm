@@ -10,7 +10,7 @@
 @implementation Robot
 
 @synthesize status, informed;
-@synthesize position, target;
+@synthesize position, target, path;
 @synthesize direction, searchTime, lastMoved, lastTurned, delay;
 @synthesize discoveredTags;
 
@@ -29,6 +29,7 @@
     
     position = NSNullPoint;
     target = NSNullPoint;
+    path = [[NSMutableArray alloc] init];
     
     direction = randomFloat(M_2PI);
     lastMoved = 0;

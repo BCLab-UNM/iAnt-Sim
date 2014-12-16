@@ -298,10 +298,16 @@ using namespace cv;
                     [robot setLastTurned:(tick + [robot delay] + 1)];
                     [robot setLastMoved:tick];
                     break;
-                    
                 }
                 
-                [robot moveWithObstacle:grid];
+                if([robot path] && [[robot path] count] > 0) {
+                    [robot setPosition:[[[robot path] objectAtIndex:0] pointValue]];
+                    [[robot path] removeObjectAtIndex:0];
+                }
+                else {
+                    [robot moveWithObstacle:grid];
+                }
+                
                 break;
             }
                 
@@ -388,6 +394,8 @@ using namespace cv;
                         [robot setStatus:ROBOT_STATUS_RETURNING];
                         [robot setDelay:9];
                         [robot setTarget:nest];
+                        
+                        [[robot path] removeAllObjects];
                     }
                 }
                 
@@ -406,6 +414,7 @@ using namespace cv;
                     break;
                 }
                 
+                [[robot path] addObject:[NSValue valueWithPoint:NSMakePoint(robot.position.x, robot.position.y)]];
                 [robot setDelay:0];
                 [robot moveWithObstacle:grid];
                 
@@ -419,15 +428,15 @@ using namespace cv;
                     
                     //Add (perturbed) tag position to global pheromone array
                     if (foundTag && (randomFloat(1.) < poissonCDF([[robot discoveredTags] count], [team pheromoneLayingRate]))) {
-                        Pheromone* p = [[Pheromone alloc] initWithPosition:[foundTag position] weight:1. decayRate:[team pheromoneDecayRate] andUpdatedTick:tick];
+                        Pheromone* p = [[Pheromone alloc] initWithPath:[[robot path] copy] weight:1. decayRate:[team pheromoneDecayRate] andUpdatedTick:tick];
                         [pheromones addObject:p];
                     }
 
-                    
+                    [[robot path] removeAllObjects];
                     
                     //Set required local variables
                     BOOL siteFidelityFlag = randomFloat(1.) < poissonCDF([[robot discoveredTags] count], [team siteFidelityRate]);
-                    NSPoint pheromone = [Pheromone getPheromone:pheromones atTick:tick];
+                    NSMutableArray* pheromone = [Pheromone getPheromone:pheromones atTick:tick];
                     
                     if([clusters count]) {
                         int r = randomInt((int)[clusters count]);
@@ -445,8 +454,9 @@ using namespace cv;
                     }
                     
                     //If no pheromones exist, pheromone will be (-1, -1)
-                    else if(!NSEqualPoints(pheromone, NSNullPoint) && !siteFidelityFlag) {
-                        [robot setTarget:[error perturbTargetPosition:pheromone withGridSize:gridSize andGridCenter:nest]];
+                    else if(pheromone && !siteFidelityFlag) {
+                        [robot setTarget:[error perturbTargetPosition:[[pheromone objectAtIndex:[pheromone count] - 1] pointValue] withGridSize:gridSize andGridCenter:nest]];
+                        [robot setPath:[pheromone copy]];
                         [robot setInformed:ROBOT_INFORMED_PHEROMONE];
                     }
                     

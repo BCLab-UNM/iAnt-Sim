@@ -32,6 +32,7 @@
 //In general, positions of (-1,-1) denote an empty/unused/uninitialized position.
 @property (nonatomic) NSPoint position; //Where the robot currently is.
 @property (nonatomic) NSPoint target; //Where the robot is going.
+@property (nonatomic) NSMutableArray* path; //Path robot took to nest.
 
 @property (nonatomic) float direction; //Direction robot is moving (used in random walk).
 @property (nonatomic) int searchTime; //Amount of ticks the robot has been performing a random walk.

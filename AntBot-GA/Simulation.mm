@@ -428,7 +428,7 @@ using namespace cv;
                     
                     //Add (perturbed) tag position to global pheromone array
                     if (foundTag && (randomFloat(1.) < poissonCDF([[robot discoveredTags] count], [team pheromoneLayingRate]))) {
-                        Pheromone* p = [[Pheromone alloc] initWithPath:[[robot path] copy] weight:1. decayRate:[team pheromoneDecayRate] andUpdatedTick:tick];
+                        Pheromone* p = [[Pheromone alloc] initWithPath:[[robot path] mutableCopy] weight:1. decayRate:[team pheromoneDecayRate] andUpdatedTick:tick];
                         [pheromones addObject:p];
                     }
 
@@ -456,7 +456,7 @@ using namespace cv;
                     //If no pheromones exist, pheromone will be (-1, -1)
                     else if(pheromone && !siteFidelityFlag) {
                         [robot setTarget:[error perturbTargetPosition:[[pheromone objectAtIndex:[pheromone count] - 1] pointValue] withGridSize:gridSize andGridCenter:nest]];
-                        [robot setPath:[pheromone copy]];
+                        [robot setPath:[pheromone mutableCopy]];
                         [robot setInformed:ROBOT_INFORMED_PHEROMONE];
                     }
                     

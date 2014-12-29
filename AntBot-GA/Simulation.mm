@@ -214,7 +214,10 @@ using namespace cv;
         
         for(int tick = 0; tickCount >= 0 ? tick < tickCount : YES; tick++) {
             
-            NSMutableArray* collectedTags = [self stateTransition:robots inTeam:team atTick:tick onGrid:grid withPheromones:pheromones clusters:clusters foundTags:foundTags];
+            NSMutableArray* collectedTags;
+			@autoreleasepool {
+				collectedTags = [self stateTransition:robots inTeam:team atTick:tick onGrid:grid withPheromones:pheromones clusters:clusters foundTags:foundTags];
+			}
             
             //printf("%d\n", team.collisions);
             

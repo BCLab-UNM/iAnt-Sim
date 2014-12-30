@@ -15,6 +15,7 @@ using namespace cv;
 @implementation Simulation
 
 @synthesize teamCount, generationCount, robotCount, tagCount, evaluationCount, evaluationLimit, tickCount, clusteringTagCutoff;
+@synthesize useTravel, useGiveUp, useSiteFidelity, usePheromone, useInformedWalk;
 @synthesize distributionRandom, distributionPowerlaw, distributionClustered;
 @synthesize averageTeam, bestTeam;
 @synthesize pileRadius, numberOfClusteredPiles;
@@ -38,8 +39,14 @@ using namespace cv;
         tickCount = 7200;               // 1 hour (two ticks per second)
         clusteringTagCutoff = -1;
         
-        distributionClustered = 0.;
-        distributionPowerlaw = 1.;
+        useTravel =
+        useGiveUp =
+        useSiteFidelity =
+        usePheromone =
+        useInformedWalk = YES;
+        
+        distributionClustered = 1.;
+        distributionPowerlaw = 0.;
         distributionRandom = 0.;
         
         pileRadius = 2;
@@ -128,6 +135,10 @@ using namespace cv;
         grids.push_back(grid);
     }
     
+    if(delegate && [delegate respondsToSelector:@selector(simulationDidStart:)]) {
+        [delegate simulationDidStart:self];
+    }
+    
     //Main loop
     for(int generation = 0; generation < generationCount && evalCount < evaluationLimit; generation++) {
         //printf("starting generation %d\n", generation);
@@ -159,13 +170,13 @@ using namespace cv;
             [ga breedPopulation:teams AtGeneration:generation andMaxGeneration:generationCount];
         }
         
-        if(delegate) {
-            
-            //Technically should pass in average and best teams here.
-            if([delegate respondsToSelector:@selector(finishedGeneration:atEvaluation:)]) {
-                [delegate finishedGeneration:generation atEvaluation:evalCount];
-            }
+        if(delegate && [delegate respondsToSelector:@selector(simulation:didFinishGeneration:atEvaluation:)]) {
+            [delegate simulation:self didFinishGeneration:generation atEvaluation:evalCount];
         }
+    }
+    
+    if(delegate && [delegate respondsToSelector:@selector(simulationDidFinish:)]) {
+        [delegate simulationDidFinish:self];
     }
     
     printf("Completed\n");
@@ -247,11 +258,16 @@ using namespace cv;
             }
             
             if(tickRate != 0.f){[NSThread sleepForTimeInterval:tickRate];}
+            
             if(viewDelegate != nil) {
                 if([viewDelegate respondsToSelector:@selector(updateDisplayWindowWithRobots:team:grid:pheromones:clusters:)]) {
                     [Pheromone getPheromone:pheromones atTick:tick];
                     [viewDelegate updateDisplayWindowWithRobots:[robots copy] team:team grid:grid pheromones:[pheromones copy] clusters:[clusters copy]];
                 }
+            }
+            
+            if(delegate && [delegate respondsToSelector:@selector(simulation:didFinishTick:)]) {
+                [delegate simulation:self didFinishTick:tick];
             }
         }
     }
@@ -294,9 +310,10 @@ using namespace cv;
              * and may change the robot/world state based on certain criteria (i.e. it reaches its destination).
              */
             case ROBOT_STATUS_DEPARTING: {
-
-                if((![robot informed] && (randomFloat(1.) < team.travelGiveUpProbability)) || (NSEqualPoints([robot position], [robot target]))) {
+				
+                if((![robot informed] && (!useTravel || (randomFloat(1.) < team.travelGiveUpProbability))) || (NSEqualPoints([robot position], [robot target]))) {
                     [robot setStatus:ROBOT_STATUS_SEARCHING];
+                    [robot setInformed:(useInformedWalk & [robot informed])];
                     [robot turnWithParameters:team];
                     [robot setLastTurned:(tick + [robot delay] + 1)];
                     [robot setLastMoved:tick];
@@ -329,7 +346,7 @@ using namespace cv;
                 [robot setDelay:0];
                 
                 //Probabilistically give up searching and return to the nest
-                if(randomFloat(1.) < [team searchGiveUpProbability]) {
+                if(useGiveUp && (randomFloat(1.) < [team searchGiveUpProbability])) {
                     [robot setTarget:nest];
                     [robot setStatus:ROBOT_STATUS_RETURNING];
                     break;
@@ -343,7 +360,6 @@ using namespace cv;
                     [robot setDirection:randomFloat(M_2PI)];
                     [robot setTarget:NSMakePoint(roundf([robot position].x + cos([robot direction])), roundf([robot position].y + sin([robot direction])))];
                 }
-                
                 
                 //Move one cell
                 [robot moveWithObstacle:grid];
@@ -399,6 +415,10 @@ using namespace cv;
                         [robot setTarget:nest];
                         
                         [[robot path] removeAllObjects];
+
+                        if(delegate && [delegate respondsToSelector:@selector(simulation:didPickupTag:atTick:)]) {
+                            [delegate simulation:self didPickupTag:foundTag atTick:tick];
+                        }
                     }
                 }
                 
@@ -438,8 +458,8 @@ using namespace cv;
                     [[robot path] removeAllObjects];
                     
                     //Set required local variables
-                    BOOL siteFidelityFlag = randomFloat(1.) < poissonCDF([[robot discoveredTags] count], [team siteFidelityRate]);
-                    NSMutableArray* pheromone = [Pheromone getPheromone:pheromones atTick:tick];
+                    BOOL decisionFlag = randomFloat(1.) < poissonCDF([[robot discoveredTags] count], [team siteFidelityRate]);
+					NSMutableArray* pheromone = [Pheromone getPheromone:pheromones atTick:tick];
                     
                     if([clusters count]) {
                         int r = randomInt((int)[clusters count]);
@@ -451,13 +471,13 @@ using namespace cv;
                     }
                     
                     //If a tag was found, decide whether to return to its location
-                    else if(foundTag && siteFidelityFlag) {
+                    else if(foundTag && useSiteFidelity && decisionFlag) {
                         [robot setTarget:[error perturbTargetPosition:[foundTag position] withGridSize:gridSize andGridCenter:nest]];
                         [robot setInformed:ROBOT_INFORMED_MEMORY];
                     }
                     
                     //If no pheromones exist, pheromone will be (-1, -1)
-                    else if(pheromone && !siteFidelityFlag) {
+                    else if(pheromone && usePheromone && !decisionFlag) {
                         [robot setTarget:[error perturbTargetPosition:[[pheromone objectAtIndex:[pheromone count] - 1] pointValue] withGridSize:gridSize andGridCenter:nest]];
                         [robot setPath:[pheromone mutableCopy]];
                         [robot setInformed:ROBOT_INFORMED_PHEROMONE];
@@ -681,6 +701,12 @@ using namespace cv;
               @"tickCount" : @(tickCount),
               @"clusteringTagCutoff" : @(clusteringTagCutoff),
               
+              @"useTravel" : @(useTravel),
+              @"useGiveUp" : @(useGiveUp),
+              @"useSiteFidelity" : @(useSiteFidelity),
+              @"usePheromone" : @(usePheromone),
+              @"useInformedWalk" : @(useInformedWalk),
+              
               @"distributionRandom" : @(distributionRandom),
               @"distributionPowerlaw" : @(distributionPowerlaw),
               @"distributionClustered" : @(distributionClustered),
@@ -709,6 +735,12 @@ using namespace cv;
     evaluationCount = [[parameters objectForKey:@"evaluationCount"] intValue];
     tickCount = [[parameters objectForKey:@"tickCount"] intValue];
     clusteringTagCutoff = [[parameters objectForKey:@"clusteringTagCutoff"] intValue];
+ 
+    useTravel = [[parameters objectForKey:@"useTravel"] boolValue];
+    useGiveUp = [[parameters objectForKey:@"useGiveUp"] boolValue];
+    useSiteFidelity = [[parameters objectForKey:@"useSiteFidelity"] boolValue];
+    usePheromone = [[parameters objectForKey:@"usePheromone"] boolValue];
+    useInformedWalk = [[parameters objectForKey:@"useInformedWalk"] boolValue];
     
     distributionRandom = [[parameters objectForKey:@"distributionRandom"] floatValue];
     distributionPowerlaw = [[parameters objectForKey:@"distributionPowerlaw"] floatValue];
@@ -729,7 +761,7 @@ using namespace cv;
 }
 
 -(void)writeParametersToFile:(NSString *)file {
-    //unused
+    [[self getParameters] writeToFile:file atomically:YES];
 }
 
 +(void)writeParameterNamesToFile:(NSString *)file {

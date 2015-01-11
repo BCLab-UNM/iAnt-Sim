@@ -36,7 +36,11 @@
     float r = randomFloat(nSum);
     for(Pheromone* pheromone in pheromones) {
         if(r < [pheromone weight]) {
-            return [pheromone path];
+            //NSLog(@"%@", [pheromone path]);
+            NSArray* rArray = [[[pheromone path] reverseObjectEnumerator] allObjects];
+            //NSLog(@"%@", rArray);
+            //return [pheromone path];
+            return [NSMutableArray arrayWithArray: rArray];
         }
         r -= [pheromone weight];
     }

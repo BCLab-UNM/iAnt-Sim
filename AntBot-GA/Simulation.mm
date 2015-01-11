@@ -32,7 +32,7 @@ using namespace cv;
         
         teamCount = 100;                // number of "individuals"
         generationCount = 50;           // generations show convergence around 20-30 so shrinking to 50 from 100
-        robotCount = 1;                 // lets leave this at 6 for now
+        robotCount = 6;                 // lets leave this at 6 for now
         tagCount = 256;                 // hold steady
         evaluationCount = 12;           // more for Maricopa
         evaluationLimit = -1;
@@ -52,7 +52,7 @@ using namespace cv;
         pileRadius = 2;
         numberOfClusteredPiles = 4;
 
-        obstacleCount = 0;
+        obstacleCount = 384;
         
         crossoverRate = 1.0;
         mutationRate = 0.1;
@@ -283,7 +283,7 @@ using namespace cv;
     
     NSMutableArray* collectedTags = [[NSMutableArray alloc] init];
     
-    [NSThread sleepForTimeInterval:0.005];
+    [NSThread sleepForTimeInterval:0.01];
     
     for (Robot* robot in robots) {
         switch([robot status]) {

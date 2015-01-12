@@ -52,7 +52,7 @@ using namespace cv;
         pileRadius = 2;
         numberOfClusteredPiles = 4;
 
-        obstacleCount = 384;
+        obstacleCount = 0;
         
         crossoverRate = 1.0;
         mutationRate = 0.1;
@@ -66,7 +66,7 @@ using namespace cv;
         
         parameterFile = nil;
         
-        observedError = NO;
+        observedError = YES;
     }
     return self;
 }
@@ -283,7 +283,7 @@ using namespace cv;
     
     NSMutableArray* collectedTags = [[NSMutableArray alloc] init];
     
-    [NSThread sleepForTimeInterval:0.01];
+    //[NSThread sleepForTimeInterval:0.01];
     
     for (Robot* robot in robots) {
         switch([robot status]) {

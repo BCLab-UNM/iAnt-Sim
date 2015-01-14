@@ -66,7 +66,7 @@ using namespace cv;
         
         parameterFile = nil;
         
-        observedError = YES;
+        observedError = NO;
     }
     return self;
 }

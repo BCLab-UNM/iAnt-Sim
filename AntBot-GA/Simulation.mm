@@ -32,10 +32,10 @@ using namespace cv;
 -(id) init {
     if(self = [super init]) {
         teamCount = 100;
-        generationCount = 100;
+        generationCount = 50;
         robotCount = 6;                                    //normally 6
         tagCount = 256;
-        evaluationCount = 8;                               //normally 8
+        evaluationCount = 12;                               //normally 8
         evaluationLimit = -1;
         tickCount = 7200;
         clusteringTagCutoff = -1;

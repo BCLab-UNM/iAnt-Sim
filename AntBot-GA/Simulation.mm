@@ -67,7 +67,7 @@ using namespace cv;
         
         parameterFile = nil;
         
-        observedError = YES;
+        observedError = NO;
         
         deadCount = 0;
         //deadPenalty = 500;
@@ -227,7 +227,10 @@ using namespace cv;
         BOOL clustered = NO;
         
         for(int tick = 0; tickCount >= 0 ? tick < tickCount : YES; tick++) {
-            NSMutableArray* collectedTags = [self stateTransition:robots inTeam:team atTick:tick onGrid:grid withPheromones:pheromones clusters:clusters foundTags:foundTags];
+            NSMutableArray* collectedTags;
+            @autoreleasepool {
+                collectedTags = [self stateTransition:robots inTeam:team atTick:tick onGrid:grid withPheromones:pheromones clusters:clusters foundTags:foundTags];
+            }
             
             [team setFitness:[team fitness] + [collectedTags count]];
             [totalCollectedTags addObjectsFromArray:collectedTags];

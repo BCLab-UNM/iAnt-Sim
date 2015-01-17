@@ -67,7 +67,7 @@ using namespace cv;
         
         parameterFile = nil;
         
-        observedError = NO;
+        observedError = YES;
         
         deadCount = 0;
         //deadPenalty = 500;

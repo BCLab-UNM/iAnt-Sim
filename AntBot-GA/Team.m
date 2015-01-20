@@ -71,7 +71,6 @@
                            [self fitness],
                            [self collisions]]
                    toFile:file];
-        //printf("%d\n", self.collisions);
 }
 
 

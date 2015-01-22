@@ -91,4 +91,14 @@
 @property (nonatomic) NSObject* viewDelegate;
 @property (nonatomic) float tickRate;
 
+@property (nonatomic) NSUInteger prevCount;
+
+@property (nonatomic) NSMutableArray* foundClusters;
+@property (nonatomic) NSMutableArray* bicValues;
+@property (nonatomic) NSMutableDictionary* allBICValues;
+@property (nonatomic) NSMutableArray* clusterDiffs;
+@property (nonatomic) NSMutableDictionary* allClusterDiffs;
+@property (nonatomic) NSMutableArray* costValues;
+@property (nonatomic) NSMutableArray* averageCosts;
+
 @end

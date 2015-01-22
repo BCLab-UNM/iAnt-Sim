@@ -25,6 +25,10 @@ using namespace cv;
 @synthesize error, observedError;
 @synthesize delegate, viewDelegate;
 @synthesize tickRate;
+@synthesize prevCount;
+@synthesize foundClusters;
+@synthesize bicValues;
+@synthesize costValues, averageCosts;
 
 -(id) init {
     if(self = [super init]) {
@@ -63,7 +67,22 @@ using namespace cv;
         
         parameterFile = nil;
         
-        observedError = YES;
+        observedError = NO;
+        
+        prevCount = 0;
+        foundClusters = [[NSMutableArray alloc] initWithCapacity:numberOfClusteredPiles];
+        BOOL b = FALSE;
+        for (int i = 0; i < numberOfClusteredPiles; ++i) {
+            [foundClusters addObject:[NSNumber numberWithBool:b]];
+        }
+        
+        bicValues = [[NSMutableArray alloc] init];
+        costValues = [[NSMutableArray alloc] init];
+        averageCosts = [[NSMutableArray alloc] init];
+        for (int i = 0; i < 9; ++i) {
+            NSMutableArray* innerArray = [[NSMutableArray alloc] init];
+            [costValues addObject:innerArray];
+        }
     }
     return self;
 }
@@ -223,7 +242,7 @@ using namespace cv;
             [totalCollectedTags addObjectsFromArray:collectedTags];
             
             if ((clusteringTagCutoff >= 0) && ([totalCollectedTags count] > [self clusteringTagCutoff]) && !clustered) {
-                EM em = [self clusterTags:totalCollectedTags];
+                EM em = [self clusterTags:totalCollectedTags withClusters:numberOfClusteredPiles];
                 Mat means = em.get<Mat>("means");
                 vector<Mat> covs = em.get<vector<Mat>>("covs");
                 
@@ -273,10 +292,10 @@ using namespace cv;
     for (Robot* robot in robots) {
         switch([robot status]) {
                 
-            /*
-             * The robot hasn't been initialized yet.
-             * Give it some basic starting values and then fall-through to the next state.
-             */
+                /*
+                 * The robot hasn't been initialized yet.
+                 * Give it some basic starting values and then fall-through to the next state.
+                 */
             case ROBOT_STATUS_INACTIVE: {
                 [robot setStatus:ROBOT_STATUS_DEPARTING];
                 [robot setPosition:nest];
@@ -284,16 +303,16 @@ using namespace cv;
                 //Fallthrough to ROBOT_STATUS_DEPARTING.
             }
                 
-            /*
-             * The robot is either:
-             *  -Moving in a random direction away from the nest (not site-fidelity-ing or pheromone-ing).
-             *  -Moving towards a specific point where a tag was last found (site-fidelity-ing).
-             *  -Moving towards a specific point due to pheromones.
-             *
-             * For each of the cases, we have to ultimately decide on a direction for the robot to travel in,
-             * then decide which 'cell' best accomplishes traveling in this direction.  We then move the robot,
-             * and may change the robot/world state based on certain criteria (i.e. it reaches its destination).
-             */
+                /*
+                 * The robot is either:
+                 *  -Moving in a random direction away from the nest (not site-fidelity-ing or pheromone-ing).
+                 *  -Moving towards a specific point where a tag was last found (site-fidelity-ing).
+                 *  -Moving towards a specific point due to pheromones.
+                 *
+                 * For each of the cases, we have to ultimately decide on a direction for the robot to travel in,
+                 * then decide which 'cell' best accomplishes traveling in this direction.  We then move the robot,
+                 * and may change the robot/world state based on certain criteria (i.e. it reaches its destination).
+                 */
             case ROBOT_STATUS_DEPARTING: {
                 if((![robot informed] && (!useTravel || (randomFloat(1.) < team.travelGiveUpProbability))) || (NSEqualPoints([robot position], [robot target]))) {
                     [robot setStatus:ROBOT_STATUS_SEARCHING];
@@ -309,12 +328,12 @@ using namespace cv;
                 break;
             }
                 
-            /*
-             * The robot is performing a random walk.
-             * It will randomly change its direction based on how long it has been searching and move in this direction.
-             * If it finds a tag, its state changes to ROBOT_STATUS_RETURNING (it brings the tag back to the nest.
-             * All site fidelity and pheromone work, however, is taken care of once the robot actually arrives at the nest.
-             */
+                /*
+                 * The robot is performing a random walk.
+                 * It will randomly change its direction based on how long it has been searching and move in this direction.
+                 * If it finds a tag, its state changes to ROBOT_STATUS_RETURNING (it brings the tag back to the nest.
+                 * All site fidelity and pheromone work, however, is taken care of once the robot actually arrives at the nest.
+                 */
             case ROBOT_STATUS_SEARCHING: {
                 
                 //Delay to emulate physical robot
@@ -402,11 +421,11 @@ using namespace cv;
                 break;
             }
                 
-            /*
-             * The robot is on its way back to the nest.
-             * It is either carrying food, or it gave up on its search and is returning to base for further instruction.
-             * Stuff like laying/assigning of pheromones is handled here.
-             */
+                /*
+                 * The robot is on its way back to the nest.
+                 * It is either carrying food, or it gave up on its search and is returning to base for further instruction.
+                 * Stuff like laying/assigning of pheromones is handled here.
+                 */
             case ROBOT_STATUS_RETURNING: {
                 if(tick - [robot lastMoved] <= [robot delay]) {
                     break;
@@ -421,6 +440,7 @@ using namespace cv;
                     if ([[robot discoveredTags] count] > 0) {
                         foundTag = [[robot discoveredTags] objectAtIndex:0];
                         [collectedTags addObject:foundTag];
+                        [foundTags addObject:foundTag];
                     }
                     
                     //Add (perturbed) tag position to global pheromone array
@@ -471,6 +491,26 @@ using namespace cv;
                 break;
             }
         }
+        
+        if ([foundTags count] % 32 == 0 && [foundTags count] != prevCount && [foundTags count] > 0) {
+            //            printf("Tags:%lu\n", (unsigned long)[foundTags count]);
+            int trueClusters = 0;
+            for (int i = 0; i < numberOfClusteredPiles; ++i) {
+                trueClusters += [[foundClusters objectAtIndex:i] boolValue];
+            }
+            //            printf("%d,", trueClusters);
+            
+            [bicValues removeAllObjects];
+            for (int i = 1; i <= 16; ++i) {
+                EM em = [self clusterTags:foundTags withClusters:i];
+            }
+            int estimatedClusters = [self findBestNumberOfClusters];
+            int diff = abs(trueClusters - estimatedClusters);
+            NSNumber* cost = [NSNumber numberWithInt:pow(diff,2)];
+            [[costValues objectAtIndex:([foundTags count]/32-1)] addObject:cost];
+            //            printf("\n");
+        }
+        prevCount = [foundTags count];
     }
     
     return collectedTags;
@@ -503,10 +543,14 @@ using namespace cv;
  * Executes unsupervised clustering algorithm Expectation-Maximization (EM) on input
  * Returns trained instantiation of EM if all robots home, untrained otherwise
  */
--(cv::EM) clusterTags:(NSMutableArray*)foundTags {
+-(cv::EM) clusterTags:(NSMutableArray*)foundTags withClusters:(int)k {
     //Construct EM for k clusters, where k = sqrt(num points / 2)
-    int k = 4;
+    //    int k = 4;
     EM em = EM(k);
+    
+    Mat labels;
+    Mat probs;
+    Mat logLikelihoods;
     
     //Run EM on aggregate tag array
     if ([foundTags count]) {
@@ -521,10 +565,26 @@ using namespace cv;
         }
         
         //Train EM
-        em.train(aggregate);
+        em.train(aggregate,logLikelihoods,labels,probs);
     }
     
+    double logSum = sum(logLikelihoods)[0];
+    double f = (k - 1) + (k * 2) + (k * (2 * (2-1)/2));
+    double bic = -2 * logSum - f * log([foundTags count]);
+    [bicValues addObject:[NSNumber numberWithDouble:bic]];
+    
     return em;
+}
+
+-(int) findBestNumberOfClusters {
+    for (int i = 1; i < [bicValues count]; ++i) {
+        double diff = abs([[bicValues objectAtIndex:i] doubleValue] - [[bicValues objectAtIndex:i-1] doubleValue]);
+        if (diff < 30) {
+            return i;
+        }
+    }
+    
+    return 0;
 }
 
 /*
@@ -564,10 +624,12 @@ using namespace cv;
                     tagY = randomInt(gridSize.height);
                 } while([grid[tagY][tagX] tag]);
                 
-                [grid[tagY][tagX] setTag:[[Tag alloc] initWithX:tagX andY:tagY]];
+                Tag* tag = [[Tag alloc] initWithX:tagX Y:tagY andCluster:1];
+                [grid[tagY][tagX] setTag:tag];
             }
         }
         else {
+            int cluster = 1;
             for(int i = 0; i < pilesOf[size]; i++) { //Place each pile.
                 int pileX,pileY;
                 
@@ -599,7 +661,11 @@ using namespace cv;
                         maxRadius += 1;
                     } while([grid[tagY][tagX] tag]);
                     
-                    [grid[tagY][tagX] setTag:[[Tag alloc] initWithX:tagX andY:tagY]];
+                    Tag* tag = [[Tag alloc] initWithX:tagX Y:tagY andCluster:cluster];
+                    [grid[tagY][tagX] setTag:tag];
+                    if ((j+1) % (tagCount / numberOfClusteredPiles) == 0) {
+                        cluster++;
+                    }
                 }
             }
         }
@@ -699,7 +765,7 @@ using namespace cv;
     evaluationCount = [[parameters objectForKey:@"evaluationCount"] intValue];
     tickCount = [[parameters objectForKey:@"tickCount"] intValue];
     clusteringTagCutoff = [[parameters objectForKey:@"clusteringTagCutoff"] intValue];
- 
+    
     useTravel = [[parameters objectForKey:@"useTravel"] boolValue];
     useGiveUp = [[parameters objectForKey:@"useGiveUp"] boolValue];
     useSiteFidelity = [[parameters objectForKey:@"useSiteFidelity"] boolValue];

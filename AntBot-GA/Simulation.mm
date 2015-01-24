@@ -32,11 +32,11 @@ using namespace cv;
         
         teamCount = 100;                // number of "individuals"
         generationCount = 50;           // generations show convergence around 20-30 so shrinking to 50 from 100
-        robotCount = 12;                 // lets leave this at 6 for now
+        robotCount = 6;                 // lets leave this at 6 for now
         tagCount = 256;                 // hold steady
-        evaluationCount = 12;           // more for Maricopa
+        evaluationCount = 10;           // more for Maricopa
         evaluationLimit = -1;
-        tickCount = 10800;               // 1 hour (two ticks per second)
+        tickCount = 7200;               // 1 hour (two ticks per second)
         clusteringTagCutoff = -1;
         
         useTravel =
@@ -66,7 +66,7 @@ using namespace cv;
         
         parameterFile = nil;
         
-        observedError = NO;
+        observedError = YES;
     }
     return self;
 }

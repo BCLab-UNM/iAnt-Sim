@@ -34,7 +34,7 @@ using namespace cv;
         generationCount = 50;           // generations show convergence around 20-30 so shrinking to 50 from 100
         robotCount = 6;                 // lets leave this at 6 for now
         tagCount = 256;                 // hold steady
-        evaluationCount = 10;           // more for Maricopa
+        evaluationCount = 14;           // more for Maricopa
         evaluationLimit = -1;
         tickCount = 7200;               // 1 hour (two ticks per second)
         clusteringTagCutoff = -1;
@@ -52,7 +52,8 @@ using namespace cv;
         pileRadius = 2;
         numberOfClusteredPiles = 4;
 
-        obstacleCount = 768;
+        // TRAIL FOLLOWING
+        obstacleCount = 800;
         
         crossoverRate = 1.0;
         mutationRate = 0.1;
@@ -66,7 +67,7 @@ using namespace cv;
         
         parameterFile = nil;
         
-        observedError = YES;
+        observedError = NO;
     }
     return self;
 }

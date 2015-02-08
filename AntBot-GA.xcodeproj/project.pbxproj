@@ -68,7 +68,7 @@
 		D01FF18417F9F7B10010C1BC /* QuadTree.h in Headers */ = {isa = PBXBuildFile; fileRef = D01FF18217F9F7B10010C1BC /* QuadTree.h */; };
 		D01FF18517F9F7B10010C1BC /* QuadTree.m in Sources */ = {isa = PBXBuildFile; fileRef = D01FF18317F9F7B10010C1BC /* QuadTree.m */; };
 		D024DB6D1823006200FF83E3 /* Cluster.h in Headers */ = {isa = PBXBuildFile; fileRef = D024DB6B1823006200FF83E3 /* Cluster.h */; };
-		D024DB6E1823006200FF83E3 /* Cluster.m in Sources */ = {isa = PBXBuildFile; fileRef = D024DB6C1823006200FF83E3 /* Cluster.m */; };
+		D024DB6E1823006200FF83E3 /* Cluster.mm in Sources */ = {isa = PBXBuildFile; fileRef = D024DB6C1823006200FF83E3 /* Cluster.mm */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -142,7 +142,7 @@
 		D01FF18217F9F7B10010C1BC /* QuadTree.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = QuadTree.h; sourceTree = "<group>"; };
 		D01FF18317F9F7B10010C1BC /* QuadTree.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = QuadTree.m; sourceTree = "<group>"; };
 		D024DB6B1823006200FF83E3 /* Cluster.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Cluster.h; sourceTree = "<group>"; };
-		D024DB6C1823006200FF83E3 /* Cluster.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Cluster.m; sourceTree = "<group>"; };
+		D024DB6C1823006200FF83E3 /* Cluster.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = Cluster.mm; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -205,7 +205,7 @@
 				42A63E111826A49200DA3751 /* Cell.h */,
 				42A63E121826A49200DA3751 /* Cell.m */,
 				D024DB6B1823006200FF83E3 /* Cluster.h */,
-				D024DB6C1823006200FF83E3 /* Cluster.m */,
+				D024DB6C1823006200FF83E3 /* Cluster.mm */,
 				42E407CF184FD28D006F8761 /* Decomposition.h */,
 				42E407D0184FD28D006F8761 /* Decomposition.mm */,
 				42307A5A176D262A005BB34B /* GA.h */,
@@ -465,7 +465,7 @@
 				42307A5D176D262A005BB34B /* GA.m in Sources */,
 				42E407D2184FD28D006F8761 /* Decomposition.mm in Sources */,
 				422F6EEB187FD099008486DD /* SensorError.m in Sources */,
-				D024DB6E1823006200FF83E3 /* Cluster.m in Sources */,
+				D024DB6E1823006200FF83E3 /* Cluster.mm in Sources */,
 				D01FF18517F9F7B10010C1BC /* QuadTree.m in Sources */,
 				42A63E141826A49200DA3751 /* Cell.m in Sources */,
 			);

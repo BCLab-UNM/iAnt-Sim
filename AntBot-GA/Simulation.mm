@@ -223,7 +223,7 @@ using namespace cv;
             [totalCollectedTags addObjectsFromArray:collectedTags];
             
             if ((clusteringTagCutoff >= 0) && ([totalCollectedTags count] > [self clusteringTagCutoff]) && !clustered) {
-                EM em = [self clusterTags:totalCollectedTags];
+                EM em = [Cluster trainOptimalEMWith:totalCollectedTags];
                 Mat means = em.get<Mat>("means");
                 vector<Mat> covs = em.get<vector<Mat>>("covs");
                 
@@ -497,34 +497,6 @@ using namespace cv;
     }
     
     return [@{@"fitness":fitness, @"time":time} mutableCopy];
-}
-
-/*
- * Executes unsupervised clustering algorithm Expectation-Maximization (EM) on input
- * Returns trained instantiation of EM if all robots home, untrained otherwise
- */
--(cv::EM) clusterTags:(NSMutableArray*)foundTags {
-    //Construct EM for k clusters, where k = sqrt(num points / 2)
-    int k = 4;
-    EM em = EM(k);
-    
-    //Run EM on aggregate tag array
-    if ([foundTags count]) {
-        Mat aggregate((int)[foundTags count], 2, CV_64F); //Create [totalFoundTags count] x 2 matrix
-        int counter = 0;
-        //Iterate over all tags
-        for (Tag* tag in foundTags) {
-            //Copy x and y location of tag into matrix
-            aggregate.at<double>(counter, 0) = [tag position].x;
-            aggregate.at<double>(counter, 1) = [tag position].y;
-            counter++;
-        }
-        
-        //Train EM
-        em.train(aggregate);
-    }
-    
-    return em;
 }
 
 /*

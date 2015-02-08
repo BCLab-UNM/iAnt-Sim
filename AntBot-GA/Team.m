@@ -75,16 +75,16 @@
 
 
 +(void) writeParameterNamesToFile:(NSString *)file {
-    NSString* headers =
-    @"pheromoneDecayRate,"
-    @"travelGiveUpProbability,"
-    @"searchGiveUpProbability,"
-    @"uninformedSearchCorrelation,"
-    @"informedSearchCorrelationDecayRate,"
-    @"pheromoneLayingRate,"
-    @"siteFidelityRate,"
-    @"fitness,"
-    @"collisions\n";
+    NSString* headers = @"\n";
+//    @"pheromoneDecayRate,"
+//    @"travelGiveUpProbability,"
+//    @"searchGiveUpProbability,"
+//    @"uninformedSearchCorrelation,"
+//    @"informedSearchCorrelationDecayRate,"
+//    @"pheromoneLayingRate,"
+//    @"siteFidelityRate,"
+//    @"fitness,"
+//    @"collisions\n";
     
     [Utilities appendText:headers toFile :file];
 }

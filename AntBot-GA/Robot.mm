@@ -134,7 +134,7 @@
     }
     collisionCount ++;
     delay ++;
-    NSLog(@"collision %d      %d", collisionCount, delay);
+    //NSLog(@"collision %d      %d", collisionCount, delay);
     return rp;
 }
 

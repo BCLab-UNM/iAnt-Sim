@@ -32,11 +32,11 @@ using namespace cv;
         
         teamCount = 100;                // number of "individuals"
         generationCount = 50;           // generations show convergence around 20-30 so shrinking to 50 from 100
-        robotCount = 1;                 // lets leave this at 6 for now
+        robotCount = 6;                 // lets leave this at 6 for now
         tagCount = 256;                 // hold steady
         evaluationCount = 14;           // more for Maricopa
         evaluationLimit = -1;
-        postEvaluations = 1000;
+        //postEvaluations = 1000;
         tickCount = 7200;
         clusteringTagCutoff = -1;
         
@@ -54,7 +54,7 @@ using namespace cv;
         numberOfClusteredPiles = 4;
 
         // TRAIL FOLLOWING
-        obstacleCount = 600;
+        obstacleCount = 0;
         
         crossoverRate = 1.0;
         mutationRate = 0.1;
@@ -285,7 +285,7 @@ using namespace cv;
     
     NSMutableArray* collectedTags = [[NSMutableArray alloc] init];
     
-    [NSThread sleepForTimeInterval:0.05];
+    //[NSThread sleepForTimeInterval:0.05];
     
     for (Robot* robot in robots) {
         switch([robot status]) {
@@ -313,11 +313,11 @@ using namespace cv;
              */
             case ROBOT_STATUS_DEPARTING: {
                 
-                NSLog(@"departing          delay %d",[robot delay]);
+                //NSLog(@"departing          delay %d",[robot delay]);
                 //Delay to emulate physical robot
                 if([robot delay]) {
                     [robot setDelay:[robot delay] - 1];
-                    NSLog(@"                                                                 %d tick    %d delay",tick, [robot delay]);
+                    //NSLog(@"                                                                 %d tick    %d delay",tick, [robot delay]);
                     break;
                 }
                 
@@ -347,12 +347,12 @@ using namespace cv;
              */
             case ROBOT_STATUS_SEARCHING: {
                 
-                NSLog(@"searching          delay %d",[robot delay]);
+                //NSLog(@"searching          delay %d",[robot delay]);
                 
                 //Delay to emulate physical robot
                 if([robot delay]) {
                     [robot setDelay:[robot delay] - 1];
-                    NSLog(@"                                                                 %d tick    %d delay",tick, [robot delay]);
+                    //NSLog(@"                                                                 %d tick    %d delay",tick, [robot delay]);
                     break;
                 }
 
@@ -443,12 +443,12 @@ using namespace cv;
              */
             case ROBOT_STATUS_RETURNING: {
 
-                NSLog(@"returning          delay %d",[robot delay]);
+                //NSLog(@"returning          delay %d",[robot delay]);
                 
                 //Delay to emulate physical robot
                 if([robot delay]) {
                     [robot setDelay:[robot delay] - 1];
-                    NSLog(@"                                                                 %d tick    %d delay",tick, [robot delay]);
+                    //NSLog(@"                                                                 %d tick    %d delay",tick, [robot delay]);
                     break;
                 }
                 

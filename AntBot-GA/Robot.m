@@ -87,7 +87,7 @@
     
     //We delay the robot 1 tick for every PI/4 radians (i.e. 45 degrees) of turning
     //NOTE: We increment PI/4 by a small epsilon value to avoid over-penalizing at PI (i.e. 180 degrees)
-    delay = (int)abs(dTheta / (M_PI_4 + 0.001)) + 1;
+    delay += (int)abs(dTheta / (M_PI_4 + 0.001)) + 1;
 }
 
 @end

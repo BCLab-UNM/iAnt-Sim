@@ -32,7 +32,7 @@ using namespace cv;
         
         teamCount = 100;                // number of "individuals"
         generationCount = 50;           // generations show convergence around 20-30 so shrinking to 50 from 100
-        robotCount = 6;                 // lets leave this at 6 for now
+        robotCount = 1;                 // lets leave this at 6 for now
         tagCount = 256;                 // hold steady
         evaluationCount = 14;           // more for Maricopa
         evaluationLimit = -1;
@@ -53,7 +53,7 @@ using namespace cv;
         numberOfClusteredPiles = 4;
 
         // TRAIL FOLLOWING
-        obstacleCount = 800;
+        obstacleCount = 600;
         
         crossoverRate = 1.0;
         mutationRate = 0.1;
@@ -284,7 +284,7 @@ using namespace cv;
     
     NSMutableArray* collectedTags = [[NSMutableArray alloc] init];
     
-    //[NSThread sleepForTimeInterval:0.01];
+    //[NSThread sleepForTimeInterval:0.05];
     
     for (Robot* robot in robots) {
         switch([robot status]) {
@@ -311,6 +311,16 @@ using namespace cv;
              * and may change the robot/world state based on certain criteria (i.e. it reaches its destination).
              */
             case ROBOT_STATUS_DEPARTING: {
+                
+                //NSLog(@"departing          delay %d",[robot delay]);
+                
+                //Delay to emulate physical robot
+                if(tick - [robot lastMoved] <= [robot delay]) {
+                    //NSLog(@"                                                                 %d tick    %d delay    %d check",tick, [robot delay],tick - [robot lastMoved]);
+                    break;
+                }
+                
+                [robot setDelay:0];
 				
                 if((![robot informed] && (!useTravel || (randomFloat(1.) < team.travelGiveUpProbability))) || (NSEqualPoints([robot position], [robot target]))) {
                     [robot setStatus:ROBOT_STATUS_SEARCHING];
@@ -329,6 +339,8 @@ using namespace cv;
                     [robot moveWithObstacle:grid];
                 }
                 
+                [robot setLastMoved:tick];
+                
                 break;
             }
                 
@@ -340,10 +352,14 @@ using namespace cv;
              */
             case ROBOT_STATUS_SEARCHING: {
                 
+                //NSLog(@"searching          delay %d",[robot delay]);
+                
                 //Delay to emulate physical robot
                 if(tick - [robot lastMoved] <= [robot delay]) {
+                    //NSLog(@"                                                                 %d tick    %d delay    %d check",tick, [robot delay],tick - [robot lastMoved]);
                     break;
                 }
+                
                 [robot setDelay:0];
                 
                 //Probabilistically give up searching and return to the nest
@@ -364,6 +380,7 @@ using namespace cv;
                 
                 //Move one cell
                 [robot moveWithObstacle:grid];
+                
                 Cell* currentCell = grid[[robot position].y][[robot position].x];
                 if (![currentCell isExplored]) {
                     [currentCell setIsExplored:YES];
@@ -424,6 +441,7 @@ using namespace cv;
                 }
                 
                 [robot setLastMoved:tick];
+
                 break;
             }
                 
@@ -434,9 +452,13 @@ using namespace cv;
              */
             case ROBOT_STATUS_RETURNING: {
                 
+                //NSLog(@"returning          delay %d",[robot delay]);
+                
                 if(tick - [robot lastMoved] <= [robot delay]) {
+                    //NSLog(@"                                                                 %d tick    %d delay    %d check",tick, [robot delay],tick - [robot lastMoved]);
                     break;
                 }
+                
                 
                 [[robot path] addObject:[NSValue valueWithPoint:NSMakePoint(robot.position.x, robot.position.y)]];
                 [robot setDelay:0];
@@ -494,13 +516,16 @@ using namespace cv;
                     [robot setSearchTime:0];
                     [robot setStatus:ROBOT_STATUS_DEPARTING];
                 }
+                
+                [robot setLastMoved:tick];
+                
                 break;
             }
         }
         // collect up a robots collisions
-        [team setCollisions:team.collisions + robot.collisionCount];
-        //printf("%d   %d\n", robot.collisionCount, team.collisions);
-        robot.collisionCount = 0;
+        [team setCollisions:[team collisions] + [robot collisionCount]];
+        //NSLog(@"                                                   %d collisions     %d delay",[robot collisionCount],[robot delay]);
+        [robot setCollisionCount:0];
     }
     
     return collectedTags;

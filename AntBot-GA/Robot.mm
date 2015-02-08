@@ -47,10 +47,10 @@
         return;
     }
     
-    if([grid[target.y][target.x] obstacle]){
-        target.x = position.x;
-        target.y = position.y;
-    }
+//    if([grid[target.y][target.x] obstacle]){
+//        target.x = position.x;
+//        target.y = position.y;
+//    }
     
     //Calculate the highest distance improvement we can get for every neighboring cell.  Ugly but optimized.
     float x = position.x;
@@ -74,7 +74,6 @@
                         }
                         dx = tp.x;
                         dy = tp.y;
-                        delay ++;
                         [self setTarget:NSMakePoint(position.x + dx, position.y + dy)];
                     }
                     position = target;
@@ -105,7 +104,6 @@
                     }
                     dx = tp.x;
                     dy = tp.y;
-                    delay ++;
                 }
                 position = NSMakePoint(x + dx, y + dy);
                 return;
@@ -136,50 +134,11 @@
         rp.x = 1; rp.y = 0;
     }
     collisionCount ++;
+    delay ++;
+    //NSLog(@"collision %d      %d", collisionCount, delay);
     return rp;
 }
 
-/*
- * Moves the robot towards its target.
- * Uses the Kenneth motion planning algorithm.
- */
--(void) moveWithin:(NSSize)bounds {
-    if(NSEqualPoints(position, target)){return;}
-    
-    //Calculate the highest distance improvement we can get for every neighboring cell.  Ugly but optimized.
-    float x = position.x;
-    float y = position.y;
-    float dis = pointDistance(x, y, target.x, target.y);
-    float improvements[3][3];
-    float improvementSum = 0;
-    int dxMin = (x == 0) ? 0 : -1;
-    int dyMin = (y == 0) ? 0 : -1;
-    int dxMax = (x == (bounds.width - 1)) ? 0 : 1;
-    int dyMax = (y == (bounds.height - 1)) ? 0 : 1;
-    for(int dx = dxMin; dx <= dxMax; dx++) {
-        for(int dy = dyMin; dy <= dyMax; dy++) {
-            if(dx || dy) {
-                if(x + dx == target.x && y + dy == target.y){position = target; return;}
-                float improvement = dis - pointDistance(x + dx, y + dy, target.x, target.y);
-                if(improvement > 0.f) {
-                    improvementSum += improvement;
-                    improvements[dx + 1][dy + 1] = improvement;
-                }
-                else{improvements[dx + 1][dy + 1] = 0.;}
-            }
-            else{improvements[dx + 1][dy + 1] = 0.;}
-        }
-    }
-    
-    //Pick a random neighbor based on a random number weighted on how much of a distance improvement we can get.
-    float r = randomFloat(improvementSum);
-    for(int dx = dxMin; dx <= dxMax; dx++) {
-        for(int dy = dyMin; dy <= dyMax; dy++) {
-            if(r < improvements[dx + 1][dy + 1]){position = NSMakePoint(x + dx, y + dy); return;}
-            r -= improvements[dx + 1][dy + 1];
-        }
-    }
-}
 
 -(void) turnWithParameters:(Team *)params {
     //We keep track of the amount of turning the robot does so we can penalize it with a time delay

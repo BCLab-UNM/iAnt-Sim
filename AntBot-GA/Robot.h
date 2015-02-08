@@ -17,7 +17,6 @@
 @interface Robot : NSObject {}
 
 -(void) reset;
--(void) moveWithin:(NSSize)bounds;
 
 #ifdef __cplusplus
 

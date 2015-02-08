@@ -35,8 +35,6 @@
 
 @property (nonatomic) float direction; //Direction robot is moving (used in random walk).
 @property (nonatomic) int searchTime; //Amount of ticks the robot has been performing a random walk.
-@property (nonatomic) int lastMoved; //tick at which the robot last moved (used in random walk).
-@property (nonatomic) int lastTurned; //tick at which the robot last turned (used in random walk).
 @property (nonatomic) int delay; //Number of ticks the robot is penalized to emulate physical robots (used in random walk).
 
 @property (nonatomic) NSMutableArray* discoveredTags; //Tags discovered by robot while searching

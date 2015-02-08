@@ -14,7 +14,7 @@ using namespace cv;
 
 @implementation Simulation
 
-@synthesize teamCount, generationCount, robotCount, tagCount, evaluationCount, evaluationLimit, tickCount, clusteringTagCutoff;
+@synthesize teamCount, generationCount, robotCount, tagCount, evaluationCount, evaluationLimit, postEvaluations, tickCount, clusteringTagCutoff;
 @synthesize useTravel, useGiveUp, useSiteFidelity, usePheromone, useInformedWalk;
 @synthesize distributionRandom, distributionPowerlaw, distributionClustered;
 @synthesize averageTeam, bestTeam;
@@ -36,7 +36,8 @@ using namespace cv;
         tagCount = 256;                 // hold steady
         evaluationCount = 14;           // more for Maricopa
         evaluationLimit = -1;
-        tickCount = 7200;               // 1 hour (two ticks per second)
+        postEvaluations = 1000;
+        tickCount = 7200;
         clusteringTagCutoff = -1;
         
         useTravel =
@@ -237,7 +238,7 @@ using namespace cv;
             [totalCollectedTags addObjectsFromArray:collectedTags];
             
             if ((clusteringTagCutoff >= 0) && ([totalCollectedTags count] > [self clusteringTagCutoff]) && !clustered) {
-                EM em = [self clusterTags:totalCollectedTags];
+                EM em = [Cluster trainOptimalEMWith:totalCollectedTags];
                 Mat means = em.get<Mat>("means");
                 vector<Mat> covs = em.get<vector<Mat>>("covs");
                 
@@ -284,7 +285,7 @@ using namespace cv;
     
     NSMutableArray* collectedTags = [[NSMutableArray alloc] init];
     
-    //[NSThread sleepForTimeInterval:0.05];
+    [NSThread sleepForTimeInterval:0.05];
     
     for (Robot* robot in robots) {
         switch([robot status]) {
@@ -312,22 +313,18 @@ using namespace cv;
              */
             case ROBOT_STATUS_DEPARTING: {
                 
-                //NSLog(@"departing          delay %d",[robot delay]);
-                
+                NSLog(@"departing          delay %d",[robot delay]);
                 //Delay to emulate physical robot
-                if(tick - [robot lastMoved] <= [robot delay]) {
-                    //NSLog(@"                                                                 %d tick    %d delay    %d check",tick, [robot delay],tick - [robot lastMoved]);
+                if([robot delay]) {
+                    [robot setDelay:[robot delay] - 1];
+                    NSLog(@"                                                                 %d tick    %d delay",tick, [robot delay]);
                     break;
                 }
                 
-                [robot setDelay:0];
-				
                 if((![robot informed] && (!useTravel || (randomFloat(1.) < team.travelGiveUpProbability))) || (NSEqualPoints([robot position], [robot target]))) {
                     [robot setStatus:ROBOT_STATUS_SEARCHING];
                     [robot setInformed:(useInformedWalk & [robot informed])];
                     [robot turnWithParameters:team];
-                    [robot setLastTurned:(tick + [robot delay] + 1)];
-                    [robot setLastMoved:tick];
                     break;
                 }
                 
@@ -338,8 +335,6 @@ using namespace cv;
                 else {
                     [robot moveWithObstacle:grid];
                 }
-                
-                [robot setLastMoved:tick];
                 
                 break;
             }
@@ -352,16 +347,15 @@ using namespace cv;
              */
             case ROBOT_STATUS_SEARCHING: {
                 
-                //NSLog(@"searching          delay %d",[robot delay]);
+                NSLog(@"searching          delay %d",[robot delay]);
                 
                 //Delay to emulate physical robot
-                if(tick - [robot lastMoved] <= [robot delay]) {
-                    //NSLog(@"                                                                 %d tick    %d delay    %d check",tick, [robot delay],tick - [robot lastMoved]);
+                if([robot delay]) {
+                    [robot setDelay:[robot delay] - 1];
+                    NSLog(@"                                                                 %d tick    %d delay",tick, [robot delay]);
                     break;
                 }
-                
-                [robot setDelay:0];
-                
+
                 //Probabilistically give up searching and return to the nest
                 if(useGiveUp && (randomFloat(1.) < [team searchGiveUpProbability])) {
                     [robot setTarget:nest];
@@ -391,7 +385,6 @@ using namespace cv;
                 
                 //Turn
                 [robot turnWithParameters:team];
-                [robot setLastTurned:(tick + [robot delay] + 1)];
                 
                 //After we've moved 1 square ahead, check one square ahead for a tag.
                 //Reusing robot.target here (without consequence, it just gets overwritten when moving).
@@ -440,8 +433,6 @@ using namespace cv;
                     }
                 }
                 
-                [robot setLastMoved:tick];
-
                 break;
             }
                 
@@ -451,17 +442,17 @@ using namespace cv;
              * Stuff like laying/assigning of pheromones is handled here.
              */
             case ROBOT_STATUS_RETURNING: {
+
+                NSLog(@"returning          delay %d",[robot delay]);
                 
-                //NSLog(@"returning          delay %d",[robot delay]);
-                
-                if(tick - [robot lastMoved] <= [robot delay]) {
-                    //NSLog(@"                                                                 %d tick    %d delay    %d check",tick, [robot delay],tick - [robot lastMoved]);
+                //Delay to emulate physical robot
+                if([robot delay]) {
+                    [robot setDelay:[robot delay] - 1];
+                    NSLog(@"                                                                 %d tick    %d delay",tick, [robot delay]);
                     break;
                 }
                 
-                
                 [[robot path] addObject:[NSValue valueWithPoint:NSMakePoint(robot.position.x, robot.position.y)]];
-                [robot setDelay:0];
                 [robot moveWithObstacle:grid];
                 
                 if(NSEqualPoints(robot.position, nest)) {
@@ -516,9 +507,7 @@ using namespace cv;
                     [robot setSearchTime:0];
                     [robot setStatus:ROBOT_STATUS_DEPARTING];
                 }
-                
-                [robot setLastMoved:tick];
-                
+                                
                 break;
             }
         }
@@ -532,14 +521,14 @@ using namespace cv;
 }
 
 /*
- * Run 100 post evaluations of the average team from the final generation (i.e. generationCount)
+ * Run post evaluations of the average team from the final generation (i.e. generationCount)
  */
 -(NSMutableDictionary*) evaluateTeam:(Team*)team onGrid:(vector<vector<Cell*>>)grid{
     NSMutableArray* fitness = [[NSMutableArray alloc] init];
     NSMutableArray* time = [[NSMutableArray alloc] init];
     NSMutableArray* teams = [[NSMutableArray alloc] initWithObjects:averageTeam, nil];
     
-    for (int i = 0; i < 100; i++) {
+    for (int i = 0; i < postEvaluations; i++) {
         
         //Reset
         [averageTeam setFitness:0.];
@@ -552,34 +541,6 @@ using namespace cv;
     }
     
     return [@{@"fitness":fitness, @"time":time} mutableCopy];
-}
-
-/*
- * Executes unsupervised clustering algorithm Expectation-Maximization (EM) on input
- * Returns trained instantiation of EM if all robots home, untrained otherwise
- */
--(cv::EM) clusterTags:(NSMutableArray*)foundTags {
-    //Construct EM for k clusters, where k = sqrt(num points / 2)
-    int k = 4;
-    EM em = EM(k);
-    
-    //Run EM on aggregate tag array
-    if ([foundTags count]) {
-        Mat aggregate((int)[foundTags count], 2, CV_64F); //Create [totalFoundTags count] x 2 matrix
-        int counter = 0;
-        //Iterate over all tags
-        for (Tag* tag in foundTags) {
-            //Copy x and y location of tag into matrix
-            aggregate.at<double>(counter, 0) = [tag position].x;
-            aggregate.at<double>(counter, 1) = [tag position].y;
-            counter++;
-        }
-        
-        //Train EM
-        em.train(aggregate);
-    }
-    
-    return em;
 }
 
 /*
@@ -619,10 +580,12 @@ using namespace cv;
                     tagY = randomInt(gridSize.height);
                 } while([grid[tagY][tagX] tag]);
                 
-                [grid[tagY][tagX] setTag:[[Tag alloc] initWithX:tagX andY:tagY]];
+                Tag* tag = [[Tag alloc] initWithX:tagX Y:tagY andCluster:1];
+                [grid[tagY][tagX] setTag:tag];
             }
         }
         else {
+            int cluster = 1;
             for(int i = 0; i < pilesOf[size]; i++) { //Place each pile.
                 int pileX,pileY;
                 
@@ -657,7 +620,11 @@ using namespace cv;
                         maxRadius += 1;
                     } while([grid[tagY][tagX] tag]);
                     
-                    [grid[tagY][tagX] setTag:[[Tag alloc] initWithX:tagX andY:tagY]];
+                    Tag* tag = [[Tag alloc] initWithX:tagX Y:tagY andCluster:cluster];
+                    [grid[tagY][tagX] setTag:tag];
+                    if ((j+1) % (tagCount / numberOfClusteredPiles) == 0) {
+                        cluster++;
+                    }
                 }
             }
         }

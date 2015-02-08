@@ -10,9 +10,10 @@
 @implementation Robot
 
 @synthesize status, informed;
-@synthesize position, target, path;
-@synthesize direction, searchTime, lastMoved, lastTurned, delay;
+@synthesize position, target;
+@synthesize direction, searchTime, delay;
 @synthesize discoveredTags;
+@synthesize path;
 
 @synthesize collisionCount;
 
@@ -32,8 +33,6 @@
     path = [[NSMutableArray alloc] init];
     
     direction = randomFloat(M_2PI);
-    lastMoved = 0;
-    lastTurned = 0;
     delay = 0;
     
     discoveredTags = nil;
@@ -135,7 +134,7 @@
     }
     collisionCount ++;
     delay ++;
-    //NSLog(@"collision %d      %d", collisionCount, delay);
+    NSLog(@"collision %d      %d", collisionCount, delay);
     return rp;
 }
 
@@ -156,7 +155,7 @@
     
     //We delay the robot 1 tick for every PI/4 radians (i.e. 45 degrees) of turning
     //NOTE: We increment PI/4 by a small epsilon value to avoid over-penalizing at PI (i.e. 180 degrees)
-    delay = (int)abs(dTheta / (M_PI_4 + 0.001)) + 1;
+    delay += (int)abs(dTheta / (M_PI_4 + 0.001)) + 1;
 }
 
 @end

@@ -536,10 +536,12 @@ using namespace cv;
                     tagY = randomInt(gridSize.height);
                 } while([grid[tagY][tagX] tag]);
                 
-                [grid[tagY][tagX] setTag:[[Tag alloc] initWithX:tagX andY:tagY]];
+                Tag* tag = [[Tag alloc] initWithX:tagX Y:tagY andCluster:1];
+                [grid[tagY][tagX] setTag:tag];
             }
         }
         else {
+            int cluster = 1;
             for(int i = 0; i < pilesOf[size]; i++) { //Place each pile.
                 int pileX,pileY;
                 
@@ -571,7 +573,11 @@ using namespace cv;
                         maxRadius += 1;
                     } while([grid[tagY][tagX] tag]);
                     
-                    [grid[tagY][tagX] setTag:[[Tag alloc] initWithX:tagX andY:tagY]];
+                    Tag* tag = [[Tag alloc] initWithX:tagX Y:tagY andCluster:cluster];
+                    [grid[tagY][tagX] setTag:tag];
+                    if ((j+1) % (tagCount / numberOfClusteredPiles) == 0) {
+                        cluster++;
+                    }
                 }
             }
         }

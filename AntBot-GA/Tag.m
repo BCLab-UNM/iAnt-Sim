@@ -4,12 +4,14 @@
 
 @synthesize position;
 @synthesize pickedUp, discovered;
+@synthesize cluster;
 
--(id) initWithX:(int)_x andY:(int)_y {
+-(id) initWithX:(int)_x Y:(int)_y andCluster:(int)_cluster {
     if(self = [super init]) {
         position = NSMakePoint(_x, _y);
         pickedUp = NO;
         discovered = NO;
+        cluster = _cluster;
     }
     return self;
 }

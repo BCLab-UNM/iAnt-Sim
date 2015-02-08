@@ -5,7 +5,7 @@
 
 @synthesize status, informed;
 @synthesize position, target;
-@synthesize direction, searchTime, lastMoved, lastTurned, delay;
+@synthesize direction, searchTime, delay;
 @synthesize discoveredTags;
 
 -(id) init {
@@ -23,8 +23,6 @@
     target = NSNullPoint;
     
     direction = randomFloat(M_2PI);
-    lastMoved = 0;
-    lastTurned = 0;
     delay = 0;
     
     discoveredTags = nil;

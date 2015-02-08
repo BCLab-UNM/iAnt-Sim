@@ -295,12 +295,17 @@ using namespace cv;
              * and may change the robot/world state based on certain criteria (i.e. it reaches its destination).
              */
             case ROBOT_STATUS_DEPARTING: {
+                
+                //Delay to emulate physical robot
+                if([robot delay]) {
+                    [robot setDelay:[robot delay] - 1];
+                    break;
+                }
+                
                 if((![robot informed] && (!useTravel || (randomFloat(1.) < team.travelGiveUpProbability))) || (NSEqualPoints([robot position], [robot target]))) {
                     [robot setStatus:ROBOT_STATUS_SEARCHING];
                     [robot setInformed:(useInformedWalk & [robot informed])];
                     [robot turnWithParameters:team];
-                    [robot setLastTurned:(tick + [robot delay] + 1)];
-                    [robot setLastMoved:tick];
                     break;
                     
                 }
@@ -318,11 +323,11 @@ using namespace cv;
             case ROBOT_STATUS_SEARCHING: {
                 
                 //Delay to emulate physical robot
-                if(tick - [robot lastMoved] <= [robot delay]) {
+                if([robot delay]) {
+                    [robot setDelay:[robot delay] - 1];
                     break;
                 }
-                [robot setDelay:0];
-                
+
                 //Probabilistically give up searching and return to the nest
                 if(useGiveUp && (randomFloat(1.) < [team searchGiveUpProbability])) {
                     [robot setTarget:nest];
@@ -351,7 +356,6 @@ using namespace cv;
                 
                 //Turn
                 [robot turnWithParameters:team];
-                [robot setLastTurned:(tick + [robot delay] + 1)];
                 
                 //After we've moved 1 square ahead, check one square ahead for a tag.
                 //Reusing robot.target here (without consequence, it just gets overwritten when moving).
@@ -398,7 +402,6 @@ using namespace cv;
                     }
                 }
                 
-                [robot setLastMoved:tick];
                 break;
             }
                 
@@ -408,11 +411,13 @@ using namespace cv;
              * Stuff like laying/assigning of pheromones is handled here.
              */
             case ROBOT_STATUS_RETURNING: {
-                if(tick - [robot lastMoved] <= [robot delay]) {
+                
+                //Delay to emulate physical robot
+                if([robot delay]) {
+                    [robot setDelay:[robot delay] - 1];
                     break;
                 }
                 
-                [robot setDelay:0];
                 [robot moveWithin:gridSize];
                 
                 if(NSEqualPoints(robot.position, nest)) {

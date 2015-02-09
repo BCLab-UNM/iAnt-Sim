@@ -41,8 +41,7 @@
 -(NSMutableDictionary*) evaluateTeam:(Team*)team onGrid:(std::vector<std::vector<Cell*>>)grid;
 -(NSMutableArray*) stateTransition:(NSMutableArray*)robots inTeam:(Team*)team atTick:(int)tick onGrid:(std::vector<std::vector<Cell*>>&)grid
                     withPheromones:(NSMutableArray*)pheromones
-                          clusters:(NSMutableArray*)clusters
-                         foundTags:(NSMutableArray*)foundTags;
+                          andClusters:(NSMutableArray*)clusters;
 -(void) initDistributionForArray:(std::vector<std::vector<Cell*>>&)grid;
 #endif
 

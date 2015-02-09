@@ -188,8 +188,7 @@ using namespace cv;
     
     NSMutableArray* robots = [[NSMutableArray alloc] initWithCapacity:robotCount];
     NSMutableArray* pheromones = [[NSMutableArray alloc] init];
-    NSMutableArray* clusters = [[NSMutableArray alloc] init];
-    NSMutableArray* foundTags = [[NSMutableArray alloc] init];
+    NSMutableArray* clusters;
     NSMutableArray* totalCollectedTags = [[NSMutableArray alloc] init];
     for(int i = 0; i < robotCount; i++){[robots addObject:[[Robot alloc] init]];}
     
@@ -211,13 +210,12 @@ using namespace cv;
         
         [pheromones removeAllObjects];
         [clusters removeAllObjects];
-        [foundTags removeAllObjects];
         [totalCollectedTags removeAllObjects];
         BOOL clustered = NO;
         
         for(int tick = 0; tickCount >= 0 ? tick < tickCount : YES; tick++) {
             
-            NSMutableArray* collectedTags = [self stateTransition:robots inTeam:team atTick:tick onGrid:grid withPheromones:pheromones clusters:clusters foundTags:foundTags];
+            NSMutableArray* collectedTags = [self stateTransition:robots inTeam:team atTick:tick onGrid:grid withPheromones:pheromones andClusters:clusters];
             
             [team setFitness:[team fitness] + [collectedTags count]];
             [totalCollectedTags addObjectsFromArray:collectedTags];
@@ -264,9 +262,7 @@ using namespace cv;
  * State transition case statement for robots using central-place foraging algorithm
  */
 -(NSMutableArray*) stateTransition:(NSMutableArray*)robots inTeam:(Team*)team atTick:(int)tick onGrid:(vector<vector<Cell*>>&)grid
-                    withPheromones:(NSMutableArray*)pheromones
-                          clusters:(NSMutableArray*)clusters
-                         foundTags:(NSMutableArray *)foundTags {
+                    withPheromones:(NSMutableArray*)pheromones andClusters:(NSMutableArray*)clusters {
     
     NSMutableArray* collectedTags = [[NSMutableArray alloc] init];
     
@@ -307,7 +303,6 @@ using namespace cv;
                     [robot setInformed:(useInformedWalk & [robot informed])];
                     [robot turnWithParameters:team];
                     break;
-                    
                 }
                 
                 [robot moveWithin:gridSize];

@@ -36,7 +36,7 @@ using namespace cv;
         tagCount = 256;                 // hold steady
         evaluationCount = 14;           // more for Maricopa
         evaluationLimit = -1;
-        //postEvaluations = 1000;
+        postEvaluations = 1000;
         tickCount = 7200;
         clusteringTagCutoff = -1;
         

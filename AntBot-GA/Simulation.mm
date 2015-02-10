@@ -26,6 +26,7 @@ using namespace cv;
 @synthesize delegate, viewDelegate;
 @synthesize tickRate;
 @synthesize obstacleCount;
+@synthesize obstacleTest;
 
 -(id) init {
     if(self = [super init]) {
@@ -54,7 +55,8 @@ using namespace cv;
         numberOfClusteredPiles = 4;
 
         // TRAIL FOLLOWING
-        obstacleCount = 0;
+        obstacleCount = 100;
+        obstacleTest = YES;
         
         crossoverRate = 1.0;
         mutationRate = 0.1;
@@ -775,31 +777,63 @@ using namespace cv;
     int homeCushion = 8;
     int obstacleSize = 2;
     
+    int delta = 10;
+    int xBar = homex - delta;
+    int xEnd = homex + delta;
+    int yBar = homey - delta;
+    int yEnd = homey + delta;
+    
     for(vector<Cell*> v : grid) {
         for (Cell* cell : v) {
             [cell setObstacle:nil];
         }
     }
     
-    for(int i = 0; i < obstacleCount; i++){
+    if(obstacleTest){
         
-        int originx = randomIntRange(edgeCushion, gridWidth - (edgeCushion + obstacleSize));
-        int originy = randomIntRange(edgeCushion, gridHeight - (edgeCushion + obstacleSize));
-        
-        while(originx > (homex - homeCushion) && originx < (homex + homeCushion) && originy > (homey - homeCushion) && originy < (homey + homeCushion)){
-            originx = randomIntRange(edgeCushion, gridWidth - (edgeCushion + obstacleSize));
-            originy = randomIntRange(edgeCushion, gridHeight - (edgeCushion + obstacleSize));
+        for(int i = xBar; i < xEnd; i ++){
+            if(![grid[yBar][i] tag] && ![grid[yBar - 1][i] tag]){
+                [grid[yBar][i] setObstacle:[[Obstacle alloc] initWithX:i andY:yBar]];
+                [grid[yBar - 1][i] setObstacle:[[Obstacle alloc] initWithX:i andY:yBar - 1]];
+            }
+            if(![grid[yEnd][i] tag] && ![grid[yEnd + 1][i] tag]){
+                [grid[yEnd][i] setObstacle:[[Obstacle alloc] initWithX:i andY:yEnd]];
+                [grid[yEnd + 1][i] setObstacle:[[Obstacle alloc] initWithX:i andY:yEnd + 1]];
+            }
         }
+        for(int i = yBar - 1; i < yEnd + 2; i ++){
+            if(i != homex + 1){
+                if(![grid[i][xBar] tag] && ![grid[i][xBar - 1] tag]){
+                    [grid[i][xBar] setObstacle:[[Obstacle alloc] initWithX:xBar andY:i]];
+                    [grid[i][xBar - 1] setObstacle:[[Obstacle alloc] initWithX:xBar - 1 andY:i]];
+                }
+            }
+            if(![grid[i][xEnd] tag] && ![grid[i][xEnd + 1] tag]){
+                [grid[i][xEnd] setObstacle:[[Obstacle alloc] initWithX:xEnd andY:i]];
+                [grid[i][xEnd + 1] setObstacle:[[Obstacle alloc] initWithX:xEnd + 1 andY:i]];
+            }
+        }
+    } else {
         
-        // square obstacles
-        for(int i = 0; i < obstacleSize; i++){
-            for(int j = 0; j < obstacleSize; j++){
-                if(![grid[originy+i][originx+j] tag]){
-                    [grid[originy+i][originx+j] setObstacle:[[Obstacle alloc] initWithX:originx+j andY:originy+i]];
+        for(int i = 0; i < obstacleCount; i++){
+            
+            int originx = randomIntRange(edgeCushion, gridWidth - (edgeCushion + obstacleSize));
+            int originy = randomIntRange(edgeCushion, gridHeight - (edgeCushion + obstacleSize));
+            
+            while(originx > (homex - homeCushion) && originx < (homex + homeCushion) && originy > (homey - homeCushion) && originy < (homey + homeCushion)){
+                originx = randomIntRange(edgeCushion, gridWidth - (edgeCushion + obstacleSize));
+                originy = randomIntRange(edgeCushion, gridHeight - (edgeCushion + obstacleSize));
+            }
+            
+            // square obstacles
+            for(int i = 0; i < obstacleSize; i++){
+                for(int j = 0; j < obstacleSize; j++){
+                    if(![grid[originy+i][originx+j] tag]){
+                        [grid[originy+i][originx+j] setObstacle:[[Obstacle alloc] initWithX:originx+j andY:originy+i]];
+                    }
                 }
             }
         }
-        
     }
 
 }

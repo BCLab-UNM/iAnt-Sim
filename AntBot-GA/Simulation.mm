@@ -188,7 +188,7 @@ using namespace cv;
     
     NSMutableArray* robots = [[NSMutableArray alloc] initWithCapacity:robotCount];
     NSMutableArray* pheromones = [[NSMutableArray alloc] init];
-    NSMutableArray* clusters;
+    NSMutableArray* clusters = [[NSMutableArray alloc] init];
     NSMutableArray* totalCollectedTags = [[NSMutableArray alloc] init];
     for(int i = 0; i < robotCount; i++){[robots addObject:[[Robot alloc] init]];}
     
@@ -209,7 +209,6 @@ using namespace cv;
         }
         
         [pheromones removeAllObjects];
-        [clusters removeAllObjects];
         [totalCollectedTags removeAllObjects];
         BOOL clustered = NO;
         
@@ -225,12 +224,11 @@ using namespace cv;
                 Mat means = em.get<Mat>("means");
                 vector<Mat> covs = em.get<vector<Mat>>("covs");
                 
-                cv::Size meansSize = means.size();
-                
-                for(int i = 0; i < meansSize.height; i++) {
+                [clusters removeAllObjects];
+                for(int i = 0; i < means.size().height; i++) {
                     NSPoint p = NSMakePoint(round(means.at<double>(i,0)), round(means.at<double>(i,1)));
-                    double width = ceil(covs[i].at<double>(0,0) * 2);
-                    double height = ceil(covs[i].at<double>(1,1) * 2);
+                    double width = ceil(covs[i].at<double>(0,0));
+                    double height = ceil(covs[i].at<double>(1,1));
                     Cluster* c = [[Cluster alloc] initWithCenter:p width:width andHeight:height];
                     [clusters addObject:c];
                 }

@@ -35,7 +35,7 @@ using namespace cv;
         generationCount = 50;           // generations show convergence around 20-30 so shrinking to 50 from 100
         robotCount = 6;                 // lets leave this at 6 for now
         tagCount = 256;                 // hold steady
-        evaluationCount = 14;           // more for Maricopa
+        evaluationCount = 12;           // more for Maricopa
         evaluationLimit = -1;
         postEvaluations = 1000;
         tickCount = 7200;

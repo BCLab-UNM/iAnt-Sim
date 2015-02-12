@@ -777,11 +777,12 @@ using namespace cv;
     int homeCushion = 8;
     int obstacleSize = 2;
     
-    int delta = 10;
+    int delta = 6;
     int xBar = homex - delta;
     int xEnd = homex + delta;
     int yBar = homey - delta;
     int yEnd = homey + delta;
+    int tabLen = 3;
     
     for(vector<Cell*> v : grid) {
         for (Cell* cell : v) {
@@ -802,7 +803,7 @@ using namespace cv;
             }
         }
         for(int i = yBar - 1; i < yEnd + 2; i ++){
-            if(i != homex + 1){
+            if(i != homex){
                 if(![grid[i][xBar] tag] && ![grid[i][xBar - 1] tag]){
                     [grid[i][xBar] setObstacle:[[Obstacle alloc] initWithX:xBar andY:i]];
                     [grid[i][xBar - 1] setObstacle:[[Obstacle alloc] initWithX:xBar - 1 andY:i]];
@@ -813,6 +814,13 @@ using namespace cv;
                 [grid[i][xEnd + 1] setObstacle:[[Obstacle alloc] initWithX:xEnd + 1 andY:i]];
             }
         }
+        for(int i = 1; i < tabLen; i++){
+            if(![grid[homey + 1][homex - delta + i] tag] && ![grid[homey - 1][homex - delta + i] tag]){
+                [grid[homey + 1][homex - delta + i] setObstacle:[[Obstacle alloc] initWithX:homex - delta + i andY:homey + 1]];
+                [grid[homey - 1][homex - delta + i] setObstacle:[[Obstacle alloc] initWithX:homex - delta + i andY:homey - 1]];
+            }
+        }
+        
     } else {
         
         for(int i = 0; i < obstacleCount; i++){

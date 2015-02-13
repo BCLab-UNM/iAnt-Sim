@@ -232,6 +232,8 @@ using namespace cv;
                     Cluster* c = [[Cluster alloc] initWithCenter:p width:width andHeight:height];
                     [clusters addObject:c];
                 }
+                
+                [team setPredictedClusters:(int)[clusters count]];
                 clustered = YES;
             }
             

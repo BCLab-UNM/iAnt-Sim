@@ -480,6 +480,7 @@ using namespace cv;
 -(NSMutableDictionary*) evaluateTeam:(Team*)team onGrid:(vector<vector<Cell*>>)grid{
     NSMutableArray* fitness = [[NSMutableArray alloc] init];
     NSMutableArray* time = [[NSMutableArray alloc] init];
+    NSMutableArray* clusters = [[NSMutableArray alloc] init];
     NSMutableArray* teams = [[NSMutableArray alloc] initWithObjects:averageTeam, nil];
     
     for (int i = 0; i < postEvaluations; i++) {
@@ -492,9 +493,10 @@ using namespace cv;
         [self evaluateTeams:teams onGrid:grid];
         [fitness addObject:@([averageTeam fitness])];
         [time addObject:@([averageTeam timeToCompleteCollection])];
+        [clusters addObject:@([averageTeam predictedClusters])];
     }
     
-    return [@{@"fitness":fitness, @"time":time} mutableCopy];
+    return [@{@"fitness":fitness, @"time":time, @"clusters":clusters} mutableCopy];
 }
 
 /*

@@ -26,7 +26,7 @@ using namespace cv;
 @synthesize delegate, viewDelegate;
 @synthesize tickRate;
 @synthesize obstacleCount;
-@synthesize obstacleTest;
+@synthesize bugTrap;
 
 -(id) init {
     if(self = [super init]) {
@@ -35,7 +35,7 @@ using namespace cv;
         generationCount = 50;           // generations show convergence around 20-30 so shrinking to 50 from 100
         robotCount = 6;                 // lets leave this at 6 for now
         tagCount = 256;                 // hold steady
-        evaluationCount = 12;           // more for Maricopa
+        evaluationCount = 12;           // stay with 12
         evaluationLimit = -1;
         postEvaluations = 1000;
         tickCount = 7200;
@@ -55,8 +55,8 @@ using namespace cv;
         numberOfClusteredPiles = 4;
 
         // TRAIL FOLLOWING
-        obstacleCount = 100;
-        obstacleTest = YES;
+        obstacleCount = 1000;
+        bugTrap = NO;
         
         crossoverRate = 1.0;
         mutationRate = 0.1;
@@ -287,7 +287,7 @@ using namespace cv;
     
     NSMutableArray* collectedTags = [[NSMutableArray alloc] init];
     
-    //[NSThread sleepForTimeInterval:0.05];
+    [NSThread sleepForTimeInterval:0.01];
     
     for (Robot* robot in robots) {
         switch([robot status]) {
@@ -790,7 +790,7 @@ using namespace cv;
         }
     }
     
-    if(obstacleTest){
+    if(bugTrap){
         
         for(int i = xBar; i < xEnd; i ++){
             if(![grid[yBar][i] tag] && ![grid[yBar - 1][i] tag]){

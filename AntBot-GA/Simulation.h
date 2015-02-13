@@ -76,7 +76,7 @@
 @property (nonatomic) int numberOfClusteredPiles;
 
 @property (nonatomic) int obstacleCount;
-@property (nonatomic) bool obstacleTest;
+@property (nonatomic) bool bugTrap;
 
 @property (nonatomic) float crossoverRate;
 @property (nonatomic) float mutationRate;

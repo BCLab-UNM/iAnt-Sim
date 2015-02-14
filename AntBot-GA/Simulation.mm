@@ -727,6 +727,7 @@ using namespace cv;
             }
         }
     }
+    //NSLog(@"reset tags");
 }
 
 /*
@@ -948,7 +949,7 @@ using namespace cv;
             }
         }
     }
-
+    //NSLog(@"reset obstacles");
 }
 
 @end

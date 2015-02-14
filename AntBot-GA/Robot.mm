@@ -48,6 +48,18 @@ const float DISCHARGE_VSHIFT = 0.8;
     discoveredTags = nil;
     
     collisionCount = 0;
+    
+    //////////////POWER STUFF///////////////
+    batteryLevel = 1.0;                                                 // Battery level is a percent - starts at 100%
+    batteryDeadPercent = 0.65;                                          // If battery falls below 65% of full charge robot dies
+    batteryFull = 1080;                     //15% of 7200 = 1080(all alive but crappy fitness)  2160 = 30%(all dead)  1440 = 20% (alive) 1800 = 25%(alive)  2376 = 33%
+    batteryTime = 0;
+    pheremoneOn = FALSE;
+    atNest = TRUE;
+    isDead = FALSE;
+    needsCharging = FALSE;
+    //////////////POWER STUFF///////////////
+    
 }
 
 -(void) moveWithObstacle:(std::vector<std::vector<Cell*>>&)grid{

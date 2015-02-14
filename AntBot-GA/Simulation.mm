@@ -60,8 +60,8 @@ using namespace cv;
         numberOfClusteredPiles = 4;
 
         // TRAIL FOLLOWING
-        obstacleCount = 0;
-        bugTrap = NO;
+        obstacleCount = 600;
+        bugTrap = YES;
         
         crossoverRate = 1.0;
         mutationRate = 0.1;

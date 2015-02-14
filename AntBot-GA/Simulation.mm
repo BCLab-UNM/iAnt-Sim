@@ -60,7 +60,7 @@ using namespace cv;
         numberOfClusteredPiles = 4;
 
         // TRAIL FOLLOWING
-        obstacleCount = 1000;
+        obstacleCount = 0;
         bugTrap = NO;
         
         crossoverRate = 1.0;
@@ -71,7 +71,7 @@ using namespace cv;
         elitism = YES;
         
         gridSize = NSMakeSize(125, 125);                    //normally 125
-        nest = NSMakePoint(62, 62);                       // 62
+        nest = NSMakePoint(62, 62);                         // 62
         
         parameterFile = nil;
         
@@ -308,7 +308,7 @@ using namespace cv;
     
     NSMutableArray* collectedTags = [[NSMutableArray alloc] init];
     
-    [NSThread sleepForTimeInterval:0.01];
+    //[NSThread sleepForTimeInterval:0.01];
     
     for (Robot* robot in robots) {
         

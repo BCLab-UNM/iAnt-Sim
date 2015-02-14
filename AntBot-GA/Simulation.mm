@@ -25,6 +25,8 @@ using namespace cv;
 @synthesize error, observedError;
 @synthesize delegate, viewDelegate;
 @synthesize tickRate;
+@synthesize obstacleCount;
+@synthesize bugTrap;
 
 //int simTime;
 @synthesize deadCount;
@@ -32,11 +34,13 @@ using namespace cv;
 
 -(id) init {
     if(self = [super init]) {
-        teamCount = 100;
-        generationCount = 50;
-        robotCount = 6;                                    //normally 6
-        tagCount = 256;
-        evaluationCount = 12;                               //normally 8
+        
+        teamCount = 100;                // number of "individuals"
+        generationCount = 50;           // generations show convergence around 20-30 so shrinking to 50 from 100
+        robotCount = 6;                 // lets leave this at 6 for now
+        tagCount = 256;                 // hold steady
+        evaluationCount = 12;           // stay with 12
+
         evaluationLimit = -1;
         postEvaluations = 1000;
         tickCount = 7200;
@@ -54,6 +58,10 @@ using namespace cv;
         
         pileRadius = 2;
         numberOfClusteredPiles = 4;
+
+        // TRAIL FOLLOWING
+        obstacleCount = 1000;
+        bugTrap = NO;
         
         crossoverRate = 1.0;
         mutationRate = 0.1;
@@ -67,11 +75,12 @@ using namespace cv;
         
         parameterFile = nil;
         
-        observedError = YES;
+        observedError = NO;
         
         deadCount = 0;
         //deadPenalty = 500;
         //tickRate = .01;
+
     }
     return self;
 }
@@ -146,10 +155,13 @@ using namespace cv;
     
     //Main loop
     for(int generation = 0; generation < generationCount && evalCount < evaluationLimit; generation++) {
+        //printf("starting generation %d\n", generation);
         for(Team* team in teams) {
             [team setFitness:0.];
             [team setCasualties:0];
             [team setTimeToCompleteCollection:0.];
+            
+            [team setCollisions:0];
         }
         
         if (evaluationCount > 1) {
@@ -193,7 +205,9 @@ using namespace cv;
  * Run a single evaluation
  */
 -(void) evaluateTeams:(NSMutableArray*)teams onGrid:(vector<vector<Cell*>>)grid{
+    
     [self initDistributionForArray:grid];
+    [self initObstaclesForArray:grid];
     
     NSMutableArray* robots = [[NSMutableArray alloc] initWithCapacity:robotCount];
     NSMutableArray* pheromones = [[NSMutableArray alloc] init];
@@ -227,11 +241,14 @@ using namespace cv;
         BOOL clustered = NO;
         
         for(int tick = 0; tickCount >= 0 ? tick < tickCount : YES; tick++) {
-            NSMutableArray* collectedTags;
-            @autoreleasepool {
-                collectedTags = [self stateTransition:robots inTeam:team atTick:tick onGrid:grid withPheromones:pheromones clusters:clusters foundTags:foundTags];
-            }
             
+            NSMutableArray* collectedTags;
+			@autoreleasepool {
+				collectedTags = [self stateTransition:robots inTeam:team atTick:tick onGrid:grid withPheromones:pheromones clusters:clusters foundTags:foundTags];
+			}
+            
+            //printf("%d\n", team.collisions);
+
             [team setFitness:[team fitness] + [collectedTags count]];
             [totalCollectedTags addObjectsFromArray:collectedTags];
             
@@ -244,7 +261,7 @@ using namespace cv;
             //////////////POWER STUFF///////////////
             
             if ((clusteringTagCutoff >= 0) && ([totalCollectedTags count] > [self clusteringTagCutoff]) && !clustered) {
-                EM em = [self clusterTags:totalCollectedTags];
+                EM em = [Cluster trainOptimalEMWith:totalCollectedTags];
                 Mat means = em.get<Mat>("means");
                 vector<Mat> covs = em.get<vector<Mat>>("covs");
                 
@@ -291,6 +308,8 @@ using namespace cv;
     
     NSMutableArray* collectedTags = [[NSMutableArray alloc] init];
     
+    [NSThread sleepForTimeInterval:0.01];
+    
     for (Robot* robot in robots) {
         
         //////////////POWER STUFF///////////////
@@ -327,21 +346,33 @@ using namespace cv;
              * and may change the robot/world state based on certain criteria (i.e. it reaches its destination).
              */
             case ROBOT_STATUS_DEPARTING: {
+                
+                //NSLog(@"departing          delay %d",[robot delay]);
+                //Delay to emulate physical robot
+                if([robot delay]) {
+                    [robot setDelay:[robot delay] - 1];
+                    //NSLog(@"                                                                 %d tick    %d delay",tick, [robot delay]);
+                    break;
+                }
+                
                 if((![robot informed] && (!useTravel || (randomFloat(1.) < team.travelGiveUpProbability))) || (NSEqualPoints([robot position], [robot target]))) {
                     [robot setStatus:ROBOT_STATUS_SEARCHING];
                     [robot setInformed:(useInformedWalk & [robot informed])];
                     [robot turnWithParameters:team];
-                    [robot setLastTurned:(tick + [robot delay] + 1)];
-                    [robot setLastMoved:tick];
                     break;
-                    
                 }
-                
-                [robot moveWithin:gridSize];
                 
                 //////////////POWER STUFF///////////////
                 [robot dischargeBattery:tick];
                 //////////////POWER STUFF///////////////
+
+                if([robot path] && [[robot path] count] > 0) {
+                    [robot setPosition:[[[robot path] objectAtIndex:0] pointValue]];
+                    [[robot path] removeObjectAtIndex:0];
+                }
+                else {
+                    [robot moveWithObstacle:grid];
+                }
                 
                 break;
             }
@@ -354,10 +385,15 @@ using namespace cv;
              */
             case ROBOT_STATUS_SEARCHING: {
                 
+                //NSLog(@"searching          delay %d",[robot delay]);
+                
                 //Delay to emulate physical robot
-                if(tick - [robot lastMoved] <= [robot delay]) {
+                if([robot delay]) {
+                    [robot setDelay:[robot delay] - 1];
+                    //NSLog(@"                                                                 %d tick    %d delay",tick, [robot delay]);
                     break;
                 }
+                
                 [robot setDelay:0];
                 
                 //////////////POWER STUFF///////////////
@@ -371,7 +407,7 @@ using namespace cv;
                     
                 }
                 //////////////POWER STUFF///////////////
-                
+
                 //Probabilistically give up searching and return to the nest
                 if(useGiveUp && (randomFloat(1.) < [team searchGiveUpProbability])) {
                     [robot setTarget:nest];
@@ -388,13 +424,12 @@ using namespace cv;
                     [robot setTarget:NSMakePoint(roundf([robot position].x + cos([robot direction])), roundf([robot position].y + sin([robot direction])))];
                 }
                 
-                //Move one cell
-                [robot moveWithin:gridSize];
-                
                 //////////////POWER STUFF///////////////
                 //printf("%d\n",tick);
                 [robot dischargeBattery:tick];
                 //////////////POWER STUFF///////////////
+
+                [robot moveWithObstacle:grid];
                 
                 Cell* currentCell = grid[[robot position].y][[robot position].x];
                 if (![currentCell isExplored]) {
@@ -406,7 +441,6 @@ using namespace cv;
                 
                 //Turn
                 [robot turnWithParameters:team];
-                [robot setLastTurned:(tick + [robot delay] + 1)];
                 
                 //After we've moved 1 square ahead, check one square ahead for a tag.
                 //Reusing robot.target here (without consequence, it just gets overwritten when moving).
@@ -447,15 +481,17 @@ using namespace cv;
                         [robot setDelay:9];
                         [robot setTarget:nest];
                         
+                        [[robot path] removeAllObjects];
+
                         if(delegate && [delegate respondsToSelector:@selector(simulation:didPickupTag:atTick:)]) {
                             [delegate simulation:self didPickupTag:foundTag atTick:tick];
                         }
                     }
                 }
                 
-                [robot setLastMoved:tick];
                 //printf("%d\n",tick);
                 [robot dischargeBattery: tick];
+
                 break;
             }
                 
@@ -487,12 +523,18 @@ using namespace cv;
              * Stuff like laying/assigning of pheromones is handled here.
              */
             case ROBOT_STATUS_RETURNING: {
-                if(tick - [robot lastMoved] <= [robot delay]) {
+
+                //NSLog(@"returning          delay %d",[robot delay]);
+                
+                //Delay to emulate physical robot
+                if([robot delay]) {
+                    [robot setDelay:[robot delay] - 1];
+                    //NSLog(@"                                                                 %d tick    %d delay",tick, [robot delay]);
                     break;
                 }
                 
-                [robot setDelay:0];
-                [robot moveWithin:gridSize];
+                [[robot path] addObject:[NSValue valueWithPoint:NSMakePoint(robot.position.x, robot.position.y)]];
+                [robot moveWithObstacle:grid];
                 
                 if(NSEqualPoints(robot.position, nest)) {
                     //Retrieve collected tag from discoveredTags array (if available)
@@ -505,17 +547,15 @@ using namespace cv;
 
                     //Add (perturbed) tag position to global pheromone array
                     if (foundTag && (randomFloat(1.) < poissonCDF([[robot discoveredTags] count], [team pheromoneLayingRate]))) {
-                        Pheromone* pheromone = [[Pheromone alloc] initWithPosition:[foundTag position] weight:1. decayRate:[team pheromoneDecayRate] andUpdatedTick:tick];
-                        [pheromones addObject:pheromone];
-                        
-                        if(delegate && [delegate respondsToSelector:@selector(simulation:didPlacePheromone:atTick:)]) {
-                            [delegate simulation:self didPlacePheromone:pheromone atTick:tick];
-                        }
+                        Pheromone* p = [[Pheromone alloc] initWithPath:[[robot path] mutableCopy] weight:1. decayRate:[team pheromoneDecayRate] andUpdatedTick:tick];
+                        [pheromones addObject:p];
                     }
+
+                    [[robot path] removeAllObjects];
                     
                     //Set required local variables
                     BOOL decisionFlag = randomFloat(1.) < poissonCDF([[robot discoveredTags] count], [team siteFidelityRate]);
-                    NSPoint pheromonePosition = [Pheromone getPheromone:pheromones atTick:tick];
+					NSMutableArray* pheromone = [Pheromone getPheromone:pheromones atTick:tick];
                     
                     if([clusters count]) {
                         int r = randomInt((int)[clusters count]);
@@ -533,8 +573,9 @@ using namespace cv;
                     }
                     
                     //If no pheromones exist, pheromone will be (-1, -1)
-                    else if(!NSEqualPoints(pheromonePosition, NSNullPoint) && usePheromone && !decisionFlag) {
-                        [robot setTarget:[error perturbTargetPosition:pheromonePosition withGridSize:gridSize andGridCenter:nest]];
+                    else if(pheromone && usePheromone && !decisionFlag) {
+                        [robot setTarget:[error perturbTargetPosition:[[pheromone objectAtIndex:[pheromone count] - 1] pointValue] withGridSize:gridSize andGridCenter:nest]];
+                        [robot setPath:[pheromone mutableCopy]];
                         [robot setInformed:ROBOT_INFORMED_PHEROMONE];
                     }
                     
@@ -563,10 +604,14 @@ using namespace cv;
                 }
         
                 [robot dischargeBattery: tick];
-        
+
                 break;
             }
         }
+        // collect up a robots collisions
+        [team setCollisions:[team collisions] + [robot collisionCount]];
+        //NSLog(@"                                                   %d collisions     %d delay",[robot collisionCount],[robot delay]);
+        [robot setCollisionCount:0];
     }
 
     return collectedTags;
@@ -594,34 +639,6 @@ using namespace cv;
     }
     
     return [@{@"fitness":fitness, @"time":time} mutableCopy];
-}
-
-/*
- * Executes unsupervised clustering algorithm Expectation-Maximization (EM) on input
- * Returns trained instantiation of EM if all robots home, untrained otherwise
- */
--(cv::EM) clusterTags:(NSMutableArray*)foundTags {
-    //Construct EM for k clusters, where k = sqrt(num points / 2)
-    int k = 4;
-    EM em = EM(k);
-    
-    //Run EM on aggregate tag array
-    if ([foundTags count]) {
-        Mat aggregate((int)[foundTags count], 2, CV_64F); //Create [totalFoundTags count] x 2 matrix
-        int counter = 0;
-        //Iterate over all tags
-        for (Tag* tag in foundTags) {
-            //Copy x and y location of tag into matrix
-            aggregate.at<double>(counter, 0) = [tag position].x;
-            aggregate.at<double>(counter, 1) = [tag position].y;
-            counter++;
-        }
-        
-        //Train EM
-        em.train(aggregate);
-    }
-    
-    return em;
 }
 
 /*
@@ -661,10 +678,12 @@ using namespace cv;
                     tagY = randomInt(gridSize.height);
                 } while([grid[tagY][tagX] tag]);
                 
-                [grid[tagY][tagX] setTag:[[Tag alloc] initWithX:tagX andY:tagY]];
+                Tag* tag = [[Tag alloc] initWithX:tagX Y:tagY andCluster:1];
+                [grid[tagY][tagX] setTag:tag];
             }
         }
         else {
+            int cluster = 1;
             for(int i = 0; i < pilesOf[size]; i++) { //Place each pile.
                 int pileX,pileY;
                 
@@ -676,7 +695,10 @@ using namespace cv;
                     //Make sure the place we picked isn't close to another pile.  Pretty naive.
                     overlapping = 0;
                     for(int j = 0; j < pileCount; j++) {
-                        if(pointDistance(pilePoints[j].x, pilePoints[j].y, pileX, pileY) < pileRadius){overlapping = 1; break;}
+                        if(pointDistance(pilePoints[j].x, pilePoints[j].y, pileX, pileY) < pileRadius){
+                            overlapping = 1;
+                            break;
+                        }
                     }
                 }
                 
@@ -696,7 +718,11 @@ using namespace cv;
                         maxRadius += 1;
                     } while([grid[tagY][tagX] tag]);
                     
-                    [grid[tagY][tagX] setTag:[[Tag alloc] initWithX:tagX andY:tagY]];
+                    Tag* tag = [[Tag alloc] initWithX:tagX Y:tagY andCluster:cluster];
+                    [grid[tagY][tagX] setTag:tag];
+                    if ((j+1) % (tagCount / numberOfClusteredPiles) == 0) {
+                        cluster++;
+                    }
                 }
             }
         }
@@ -711,11 +737,13 @@ using namespace cv;
     NSMutableDictionary* parameterSums = [[NSMutableDictionary alloc] init];
     float tagSum = 0.f;
     float deadSum = 0.f;
+    float collisionSum = 0.f;
     
     for(Team* team in teams) {
         NSMutableDictionary* parameters = [team getParameters];
         tagSum += [team fitness];
         deadSum += [team casualties];
+        collisionSum += [team collisions];
         for(NSString* key in parameters) {
             float val = [[parameterSums objectForKey:key] floatValue] + [[parameters objectForKey:key] floatValue];
             [parameterSums setObject:@(val) forKey:key];
@@ -730,6 +758,7 @@ using namespace cv;
     [averageTeam setFitness:(tagSum / teamCount) / evaluationCount];
     [averageTeam setCasualties:(deadSum / teamCount) / evaluationCount];
     [averageTeam setParameters:parameterSums];
+    [averageTeam setCollisions:(collisionSum / teamCount) / evaluationCount];
 }
 
 
@@ -745,6 +774,7 @@ using namespace cv;
         if([team fitness] > maxTags) {
             maxTags = [team fitness];
             [bestTeam setParameters:[team getParameters]];
+            [bestTeam setCollisions:[team collisions]];
         }
         if([team casualties] < minDead){
             minDead = [team casualties];
@@ -836,6 +866,89 @@ using namespace cv;
 
 +(void)writeParameterNamesToFile:(NSString *)file {
     //unused
+}
+
+
+
+
+-(void) initObstaclesForArray:(vector<vector<Cell*>>&)grid {
+    
+    int gridWidth = (int)grid[0].size();
+    int gridHeight = (int)grid.size();
+    int homex = gridWidth / 2;
+    int homey = gridHeight / 2;
+    
+    int edgeCushion = 2;
+    int homeCushion = 8;
+    int obstacleSize = 2;
+    
+    int delta = 6;
+    int xBar = homex - delta;
+    int xEnd = homex + delta;
+    int yBar = homey - delta;
+    int yEnd = homey + delta;
+    int tabLen = 3;
+    
+    for(vector<Cell*> v : grid) {
+        for (Cell* cell : v) {
+            [cell setObstacle:nil];
+        }
+    }
+    
+    if(bugTrap){
+        
+        for(int i = xBar; i < xEnd; i ++){
+            if(![grid[yBar][i] tag] && ![grid[yBar - 1][i] tag]){
+                [grid[yBar][i] setObstacle:[[Obstacle alloc] initWithX:i andY:yBar]];
+                [grid[yBar - 1][i] setObstacle:[[Obstacle alloc] initWithX:i andY:yBar - 1]];
+            }
+            if(![grid[yEnd][i] tag] && ![grid[yEnd + 1][i] tag]){
+                [grid[yEnd][i] setObstacle:[[Obstacle alloc] initWithX:i andY:yEnd]];
+                [grid[yEnd + 1][i] setObstacle:[[Obstacle alloc] initWithX:i andY:yEnd + 1]];
+            }
+        }
+        for(int i = yBar - 1; i < yEnd + 2; i ++){
+            if(i != homex){
+                if(![grid[i][xBar] tag] && ![grid[i][xBar - 1] tag]){
+                    [grid[i][xBar] setObstacle:[[Obstacle alloc] initWithX:xBar andY:i]];
+                    [grid[i][xBar - 1] setObstacle:[[Obstacle alloc] initWithX:xBar - 1 andY:i]];
+                }
+            }
+            if(![grid[i][xEnd] tag] && ![grid[i][xEnd + 1] tag]){
+                [grid[i][xEnd] setObstacle:[[Obstacle alloc] initWithX:xEnd andY:i]];
+                [grid[i][xEnd + 1] setObstacle:[[Obstacle alloc] initWithX:xEnd + 1 andY:i]];
+            }
+        }
+        for(int i = 1; i < tabLen; i++){
+            if(![grid[homey + 1][homex - delta + i] tag] && ![grid[homey - 1][homex - delta + i] tag]){
+                [grid[homey + 1][homex - delta + i] setObstacle:[[Obstacle alloc] initWithX:homex - delta + i andY:homey + 1]];
+                [grid[homey - 1][homex - delta + i] setObstacle:[[Obstacle alloc] initWithX:homex - delta + i andY:homey - 1]];
+            }
+        }
+        
+    } else {
+        
+        for(int i = 0; i < obstacleCount; i++){
+            
+            int originx = randomIntRange(edgeCushion, gridWidth - (edgeCushion + obstacleSize));
+            int originy = randomIntRange(edgeCushion, gridHeight - (edgeCushion + obstacleSize));
+            
+            while(originx > (homex - homeCushion) && originx < (homex + homeCushion) && originy > (homey - homeCushion) && originy < (homey + homeCushion)){
+                originx = randomIntRange(edgeCushion, gridWidth - (edgeCushion + obstacleSize));
+                originy = randomIntRange(edgeCushion, gridHeight - (edgeCushion + obstacleSize));
+            }
+            
+            // square obstacles
+            for(int i = 0; i < obstacleSize; i++){
+                for(int j = 0; j < obstacleSize; j++){
+                    if(![grid[originy+i][originx+j] tag]){
+                        [grid[originy+i][originx+j] setObstacle:[[Obstacle alloc] initWithX:originx+j andY:originy+i]];
+                    }
+                }
+            }
+        }
+    }
+
 }
 
 @end

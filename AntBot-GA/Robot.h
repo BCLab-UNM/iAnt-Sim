@@ -1,5 +1,7 @@
 #import <Foundation/Foundation.h>
 #import "Team.h"
+#import "Cell.h"
+#import "Utilities.h"
 
 #define ROBOT_STATUS_INACTIVE 0
 #define ROBOT_STATUS_DEPARTING 1
@@ -19,7 +21,12 @@
 }
 
 -(void) reset;
--(void) moveWithin:(NSSize)bounds;
+
+#ifdef __cplusplus
+
+-(void) moveWithObstacle:(std::vector<std::vector<Cell*>>&)grid;
+
+#endif
 -(void) turnWithParameters:(Team*)params;
 
 @property (nonatomic) int status; //Indicates what state the robot is in (see #define'd above).
@@ -28,11 +35,10 @@
 //In general, positions of (-1,-1) denote an empty/unused/uninitialized position.
 @property (nonatomic) NSPoint position; //Where the robot currently is.
 @property (nonatomic) NSPoint target; //Where the robot is going.
+@property (nonatomic) NSMutableArray* path; //Path robot took to nest.
 
 @property (nonatomic) float direction; //Direction robot is moving (used in random walk).
 @property (nonatomic) int searchTime; //Amount of ticks the robot has been performing a random walk.
-@property (nonatomic) int lastMoved; //tick at which the robot last moved (used in random walk).
-@property (nonatomic) int lastTurned; //tick at which the robot last turned (used in random walk).
 @property (nonatomic) int delay; //Number of ticks the robot is penalized to emulate physical robots (used in random walk).
 
 @property (nonatomic) NSMutableArray* discoveredTags; //Tags discovered by robot while searching
@@ -50,5 +56,8 @@
 @property (nonatomic) BOOL isDead;
 @property (nonatomic) BOOL needsCharging;
 //////////////POWER STUFF///////////////
+
+@property (nonatomic) int collisionCount;
+
 
 @end

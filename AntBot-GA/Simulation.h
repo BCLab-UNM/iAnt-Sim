@@ -82,6 +82,9 @@
 @property (nonatomic) int pileRadius;
 @property (nonatomic) int numberOfClusteredPiles;
 
+@property (nonatomic) int obstacleCount;
+@property (nonatomic) bool bugTrap;
+
 @property (nonatomic) float crossoverRate;
 @property (nonatomic) float mutationRate;
 @property (nonatomic) int selectionOperator;

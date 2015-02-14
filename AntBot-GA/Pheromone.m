@@ -2,11 +2,11 @@
 
 @implementation Pheromone
 
-@synthesize position, weight, decayRate, updatedTick;
+@synthesize path, weight, decayRate, updatedTick;
 
--(id) initWithPosition:(NSPoint)_position weight:(float)_weight decayRate:(float)_decayRate andUpdatedTick:(int)_updatedTick {
+-(id) initWithPath:(NSMutableArray*)_path weight:(float)_weight decayRate:(float)_decayRate andUpdatedTick:(int)_updatedTick {
     if(self = [super init]) {
-        position = _position;
+        path = _path;
         weight = _weight;
         decayRate = _decayRate;
         updatedTick = _updatedTick;
@@ -17,7 +17,7 @@
 /*
  * Picks a pheromone out of the passed list based on a random number weighted on the pheromone strengths
  */
-+(NSPoint) getPheromone:(NSMutableArray*)pheromones atTick:(int)tick {
++(NSMutableArray*) getPheromone:(NSMutableArray*)pheromones atTick:(int)tick {
     float nSum = 0.f;
     
     for(int i = 0; i < [pheromones count]; i++) {
@@ -36,12 +36,16 @@
     float r = randomFloat(nSum);
     for(Pheromone* pheromone in pheromones) {
         if(r < [pheromone weight]) {
-            return [pheromone position];
+            //NSLog(@"%@", [pheromone path]);
+            NSArray* rArray = [[[pheromone path] reverseObjectEnumerator] allObjects];
+            //NSLog(@"%@", rArray);
+            //return [pheromone path];
+            return [NSMutableArray arrayWithArray: rArray];
         }
         r -= [pheromone weight];
     }
     
-    return NSNullPoint;
+    return nil;
 }
 
 

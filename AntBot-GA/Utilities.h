@@ -145,7 +145,6 @@ static inline float exponentialDecay(float quantity, float time, float lambda) {
     return (quantity * exp(-lambda * time));
 }
 
-
 //////////////POWER STUFF///////////////
 
 /*
@@ -179,5 +178,19 @@ static inline float logitFunction(float x, float scale, float vshift){
     return temp;    
 }
 
+/*
+ * Calculates Bayesian Information Criteria (BIC) given log likelihood ll,
+ * free parameters k, and number of data points n
+ */
+static inline float bic(float ll, int k, int n) {
+    return (log(n) * k) - (2 * ll);
+}
 
+/*
+ * Calculates number of free parameters for EM given clusters k and
+ * dimensionality of data d
+ */
+static inline int componentsEM(int k, int d) {
+    return (k - 1) + (k * d) + (k * ((d * (d - 1)) / 2));
+}
 

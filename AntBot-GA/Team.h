@@ -33,4 +33,6 @@
 @property (nonatomic) float fitness;
 @property (nonatomic) int timeToCompleteCollection;
 
+@property (nonatomic) int collisions;
+
 @end

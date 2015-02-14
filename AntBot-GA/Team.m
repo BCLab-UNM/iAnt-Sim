@@ -6,6 +6,7 @@
 @synthesize uninformedSearchCorrelation, informedSearchCorrelationDecayRate;
 @synthesize pheromoneDecayRate, pheromoneLayingRate, siteFidelityRate;
 @synthesize fitness, timeToCompleteCollection;
+@synthesize collisions;
 
 //////////////POWER STUFF///////////////
 //@synthesize powerReturnShift, powerReturnSigma, chargeActiveSigma;
@@ -85,7 +86,9 @@
 }
 
 -(void) writeParametersToFile:(NSString *)file {
-    [Utilities appendText:[NSString stringWithFormat:@"%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f\n",
+
+    [Utilities appendText:[NSString stringWithFormat:@"%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%d\n",
+
                            [self pheromoneDecayRate],
                            [self travelGiveUpProbability],
                            [self searchGiveUpProbability],
@@ -99,7 +102,8 @@
                            [self batteryReturnVal],
                            [self batteryLeaveVal],
                            [self casualties],
-                           [self fitness]]
+                           [self fitness],
+                           [self collisions]]
                    toFile:file];
 }
 
@@ -119,7 +123,8 @@
     @"batteryReturnVal,"
     @"batteryLeaveVal,"
     @"casualties,"
-    @"fitness\n";
+    @"fitness,"
+    @"collisions\n";
     
     [Utilities appendText:headers toFile :file];
 }

@@ -27,6 +27,7 @@ using namespace cv;
 @synthesize tickRate;
 @synthesize obstacleCount;
 @synthesize bugTrap;
+@synthesize gridDimension, nestLocation;
 
 //int simTime;
 @synthesize deadCount;
@@ -37,7 +38,7 @@ using namespace cv;
         
         teamCount = 100;                // number of "individuals"
         generationCount = 50;           // generations show convergence around 20-30 so shrinking to 50 from 100
-        robotCount = 6;                 // lets leave this at 6 for now
+        robotCount = 4;                 // lets leave this at 6 for now
         tagCount = 256;                 // hold steady
         evaluationCount = 12;           // stay with 12
 
@@ -60,8 +61,8 @@ using namespace cv;
         numberOfClusteredPiles = 4;
 
         // TRAIL FOLLOWING
-        obstacleCount = 600;
-        bugTrap = YES;
+        obstacleCount = 100;
+        bugTrap = NO;
         
         crossoverRate = 1.0;
         mutationRate = 0.1;
@@ -70,12 +71,15 @@ using namespace cv;
         mutationOperator = FixedVarMutId;
         elitism = YES;
         
-        gridSize = NSMakeSize(125, 125);                    //normally 125
-        nest = NSMakePoint(62, 62);                         // 62
+        gridDimension = 125;
+        nestLocation = gridDimension / 2;
+        
+        gridSize = NSMakeSize(gridDimension, gridDimension);                    //normally 125
+        nest = NSMakePoint(nestLocation, nestLocation);                         // 62
         
         parameterFile = nil;
         
-        observedError = NO;
+        observedError = YES;
         
         deadCount = 0;
         //deadPenalty = 500;

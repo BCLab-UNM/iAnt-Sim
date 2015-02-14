@@ -101,4 +101,7 @@
 @property (nonatomic) NSObject* viewDelegate;
 @property (nonatomic) float tickRate;
 
+@property (nonatomic) int gridDimension;
+@property (nonatomic) int nestLocation;
+
 @end

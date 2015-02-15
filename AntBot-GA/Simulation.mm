@@ -38,30 +38,30 @@ using namespace cv;
         
         teamCount = 100;                // number of "individuals"
         generationCount = 50;           // generations show convergence around 20-30 so shrinking to 50 from 100
-        robotCount = 4;                 // lets leave this at 6 for now
-        tagCount = 256;                 // hold steady
-        evaluationCount = 12;           // stay with 12
-
-        evaluationLimit = -1;
-        postEvaluations = 1000;
-        tickCount = 7200;
-        clusteringTagCutoff = -1;
+        robotCount = 4;                 // lets leave this at 6 for now - 4 for swarmies
+        tagCount = 256;                 // hold
+        evaluationCount = 8;            // hold
+        
+        evaluationLimit = -1;           // hold
+        postEvaluations = 1000;         // hold
+        tickCount = 7200 * 2 + 3600;	// 7200 ticks per hour - this is 2.5 hours
+        clusteringTagCutoff = -1;       // hold
         
         useTravel =
         useGiveUp =
         useSiteFidelity =
         usePheromone =
-        useInformedWalk = YES;
+        useInformedWalk = YES;          // hold
         
-        distributionClustered = 1.;
+        distributionClustered = 1.;     // set whichever distribution value you want to 1.0 - the other two to zero
         distributionPowerlaw = 0.;
         distributionRandom = 0.;
         
-        pileRadius = 2;
-        numberOfClusteredPiles = 4;
-
+        pileRadius = 2;                 // hold
+        numberOfClusteredPiles = 4;     // hold
+        
         // TRAIL FOLLOWING
-        obstacleCount = 100;
+        obstacleCount = 100;            // alter the number of obstacles here
         bugTrap = NO;
         
         crossoverRate = 1.0;
@@ -71,20 +71,20 @@ using namespace cv;
         mutationOperator = FixedVarMutId;
         elitism = YES;
         
-        gridDimension = 125;
+        gridDimension = 125 * 3;                                // normal 125 which is 10m - this is 30m
         nestLocation = gridDimension / 2;
         
-        gridSize = NSMakeSize(gridDimension, gridDimension);                    //normally 125
-        nest = NSMakePoint(nestLocation, nestLocation);                         // 62
+        gridSize = NSMakeSize(gridDimension, gridDimension);
+        nest = NSMakePoint(nestLocation, nestLocation);
         
         parameterFile = nil;
         
-        observedError = YES;
+        observedError = YES;            // always use error with swarmies
         
         deadCount = 0;
         //deadPenalty = 500;
         //tickRate = .01;
-
+        
     }
     return self;
 }

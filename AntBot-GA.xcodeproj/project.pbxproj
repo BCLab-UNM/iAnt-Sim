@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		3A43CF941A99440B00A01C7F /* Pile.h in Headers */ = {isa = PBXBuildFile; fileRef = 3A43CF921A99440B00A01C7F /* Pile.h */; };
+		3A43CF951A99440B00A01C7F /* Pile.mm in Sources */ = {isa = PBXBuildFile; fileRef = 3A43CF931A99440B00A01C7F /* Pile.mm */; };
 		40ED65BA16DABD31006F8494 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 40ED65B916DABD31006F8494 /* Cocoa.framework */; };
 		40ED661616DABE50006F8494 /* Robot.h in Headers */ = {isa = PBXBuildFile; fileRef = 40ED660B16DABE50006F8494 /* Robot.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		40ED661716DABE50006F8494 /* Robot.m in Sources */ = {isa = PBXBuildFile; fileRef = 40ED660C16DABE50006F8494 /* Robot.m */; };
@@ -72,6 +74,8 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		3A43CF921A99440B00A01C7F /* Pile.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Pile.h; sourceTree = "<group>"; };
+		3A43CF931A99440B00A01C7F /* Pile.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = Pile.mm; sourceTree = "<group>"; };
 		40ED65B616DABD31006F8494 /* libAntBot-GA.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libAntBot-GA.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		40ED65B916DABD31006F8494 /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = System/Library/Frameworks/Cocoa.framework; sourceTree = SDKROOT; };
 		40ED65BC16DABD31006F8494 /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = System/Library/Frameworks/AppKit.framework; sourceTree = SDKROOT; };
@@ -206,6 +210,8 @@
 				42A63E121826A49200DA3751 /* Cell.m */,
 				D024DB6B1823006200FF83E3 /* Cluster.h */,
 				D024DB6C1823006200FF83E3 /* Cluster.mm */,
+				3A43CF921A99440B00A01C7F /* Pile.h */,
+				3A43CF931A99440B00A01C7F /* Pile.mm */,
 				42E407CF184FD28D006F8761 /* Decomposition.h */,
 				42E407D0184FD28D006F8761 /* Decomposition.mm */,
 				42307A5A176D262A005BB34B /* GA.h */,
@@ -384,6 +390,7 @@
 				4290E27A17E0E40E0023CF98 /* defines.h in Headers */,
 				424C5E461884A3F100017F25 /* Utilities.h in Headers */,
 				4290E27C17E0E41B0023CF98 /* config.h in Headers */,
+				3A43CF941A99440B00A01C7F /* Pile.h in Headers */,
 				422F6EEA187FD099008486DD /* SensorError.h in Headers */,
 				42EA17EE17E0E728001103A9 /* retina.hpp in Headers */,
 				42E407D1184FD28D006F8761 /* Decomposition.h in Headers */,
@@ -456,6 +463,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				3A43CF951A99440B00A01C7F /* Pile.mm in Sources */,
 				40ED661716DABE50006F8494 /* Robot.m in Sources */,
 				40ED661916DABE50006F8494 /* Team.m in Sources */,
 				40ED661B16DABE50006F8494 /* Simulation.mm in Sources */,
@@ -540,6 +548,7 @@
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"\"$(SRCROOT)/AntBot-GA/OpenCV/lib\"",
+					"$(PROJECT_DIR)/AntBot-GA/OpenCV/lib",
 				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PUBLIC_HEADERS_FOLDER_PATH = "include/$(TARGET_NAME)";
@@ -558,6 +567,7 @@
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"\"$(SRCROOT)/AntBot-GA/OpenCV/lib\"",
+					"$(PROJECT_DIR)/AntBot-GA/OpenCV/lib",
 				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PUBLIC_HEADERS_FOLDER_PATH = "include/$(TARGET_NAME)";

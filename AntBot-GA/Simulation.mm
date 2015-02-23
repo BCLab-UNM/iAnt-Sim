@@ -18,13 +18,14 @@ using namespace cv;
 @synthesize useTravel, useGiveUp, useSiteFidelity, usePheromone, useInformedWalk;
 @synthesize distributionRandom, distributionPowerlaw, distributionClustered;
 @synthesize averageTeam, bestTeam;
-@synthesize pileRadius, numberOfClusteredPiles;
+@synthesize pileRadius, numberOfClusteredPiles, pileArray;
 @synthesize crossoverRate, mutationRate, selectionOperator, crossoverOperator, mutationOperator, elitism;
 @synthesize gridSize, nest;
 @synthesize parameterFile;
 @synthesize error, observedError;
 @synthesize delegate, viewDelegate;
 @synthesize tickRate;
+@synthesize volatilityRate;
 
 -(id) init {
     if(self = [super init]) {
@@ -60,6 +61,8 @@ using namespace cv;
         
         gridSize = NSMakeSize(125, 125);
         nest = NSMakePoint(62, 62);
+        
+        volatilityRate = 1.0;
         
         parameterFile = nil;
         
@@ -183,7 +186,7 @@ using namespace cv;
 /*
  * Run a single evaluation
  */
--(void) evaluateTeams:(NSMutableArray*)teams onGrid:(vector<vector<Cell*>>)grid{
+-(void) evaluateTeams:(NSMutableArray*)teams onGrid:(vector<vector<Cell*>>)grid {
     [self initDistributionForArray:grid];
     
     NSMutableArray* robots = [[NSMutableArray alloc] initWithCapacity:robotCount];
@@ -211,6 +214,8 @@ using namespace cv;
         [pheromones removeAllObjects];
         [totalCollectedTags removeAllObjects];
         BOOL clustered = NO;
+        
+        float volatilityCounter = 0.f;
         
         for(int tick = 0; tickCount >= 0 ? tick < tickCount : YES; tick++) {
             
@@ -252,7 +257,42 @@ using namespace cv;
             if(delegate && [delegate respondsToSelector:@selector(simulation:didFinishTick:)]) {
                 [delegate simulation:self didFinishTick:tick];
             }
+  
+            
+            volatilityCounter += volatilityRate;
+            while (volatilityCounter >= 1.0) {
+                [self swapPilesOnGrid:grid];
+                volatilityCounter -= 1.0;
+            }
         }
+    }
+}
+
+/*
+ * Swap piles: move tags around the grid to simulate volatility
+ */
+-(void) swapPilesOnGrid:(vector<vector<Cell*>>&)grid {
+    
+    NSPoint loc;
+    Pile* newPile;
+    int size;
+    
+    while ([[pileArray firstObject] numTags] <= 0 && [pileArray count] > 0) {
+        [pileArray removeObjectAtIndex:0];
+    }
+    
+    if ([pileArray count] >= 2 && [[pileArray firstObject] numTags] > 0) {
+        [[pileArray firstObject] removeTagFromGrid:grid];
+        [[pileArray lastObject] addTagtoGrid:grid ofSize:gridSize];
+    }
+    
+    if ([[pileArray firstObject] numTags] <= 0 && [pileArray count] > 0) {
+        [pileArray removeObjectAtIndex:0];
+        
+        loc = [self findNewPileLocation];
+        size = roundf(tagCount / (distributionPowerlaw + (numberOfClusteredPiles * distributionClustered)));
+        newPile = [[Pile alloc] initAtX:loc.x andY:loc.y withCapacity:size andRadius:pileRadius];
+        [pileArray addObject:newPile];
     }
 }
 
@@ -364,6 +404,7 @@ using namespace cv;
                         
                         [robot setDiscoveredTags:[[NSMutableArray alloc] initWithObjects:tagCopy, nil]];
                         [foundTag setPickedUp:YES];
+                        [foundTag removeFromPile];
                         
                         //Sum up all non-picked-up seeds in the moore neighbor.
                         for(int dx = -1; dx <= 1; dx++) {
@@ -502,7 +543,8 @@ using namespace cv;
  * Called at the beginning of each evaluation.
  */
 -(void) initDistributionForArray:(vector<vector<Cell*>>&)grid {
-    
+        
+    // Clear Tags
     for(vector<Cell*> v : grid) {
         for (Cell* cell : v) {
             [cell setTag:nil];
@@ -518,14 +560,12 @@ using namespace cv;
     pilesOf[(tagCount / 16)] = roundf((tagCount / 64) * distributionPowerlaw);
     pilesOf[(tagCount / numberOfClusteredPiles)] = roundf(distributionPowerlaw + (numberOfClusteredPiles * distributionClustered));
     
-    int pileCount = 0;
-    NSPoint pilePoints[tagCount + 1];
-    
     for(int size = 1; size <= tagCount; size++) { //For each distinct size of pile.
         if(pilesOf[size] == 0) {
             continue;
         }
         
+        // No clustering
         if(size == 1) {
             for(int i = 0; i < pilesOf[1]; i++) {
                 int tagX, tagY;
@@ -538,48 +578,48 @@ using namespace cv;
                 [grid[tagY][tagX] setTag:tag];
             }
         }
+        
+        // Clustered Piles: pilesOf[size] == the number of piles
         else {
-            int cluster = 1;
-            for(int i = 0; i < pilesOf[size]; i++) { //Place each pile.
-                int pileX,pileY;
+//            int cluster = 1;
+            Pile* currentPile;
+            NSPoint pileLocation;
+            pileArray = [[NSMutableArray alloc] init];
+            
+            // Place each pile. +1 to create an empty pile to be the new patch.
+            for(int i = 0; i < pilesOf[size]+1; i++) {
+                pileLocation = [self findNewPileLocation];
+                currentPile = [[Pile alloc] initAtX:pileLocation.x andY:pileLocation.y withCapacity:pilesOf[size] andRadius:pileRadius];
                 
-                int overlapping = 1;
-                while(overlapping) {
-                    pileX = randomIntRange(pileRadius, gridSize.width - (pileRadius * 2));
-                    pileY = randomIntRange(pileRadius, gridSize.height - (pileRadius * 2));
-                    
-                    //Make sure the place we picked isn't close to another pile.  Pretty naive.
-                    overlapping = 0;
-                    for(int j = 0; j < pileCount; j++) {
-                        if(pointDistance(pilePoints[j].x, pilePoints[j].y, pileX, pileY) < pileRadius){overlapping = 1; break;}
-                    }
+                //Place each individual tag in the pile.  Don't place any new tags in the extra pile.
+                for(int j = 0; j < size && i < pilesOf[size]; j++) {
+                    [currentPile addTagtoGrid:grid ofSize:gridSize];
                 }
-                
-                pilePoints[pileCount++] = NSMakePoint(pileX, pileY);
-                
-                //Place each individual tag in the pile.
-                for(int j = 0; j < size; j++) {
-                    float maxRadius = pileRadius;
-                    int tagX, tagY;
-                    do {
-                        float rad = randomFloat(maxRadius);
-                        float dir = randomFloat(M_2PI);
-                        
-                        tagX = clip(roundf(pileX + (rad * cos(dir))), 0, gridSize.width - 1);
-                        tagY = clip(roundf(pileY + (rad * sin(dir))), 0, gridSize.height - 1);
-                        
-                        maxRadius += 1;
-                    } while([grid[tagY][tagX] tag]);
-                    
-                    Tag* tag = [[Tag alloc] initWithX:tagX Y:tagY andCluster:cluster];
-                    [grid[tagY][tagX] setTag:tag];
-                    if ((j+1) % (tagCount / numberOfClusteredPiles) == 0) {
-                        cluster++;
-                    }
-                }
+                [currentPile shuffle];
+                [pileArray addObject:currentPile];
             }
         }
     }
+}
+
+-(NSPoint) findNewPileLocation {
+    int pileX, pileY;
+    int overlapping = 1;
+    do {
+        pileX = randomIntRange(pileRadius, gridSize.width - (pileRadius * 2));
+        pileY = randomIntRange(pileRadius, gridSize.height - (pileRadius * 2));
+        
+        //Make sure the place we picked isn't close to another pile.  Pretty naive.
+        overlapping = 0;
+        for(int j = 0; j < [pileArray count]; j++) {
+            if([pileArray[j] containsPointX:pileX andY:pileY]) {
+                overlapping = 1;
+                break;
+            }
+        }
+    } while(overlapping);
+    
+    return NSMakePoint(pileX, pileY);
 }
 
 /*

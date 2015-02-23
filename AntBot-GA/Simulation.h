@@ -8,10 +8,12 @@
 #import "Team.h"
 #import "Robot.h"
 #import "Tag.h"
+#import "Pile.h"
 #import "Utilities.h"
 
 @class Team;
 @class Tag;
+@class Pile;
 @class Pheromone;
 @class Simulation;
 
@@ -39,11 +41,14 @@
 #ifdef __cplusplus
 -(void) evaluateTeams:(NSMutableArray*)teams onGrid:(std::vector<std::vector<Cell*>>)grid;
 -(NSMutableDictionary*) evaluateTeam:(Team*)team onGrid:(std::vector<std::vector<Cell*>>)grid;
+-(void) swapPilesOnGrid:(std::vector<std::vector<Cell*>>&)grid;
 -(NSMutableArray*) stateTransition:(NSMutableArray*)robots inTeam:(Team*)team atTick:(int)tick onGrid:(std::vector<std::vector<Cell*>>&)grid
                     withPheromones:(NSMutableArray*)pheromones
                           andClusters:(NSMutableArray*)clusters;
 -(void) initDistributionForArray:(std::vector<std::vector<Cell*>>&)grid;
 #endif
+-(NSPoint) findNewPileLocation;
+
 
 @property (readonly, nonatomic) Team* averageTeam;
 @property (readonly, nonatomic) Team* bestTeam;
@@ -73,6 +78,7 @@
 
 @property (nonatomic) int pileRadius;
 @property (nonatomic) int numberOfClusteredPiles;
+@property (nonatomic) NSMutableArray* pileArray;
 
 @property (nonatomic) float crossoverRate;
 @property (nonatomic) float mutationRate;
@@ -89,5 +95,7 @@
 @property (nonatomic) NSObject* delegate;
 @property (nonatomic) NSObject* viewDelegate;
 @property (nonatomic) float tickRate;
+
+@property (nonatomic) float volatilityRate;
 
 @end

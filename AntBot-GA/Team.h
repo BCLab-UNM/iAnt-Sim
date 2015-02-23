@@ -20,6 +20,10 @@
 @property (nonatomic) float pheromoneLayingRate;
 @property (nonatomic) float siteFidelityRate;
 
+//Recruitment parameters:
+@property (nonatomic) float leaveNestProbability;
+@property (nonatomic) float recruitProbability;
+
 //Non-evolved variables:
 @property (nonatomic) float fitness;
 @property (nonatomic) int timeToCompleteCollection;

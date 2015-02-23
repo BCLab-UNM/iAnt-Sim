@@ -21,7 +21,7 @@
 @property (nonatomic) NSPoint position;
 @property (nonatomic) NSMutableArray* tagArray;
 
--(Pile*) initAtX:(int)x andY:(int)y withCapacity:(int)_capacity andRadius:(int)_radius;
+-(Pile*) initAtX:(int)_x andY:(int)_y withCapacity:(int)_capacity andRadius:(int)_radius;
 
 -(UInt8) numTags;
 

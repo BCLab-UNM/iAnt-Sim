@@ -41,13 +41,13 @@
 #ifdef __cplusplus
 -(void) evaluateTeams:(NSMutableArray*)teams onGrid:(std::vector<std::vector<Cell*>>)grid;
 -(NSMutableDictionary*) evaluateTeam:(Team*)team onGrid:(std::vector<std::vector<Cell*>>)grid;
--(void) swapPilesOnGrid:(std::vector<std::vector<Cell*>>&)grid;
+-(void) swapPilesOnGrid:(std::vector<std::vector<Cell*>>&)grid fromPiles:(NSMutableArray*)piles;
 -(NSMutableArray*) stateTransition:(NSMutableArray*)robots inTeam:(Team*)team atTick:(int)tick onGrid:(std::vector<std::vector<Cell*>>&)grid
                     withPheromones:(NSMutableArray*)pheromones
-                          andClusters:(NSMutableArray*)clusters;
--(void) initDistributionForArray:(std::vector<std::vector<Cell*>>&)grid;
+                       andClusters:(NSMutableArray*)clusters andResting:(NSMutableArray*)resting;
+-(void) initDistributionForArray:(std::vector<std::vector<Cell*>>&)grid intoPiles:(NSMutableArray*)piles;
 #endif
--(NSPoint) findNewPileLocation;
+-(NSPoint) findNewPileLocationInPiles:(NSMutableArray*)piles;
 
 
 @property (readonly, nonatomic) Team* averageTeam;
@@ -65,12 +65,14 @@
 @property (nonatomic) int postEvaluations;
 @property (nonatomic) int tickCount;
 @property (nonatomic) int clusteringTagCutoff;
+@property (nonatomic) float volatilityRate;
 
 @property (nonatomic) BOOL useTravel;
 @property (nonatomic) BOOL useGiveUp;
 @property (nonatomic) BOOL useSiteFidelity;
 @property (nonatomic) BOOL usePheromone;
 @property (nonatomic) BOOL useInformedWalk;
+@property (nonatomic) BOOL useRecruitment;
 
 @property (nonatomic) float distributionRandom;
 @property (nonatomic) float distributionPowerlaw;
@@ -78,7 +80,6 @@
 
 @property (nonatomic) int pileRadius;
 @property (nonatomic) int numberOfClusteredPiles;
-@property (nonatomic) NSMutableArray* pileArray;
 
 @property (nonatomic) float crossoverRate;
 @property (nonatomic) float mutationRate;
@@ -95,7 +96,5 @@
 @property (nonatomic) NSObject* delegate;
 @property (nonatomic) NSObject* viewDelegate;
 @property (nonatomic) float tickRate;
-
-@property (nonatomic) float volatilityRate;
 
 @end

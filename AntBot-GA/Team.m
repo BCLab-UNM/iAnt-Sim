@@ -5,6 +5,7 @@
 @synthesize travelGiveUpProbability, searchGiveUpProbability;
 @synthesize uninformedSearchCorrelation, informedSearchCorrelationDecayRate;
 @synthesize pheromoneDecayRate, pheromoneLayingRate, siteFidelityRate;
+@synthesize leaveNestProbability, recruitProbability;
 @synthesize fitness, timeToCompleteCollection;
 
 -(id) initRandom {
@@ -18,6 +19,9 @@
         pheromoneDecayRate = randomExponential(10.0);
         pheromoneLayingRate = randomFloat(20.);
         siteFidelityRate = randomFloat(20.);
+        
+        leaveNestProbability = randomFloat(0.25);
+        recruitProbability = randomFloat(0.25);
     }
     return self;
 }
@@ -45,7 +49,10 @@
               @"informedSearchCorrelationDecayRate" : @(informedSearchCorrelationDecayRate),
               @"pheromoneDecayRate" : @(pheromoneDecayRate),
               @"pheromoneLayingRate" : @(pheromoneLayingRate),
-              @"siteFidelityRate" : @(siteFidelityRate)} mutableCopy];
+              @"siteFidelityRate" : @(siteFidelityRate),
+              @"leaveNestProbability" : @(leaveNestProbability),
+              @"recruitProbability" : @(recruitProbability)
+            } mutableCopy];
 }
 
 -(void) setParameters:(NSDictionary *)parameters {
@@ -56,10 +63,12 @@
     pheromoneDecayRate = [[parameters objectForKey:@"pheromoneDecayRate"] floatValue];
     pheromoneLayingRate = [[parameters objectForKey:@"pheromoneLayingRate"] floatValue];
     siteFidelityRate = [[parameters objectForKey:@"siteFidelityRate"] floatValue];
+    leaveNestProbability = [[parameters objectForKey:@"leaveNestProbability"] floatValue];
+    recruitProbability = [[parameters objectForKey:@"recruitProbability"] floatValue];
 }
 
 -(void) writeParametersToFile:(NSString *)file {
-    [Utilities appendText:[NSString stringWithFormat:@"%f,%f,%f,%f,%f,%f,%f,%f\n",
+    [Utilities appendText:[NSString stringWithFormat:@"%f,%f,%f,%f,%f,%f,%f,%f,%f,%f\n",
                            [self pheromoneDecayRate],
                            [self travelGiveUpProbability],
                            [self searchGiveUpProbability],
@@ -67,6 +76,8 @@
                            [self informedSearchCorrelationDecayRate],
                            [self pheromoneLayingRate],
                            [self siteFidelityRate],
+                           [self leaveNestProbability],
+                           [self recruitProbability],
                            [self fitness]]
                    toFile:file];
 }
@@ -81,6 +92,8 @@
     @"informedSearchCorrelationDecayRate,"
     @"pheromoneLayingRate,"
     @"siteFidelityRate,"
+    @"leaveNestProbability,"
+    @"recruitProbability,"
     @"fitness\n";
     
     [Utilities appendText:headers toFile :file];

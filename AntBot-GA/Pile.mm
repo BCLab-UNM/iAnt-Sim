@@ -17,8 +17,8 @@ using namespace std;
 @synthesize position;
 @synthesize tagArray;
 
--(Pile*) initAtX:(int)x andY:(int)y withCapacity:(int)_capacity andRadius:(int)_radius {
-    position = NSMakePoint(x, y);
+-(Pile*) initAtX:(int)_x andY:(int)_y withCapacity:(int)_capacity andRadius:(int)_radius {
+    position = NSMakePoint(_x, _y);
     capacity = _capacity;
     radius = _radius;
     

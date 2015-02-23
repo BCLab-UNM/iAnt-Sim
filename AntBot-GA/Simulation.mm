@@ -15,7 +15,7 @@ using namespace cv;
 @implementation Simulation
 
 @synthesize teamCount, generationCount, robotCount, tagCount, evaluationCount, evaluationLimit, postEvaluations, tickCount, clusteringTagCutoff;
-@synthesize useTravel, useGiveUp, useSiteFidelity, usePheromone, useInformedWalk;
+@synthesize useTravel, useGiveUp, useSiteFidelity, usePheromone, useInformedWalk, useRecruitment;
 @synthesize distributionRandom, distributionPowerlaw, distributionClustered;
 @synthesize averageTeam, bestTeam;
 @synthesize pileRadius, numberOfClusteredPiles;
@@ -25,30 +25,33 @@ using namespace cv;
 @synthesize error, observedError;
 @synthesize delegate, viewDelegate;
 @synthesize tickRate;
+@synthesize volatilityRate;
 
 -(id) init {
     if(self = [super init]) {
         teamCount = 100;
         generationCount = 100;
-        robotCount = 6;
+        robotCount = 50;
         tagCount = 256;
         evaluationCount = 8;
         evaluationLimit = -1;
         postEvaluations = 1000;
         tickCount = 7200;
         clusteringTagCutoff = -1;
+        volatilityRate = 0.1;
         
         useTravel =
         useGiveUp =
         useSiteFidelity =
-        usePheromone =
-        useInformedWalk = YES;
+        useInformedWalk =
+        useRecruitment = YES;
+        usePheromone = NO;
         
         distributionClustered = 1.;
         distributionPowerlaw = 0.;
         distributionRandom = 0.;
         
-        pileRadius = 2;
+        pileRadius = 1;
         numberOfClusteredPiles = 4;
         
         crossoverRate = 1.0;
@@ -183,16 +186,18 @@ using namespace cv;
 /*
  * Run a single evaluation
  */
--(void) evaluateTeams:(NSMutableArray*)teams onGrid:(vector<vector<Cell*>>)grid{
-    [self initDistributionForArray:grid];
-    
+-(void) evaluateTeams:(NSMutableArray*)teams onGrid:(vector<vector<Cell*>>)grid {
     NSMutableArray* robots = [[NSMutableArray alloc] initWithCapacity:robotCount];
     NSMutableArray* pheromones = [[NSMutableArray alloc] init];
     NSMutableArray* clusters = [[NSMutableArray alloc] init];
+    NSMutableArray* piles = [[NSMutableArray alloc] init];
+    NSMutableArray* resting = [[NSMutableArray alloc] init];
     NSMutableArray* totalCollectedTags = [[NSMutableArray alloc] init];
     for(int i = 0; i < robotCount; i++){[robots addObject:[[Robot alloc] init]];}
     
     for(Team* team in teams) {
+        [self initDistributionForArray:grid intoPiles:piles];
+        
         for (vector<Cell*> v : grid) {
             for (Cell* cell : v) {
                 [cell setIsClustered:NO];
@@ -208,13 +213,16 @@ using namespace cv;
             [robot reset];
         }
         
+        [resting removeAllObjects];
         [pheromones removeAllObjects];
         [totalCollectedTags removeAllObjects];
         BOOL clustered = NO;
         
+        float volatilityCounter = 0.f;
+        
         for(int tick = 0; tickCount >= 0 ? tick < tickCount : YES; tick++) {
             
-            NSMutableArray* collectedTags = [self stateTransition:robots inTeam:team atTick:tick onGrid:grid withPheromones:pheromones andClusters:clusters];
+            NSMutableArray* collectedTags = [self stateTransition:robots inTeam:team atTick:tick onGrid:grid withPheromones:pheromones andClusters:clusters andResting:resting];
             
             [team setFitness:[team fitness] + [collectedTags count]];
             [totalCollectedTags addObjectsFromArray:collectedTags];
@@ -254,7 +262,42 @@ using namespace cv;
             if(delegate && [delegate respondsToSelector:@selector(simulation:didFinishTick:)]) {
                 [delegate simulation:self didFinishTick:tick];
             }
+  
+            
+            volatilityCounter += volatilityRate;
+            while (volatilityCounter >= 1.0) {
+                [self swapPilesOnGrid:grid fromPiles:piles];
+                volatilityCounter -= 1.0;
+            }
         }
+    }
+}
+
+/*
+ * Swap piles: move tags around the grid to simulate volatility
+ */
+-(void) swapPilesOnGrid:(vector<vector<Cell*>>&)grid fromPiles:(NSMutableArray*)piles {
+    
+    NSPoint loc;
+    Pile* newPile;
+    int size;
+
+    while ([[[piles firstObject] tagArray] count] == 0 && [piles count] > 0) {
+        [piles removeObjectAtIndex:0];
+    }
+    
+    if ([piles count] >= 2 && [[[piles firstObject] tagArray] count] > 0) {
+        [[piles firstObject] removeTagFromGrid:grid];
+        [[piles lastObject] addTagtoGrid:grid ofSize:gridSize];
+    }
+    
+    if ([[[piles firstObject] tagArray] count] <= 0 && [piles count] > 0) {
+        [piles removeObjectAtIndex:0];
+        
+        loc = [self findNewPileLocationInPiles:piles];
+        size = roundf(tagCount / (distributionPowerlaw + (numberOfClusteredPiles * distributionClustered)));
+        newPile = [[Pile alloc] initAtX:loc.x andY:loc.y withCapacity:size andRadius:pileRadius];
+        [piles addObject:newPile];
     }
 }
 
@@ -262,7 +305,7 @@ using namespace cv;
  * State transition case statement for robots using central-place foraging algorithm
  */
 -(NSMutableArray*) stateTransition:(NSMutableArray*)robots inTeam:(Team*)team atTick:(int)tick onGrid:(vector<vector<Cell*>>&)grid
-                    withPheromones:(NSMutableArray*)pheromones andClusters:(NSMutableArray*)clusters {
+                    withPheromones:(NSMutableArray*)pheromones andClusters:(NSMutableArray*)clusters andResting:(NSMutableArray*)resting {
     
     NSMutableArray* collectedTags = [[NSMutableArray alloc] init];
     
@@ -277,7 +320,37 @@ using namespace cv;
                 [robot setStatus:ROBOT_STATUS_DEPARTING];
                 [robot setPosition:nest];
                 [robot setTarget:edge(gridSize)];
-                //Fallthrough to ROBOT_STATUS_DEPARTING.
+                
+                if (useRecruitment) {
+                    [robot setStatus:ROBOT_STATUS_RESTING];
+                    [resting addObject:robot];
+                }
+                //Fallthrough to ROBOT_STATUS_RESTING or ROBOT_STATUS_DEPARTING.
+            }
+                
+            /*
+             * The robot is waiting inside the nest.
+             * This should only happen when useRecruitment is true.
+             * Robots leave the nest to forage at a low resting probability.
+             * Robots leave the nest to visit a specific location if they are recruited.
+             */
+            case ROBOT_STATUS_RESTING: {
+                
+                //Delay to emulate physical robot
+                if([robot delay]) {
+                    [robot setDelay:[robot delay] - 1];
+                    break;
+                }
+
+                if (useRecruitment) {
+                    // Leave the nest at a fixed probability
+                    if (randomFloat(1.) < team.leaveNestProbability) {
+                        [resting removeObjectIdenticalTo:robot];
+                        [robot setStatus:ROBOT_STATUS_DEPARTING];
+                    }
+                    break;
+                }
+                // Fallthrough to ROBOT_STATUS_DEPARTING if useRecruitment is false.
             }
                 
             /*
@@ -366,6 +439,7 @@ using namespace cv;
                         
                         [robot setDiscoveredTags:[[NSMutableArray alloc] initWithObjects:tagCopy, nil]];
                         [foundTag setPickedUp:YES];
+                        [foundTag removeFromPile];
                         
                         //Sum up all non-picked-up seeds in the moore neighbor.
                         for(int dx = -1; dx <= 1; dx++) {
@@ -415,6 +489,7 @@ using namespace cv;
                 
                 [robot moveWithin:gridSize];
                 
+                // If back at the nest
                 if(NSEqualPoints(robot.position, nest)) {
                     //Retrieve collected tag from discoveredTags array (if available)
                     Tag* foundTag = nil;
@@ -430,6 +505,31 @@ using namespace cv;
                         
                         if(delegate && [delegate respondsToSelector:@selector(simulation:didPlacePheromone:atTick:)]) {
                             [delegate simulation:self didPlacePheromone:pheromone atTick:tick];
+                        }
+                    }
+                    
+                    // Recruit Resting Robots
+                    if (foundTag && useRecruitment && [resting count] > 0) {
+                        NSMutableArray* leavingRobots = [[NSMutableArray alloc] init];
+                        for (Robot* r in resting) {
+                            if (randomFloat(1.) < team.recruitProbability) {
+                                // If siteFidelity, give the newly departing robot the location
+                                if (useSiteFidelity) {
+                                    [r setTarget:[error perturbTagPosition:[foundTag position] withGridSize:gridSize andGridCenter:nest]];
+                                    [r setInformed:ROBOT_INFORMED_MEMORY];
+                                    [r setStatus:ROBOT_STATUS_DEPARTING];
+                                }
+                                // If no sideFidelity, have the newly departing robot forage randomly
+                                else {
+                                    [r setTarget:edge(gridSize)];
+                                    [r setInformed:ROBOT_INFORMED_NONE];
+                                    [r setStatus:ROBOT_STATUS_DEPARTING];
+                                }
+                                [leavingRobots addObject:r];
+                            }
+                        }
+                        for (Robot* leaving in leavingRobots) {
+                            [resting removeObjectIdenticalTo:leaving];
                         }
                     }
                     
@@ -466,7 +566,13 @@ using namespace cv;
                     
                     [robot setDiscoveredTags:nil];
                     [robot setSearchTime:0];
-                    [robot setStatus:ROBOT_STATUS_DEPARTING];
+                    if (useRecruitment && !foundTag) {
+                        [robot setStatus:ROBOT_STATUS_RESTING];
+                        [resting addObject:robot];
+                    }
+                    else {
+                        [robot setStatus:ROBOT_STATUS_DEPARTING];
+                    }
                 }
                 break;
             }
@@ -505,8 +611,12 @@ using namespace cv;
  * Creates a random distribution of tags.
  * Called at the beginning of each evaluation.
  */
--(void) initDistributionForArray:(vector<vector<Cell*>>&)grid {
+-(void) initDistributionForArray:(vector<vector<Cell*>>&)grid intoPiles:(NSMutableArray *)piles {
     
+    // Clear piles
+    [piles removeAllObjects];
+    
+    // Clear Tags
     for(vector<Cell*> v : grid) {
         for (Cell* cell : v) {
             [cell setTag:nil];
@@ -522,15 +632,13 @@ using namespace cv;
     pilesOf[(tagCount / 16)] = roundf((tagCount / 64) * distributionPowerlaw);
     pilesOf[(tagCount / numberOfClusteredPiles)] = roundf(distributionPowerlaw + (numberOfClusteredPiles * distributionClustered));
     
-    int pileCount = 0;
-    NSPoint pilePoints[tagCount + 1];
-    
     for(int size = 1; size <= tagCount; size++) { //For each distinct size of pile.
         if(pilesOf[size] == 0) {
             continue;
         }
         
-        if(size == 1) {
+        // No clustering
+        if(size < 1) {
             for(int i = 0; i < pilesOf[1]; i++) {
                 int tagX, tagY;
                 do {
@@ -542,48 +650,48 @@ using namespace cv;
                 [grid[tagY][tagX] setTag:tag];
             }
         }
+        
+        // Clustered Piles: pilesOf[size] == the number of piles
         else {
-            int cluster = 1;
-            for(int i = 0; i < pilesOf[size]; i++) { //Place each pile.
-                int pileX,pileY;
+//            int cluster = 1;
+            Pile* currentPile;
+            NSPoint pileLocation;
+//            pileArray = [[NSMutableArray alloc] init];
+            
+            // Place each pile. +1 to create an empty pile to be the new patch.
+            for(int i = 0; i < pilesOf[size]+1; i++) {
+                pileLocation = [self findNewPileLocationInPiles:piles];
+                currentPile = [[Pile alloc] initAtX:pileLocation.x andY:pileLocation.y withCapacity:pilesOf[size] andRadius:pileRadius];
                 
-                int overlapping = 1;
-                while(overlapping) {
-                    pileX = randomIntRange(pileRadius, gridSize.width - (pileRadius * 2));
-                    pileY = randomIntRange(pileRadius, gridSize.height - (pileRadius * 2));
-                    
-                    //Make sure the place we picked isn't close to another pile.  Pretty naive.
-                    overlapping = 0;
-                    for(int j = 0; j < pileCount; j++) {
-                        if(pointDistance(pilePoints[j].x, pilePoints[j].y, pileX, pileY) < pileRadius){overlapping = 1; break;}
-                    }
+                //Place each individual tag in the pile.  Don't place any new tags in the extra pile.
+                for(int j = 0; j < size && i < pilesOf[size]; j++) {
+                    [currentPile addTagtoGrid:grid ofSize:gridSize];
                 }
-                
-                pilePoints[pileCount++] = NSMakePoint(pileX, pileY);
-                
-                //Place each individual tag in the pile.
-                for(int j = 0; j < size; j++) {
-                    float maxRadius = pileRadius;
-                    int tagX, tagY;
-                    do {
-                        float rad = randomFloat(maxRadius);
-                        float dir = randomFloat(M_2PI);
-                        
-                        tagX = clip(roundf(pileX + (rad * cos(dir))), 0, gridSize.width - 1);
-                        tagY = clip(roundf(pileY + (rad * sin(dir))), 0, gridSize.height - 1);
-                        
-                        maxRadius += 1;
-                    } while([grid[tagY][tagX] tag]);
-                    
-                    Tag* tag = [[Tag alloc] initWithX:tagX Y:tagY andCluster:cluster];
-                    [grid[tagY][tagX] setTag:tag];
-                    if ((j+1) % (tagCount / numberOfClusteredPiles) == 0) {
-                        cluster++;
-                    }
-                }
+                [currentPile shuffle];
+                [piles addObject:currentPile];
             }
         }
     }
+}
+
+-(NSPoint) findNewPileLocationInPiles:(NSMutableArray*)piles {
+    int pileX, pileY;
+    int overlapping = 1;
+    do {
+        pileX = randomIntRange(pileRadius, gridSize.width - (pileRadius * 2));
+        pileY = randomIntRange(pileRadius, gridSize.height - (pileRadius * 2));
+        
+        //Make sure the place we picked isn't close to another pile.  Pretty naive.
+        overlapping = 0;
+        for(int j = 0; j < [piles count]; j++) {
+            if([piles[j] containsPointX:pileX andY:pileY]) {
+                overlapping = 1;
+                break;
+            }
+        }
+    } while(overlapping);
+    
+    return NSMakePoint(pileX, pileY);
 }
 
 /*
@@ -644,12 +752,14 @@ using namespace cv;
               @"evaluationCount" : @(evaluationCount),
               @"tickCount" : @(tickCount),
               @"clusteringTagCutoff" : @(clusteringTagCutoff),
+              @"volatilityRate" : @(volatilityRate),
               
               @"useTravel" : @(useTravel),
               @"useGiveUp" : @(useGiveUp),
               @"useSiteFidelity" : @(useSiteFidelity),
               @"usePheromone" : @(usePheromone),
               @"useInformedWalk" : @(useInformedWalk),
+              @"useRecruitment" : @(useRecruitment),
               
               @"distributionRandom" : @(distributionRandom),
               @"distributionPowerlaw" : @(distributionPowerlaw),
@@ -679,12 +789,14 @@ using namespace cv;
     evaluationCount = [[parameters objectForKey:@"evaluationCount"] intValue];
     tickCount = [[parameters objectForKey:@"tickCount"] intValue];
     clusteringTagCutoff = [[parameters objectForKey:@"clusteringTagCutoff"] intValue];
+    volatilityRate = [[parameters objectForKey:@"volatilityRate"] floatValue];
  
     useTravel = [[parameters objectForKey:@"useTravel"] boolValue];
     useGiveUp = [[parameters objectForKey:@"useGiveUp"] boolValue];
     useSiteFidelity = [[parameters objectForKey:@"useSiteFidelity"] boolValue];
     usePheromone = [[parameters objectForKey:@"usePheromone"] boolValue];
     useInformedWalk = [[parameters objectForKey:@"useInformedWalk"] boolValue];
+    useRecruitment = [[parameters objectForKey:@"useRecruitment"] boolValue];
     
     distributionRandom = [[parameters objectForKey:@"distributionRandom"] floatValue];
     distributionPowerlaw = [[parameters objectForKey:@"distributionPowerlaw"] floatValue];

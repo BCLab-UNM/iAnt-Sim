@@ -2,6 +2,8 @@
 #import "QuadTree.h"
 #import "Tag.h"
 
+@class Tag;
+
 @interface Cell : NSObject {}
 
 @property (nonatomic) Tag* tag;

@@ -29,7 +29,7 @@ using namespace cv;
 
 -(id) init {
     if(self = [super init]) {
-        teamCount = 25;
+        teamCount = 20;
         generationCount = 50;
         robotCount = 50;
         tagCount = 2048;
@@ -42,16 +42,16 @@ using namespace cv;
         
         useTravel = NO;
         useGiveUp = YES;
-        useSiteFidelity =
-        useInformedWalk =
-        useRecruitment = YES;
-        usePheromone = NO;
+        useSiteFidelity = YES;
+        useInformedWalk = YES;
+        useRecruitment = NO;
+        usePheromone = YES;
         
         distributionClustered = 1.;
         distributionPowerlaw = 0.;
         distributionRandom = 0.;
         
-        pileRadius = 1;
+        pileRadius = 3;
         numberOfClusteredPiles = 1;
         
         crossoverRate = 1.0;
@@ -225,12 +225,13 @@ using namespace cv;
         
         volatilityCounter = 0.f;
         timeToCompleted = 0;
+        [team setCollectedTags:0];
         
         for(int tick = 0; tickCount >= 0 ? tick < tickCount : YES; tick++) {
             
             NSMutableArray* collectedTags = [self stateTransition:robots inTeam:team atTick:tick onGrid:grid withPheromones:pheromones andClusters:clusters andResting:resting];
             
-            [team setFitness:[team fitness] + [collectedTags count]];
+            [team setCollectedTags:[team collectedTags] + (int)[collectedTags count]];
             [totalCollectedTags addObjectsFromArray:collectedTags];
             
             if ((clusteringTagCutoff >= 0) && ([totalCollectedTags count] > [self clusteringTagCutoff]) && !clustered) {
@@ -251,7 +252,7 @@ using namespace cv;
                 clustered = YES;
             }
             
-            if ([team fitness] == [self tagCount]) {
+            if ([team collectedTags] == [self tagCount]) {
                 if (evaluationCount == 1) {
                     [team setTimeToCompleteCollection:tick];
                 }
@@ -281,11 +282,10 @@ using namespace cv;
         }
         
         if (timeToCompleted > 0) {
-            [team setFitness:(1.0/timeToCompleted)];
+            [team setFitness:[team fitness] + (tickCount*tagCount/timeToCompleted)];
         }
         else {
-            [team setFitness:(1.0/tickCount)*([team fitness]/tagCount)];
-            
+            [team setFitness:[team fitness] + [team collectedTags]];
         }
     }
 }

@@ -26,6 +26,7 @@
 
 //Non-evolved variables:
 @property (nonatomic) float fitness;
+@property (nonatomic) int collectedTags;
 @property (nonatomic) int timeToCompleteCollection;
 @property (nonatomic) int predictedClusters;
 

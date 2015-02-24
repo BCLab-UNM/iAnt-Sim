@@ -6,7 +6,7 @@
 @synthesize uninformedSearchCorrelation, informedSearchCorrelationDecayRate;
 @synthesize pheromoneDecayRate, pheromoneLayingRate, siteFidelityRate;
 @synthesize leaveNestProbability, recruitProbability;
-@synthesize fitness, timeToCompleteCollection;
+@synthesize fitness, collectedTags, timeToCompleteCollection;
 
 -(id) initRandom {
     if(self = [super init]) {
@@ -14,7 +14,7 @@
         searchGiveUpProbability = randomExponential(10.0);
         
 //        uninformedSearchCorrelation = randomFloat(2 * M_2PI);
-        uninformedSearchCorrelation = 0.1 + randomFloat(0.4);
+        uninformedSearchCorrelation = randomFloat(0.6);
         informedSearchCorrelationDecayRate = randomExponential(5.0);
         
         pheromoneDecayRate = randomExponential(10.0);

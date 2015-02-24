@@ -10,18 +10,21 @@
 
 -(id) initRandom {
     if(self = [super init]) {
-        travelGiveUpProbability = randomFloat(1.0);
-        searchGiveUpProbability = randomFloat(1.0);
+        travelGiveUpProbability = randomExponential(10.0);
+        searchGiveUpProbability = randomExponential(10.0);
         
-        uninformedSearchCorrelation = randomFloat(2 * M_2PI);
+//        uninformedSearchCorrelation = randomFloat(2 * M_2PI);
+        uninformedSearchCorrelation = 0.1 + randomFloat(0.4);
         informedSearchCorrelationDecayRate = randomExponential(5.0);
         
         pheromoneDecayRate = randomExponential(10.0);
         pheromoneLayingRate = randomFloat(20.);
         siteFidelityRate = randomFloat(20.);
         
-        leaveNestProbability = randomFloat(0.25);
-        recruitProbability = randomFloat(0.25);
+//        leaveNestProbability = randomExponential(10.0);
+//        recruitProbability = randomExponential(10.0);
+        leaveNestProbability = 0.0005;
+        recruitProbability = 0.05;
     }
     return self;
 }

@@ -63,9 +63,12 @@ using namespace std;
     [tagArray removeLastObject];
 }
 
+-(void) addTag:(Tag*)_tag {
+    [tagArray addObject:_tag];
+}
+
 -(void) removeSpecificTag:(Tag*)_tag {
-    unsigned long i = [tagArray indexOfObjectIdenticalTo:_tag];
-    [tagArray removeObjectAtIndex:i];
+    [tagArray removeObjectIdenticalTo:_tag];
 }
 
 -(BOOL) containsPointX:(float)_x andY:(float)_y {

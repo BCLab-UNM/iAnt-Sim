@@ -10,8 +10,8 @@
 
 -(id) initRandom {
     if(self = [super init]) {
-        travelGiveUpProbability = randomFloat(1.0);
-        searchGiveUpProbability = randomFloat(1.0);
+        travelGiveUpProbability = randomExponential(10.0);
+        searchGiveUpProbability = randomExponential(10.0);
         
 //        uninformedSearchCorrelation = randomFloat(2 * M_2PI);
         uninformedSearchCorrelation = 0.1 + randomFloat(0.4);

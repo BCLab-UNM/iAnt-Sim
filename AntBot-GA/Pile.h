@@ -29,6 +29,7 @@
 -(void) addTagtoGrid:(std::vector<std::vector<Cell*>>&)grid ofSize:(NSSize)gridSize;
 -(void) removeTagFromGrid:(std::vector<std::vector<Cell*>>&)grid;
 #endif
+-(void) addTag:(Tag*)_tag;
 -(void) removeSpecificTag:(Tag*)_tag;
 
 -(BOOL) containsPointX:(float)_x andY:(float)y;

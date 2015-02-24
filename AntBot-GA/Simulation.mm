@@ -32,7 +32,7 @@ using namespace cv;
         teamCount = 25;
         generationCount = 50;
         robotCount = 50;
-        tagCount = 1280;
+        tagCount = 2048;
         evaluationCount = 8;
         evaluationLimit = -1;
         postEvaluations = 1000;
@@ -40,11 +40,11 @@ using namespace cv;
         clusteringTagCutoff = -1;
         volatilityRate = 1.0;
         
-        useTravel = YES;
-        useGiveUp = NO;
-        useSiteFidelity = NO;
-        useInformedWalk = NO;
-        useRecruitment = NO;
+        useTravel = NO;
+        useGiveUp = YES;
+        useSiteFidelity =
+        useInformedWalk =
+        useRecruitment = YES;
         usePheromone = NO;
         
         distributionClustered = 1.;
@@ -61,8 +61,8 @@ using namespace cv;
         mutationOperator = FixedVarMutId;
         elitism = YES;
         
-        gridSize = NSMakeSize(125, 125);
-        nest = NSMakePoint(62, 62);
+        gridSize = NSMakeSize(200, 200);
+        nest = NSMakePoint(100, 100);
         
         parameterFile = nil;
         
@@ -194,6 +194,10 @@ using namespace cv;
     NSMutableArray* piles = [[NSMutableArray alloc] init];
     NSMutableArray* resting = [[NSMutableArray alloc] init];
     NSMutableArray* totalCollectedTags = [[NSMutableArray alloc] init];
+
+    float volatilityCounter;
+    int timeToCompleted;
+
     for(int i = 0; i < robotCount; i++){[robots addObject:[[Robot alloc] init]];}
     
     for(Team* team in teams) {
@@ -219,7 +223,8 @@ using namespace cv;
         [totalCollectedTags removeAllObjects];
         BOOL clustered = NO;
         
-        float volatilityCounter = 0.f;
+        volatilityCounter = 0.f;
+        timeToCompleted = 0;
         
         for(int tick = 0; tickCount >= 0 ? tick < tickCount : YES; tick++) {
             
@@ -246,8 +251,11 @@ using namespace cv;
                 clustered = YES;
             }
             
-            if ((evaluationCount == 1) && ([team fitness] == [self tagCount])) {
-                [team setTimeToCompleteCollection:tick];
+            if ([team fitness] == [self tagCount]) {
+                if (evaluationCount == 1) {
+                    [team setTimeToCompleteCollection:tick];
+                }
+                timeToCompleted = tick;
                 break;
             }
             
@@ -271,6 +279,14 @@ using namespace cv;
                 volatilityCounter -= 1.0;
             }
         }
+        
+        if (timeToCompleted > 0) {
+            [team setFitness:(1.0/timeToCompleted)];
+        }
+        else {
+            [team setFitness:(1.0/tickCount)*([team fitness]/tagCount)];
+            
+        }
     }
 }
 
@@ -281,6 +297,7 @@ using namespace cv;
     
     NSPoint loc;
     Pile* newPile;
+    Tag* tempTag;
     int size;
 
     while ([[[piles firstObject] tagArray] count] == 0 && [piles count] > 0) {
@@ -288,8 +305,17 @@ using namespace cv;
     }
     
     if ([piles count] >= 2 && [[[piles firstObject] tagArray] count] > 0) {
-        [[piles firstObject] removeTagFromGrid:grid];
-        [[piles lastObject] addTagtoGrid:grid ofSize:gridSize];
+        // If a tag has been picked up, move it to the new pile, but leave it in the same spot
+        if ([[[[piles firstObject] tagArray] firstObject] pickedUp]) {
+            tempTag = [[[piles firstObject] tagArray] firstObject];
+            [[piles lastObject] addTag:tempTag];
+            [[piles firstObject] removeSpecificTag:tempTag];
+        }
+        // If a tag has not been picked up, remove it and make a new one
+        else {
+            [[piles firstObject] removeTagFromGrid:grid];
+            [[piles lastObject] addTagtoGrid:grid ofSize:gridSize];
+        }
     }
     
     if ([[[piles firstObject] tagArray] count] <= 0 && [piles count] > 0) {
@@ -440,7 +466,7 @@ using namespace cv;
                         
                         [robot setDiscoveredTags:[[NSMutableArray alloc] initWithObjects:tagCopy, nil]];
                         [foundTag setPickedUp:YES];
-                        [foundTag removeFromPile];
+//                        [foundTag removeFromPile];
                         
                         //Sum up all non-picked-up seeds in the moore neighbor.
                         for(int dx = -1; dx <= 1; dx++) {
@@ -662,7 +688,7 @@ using namespace cv;
             // Place each pile. +1 to create an empty pile to be the new patch.
             for(int i = 0; i < pilesOf[size]+1; i++) {
                 pileLocation = [self findNewPileLocationInPiles:piles];
-                currentPile = [[Pile alloc] initAtX:pileLocation.x andY:pileLocation.y withCapacity:pilesOf[size] andRadius:pileRadius];
+                currentPile = [[Pile alloc] initAtX:pileLocation.x andY:pileLocation.y withCapacity:size andRadius:pileRadius];
                 
                 //Place each individual tag in the pile.  Don't place any new tags in the extra pile.
                 for(int j = 0; j < size && i < pilesOf[size]; j++) {
@@ -677,17 +703,23 @@ using namespace cv;
 
 -(NSPoint) findNewPileLocationInPiles:(NSMutableArray*)piles {
     int pileX, pileY;
-    int overlapping = 1;
+    BOOL overlapping;
     do {
         pileX = randomIntRange(pileRadius, gridSize.width - (pileRadius * 2));
         pileY = randomIntRange(pileRadius, gridSize.height - (pileRadius * 2));
         
         //Make sure the place we picked isn't close to another pile.  Pretty naive.
-        overlapping = 0;
-        for(int j = 0; j < [piles count]; j++) {
-            if([piles[j] containsPointX:pileX andY:pileY]) {
-                overlapping = 1;
-                break;
+        overlapping = NO;
+
+        if (pointDistance(pileX, pileY, nest.x, nest.y) < (float)min(gridSize.width, gridSize.height) / 5.0) {
+            overlapping = YES;
+        }
+        else {
+            for(int j = 0; j < [piles count]; j++) {
+                if([piles[j] containsPointX:pileX andY:pileY]) {
+                    overlapping = YES;
+                    break;
+                }
             }
         }
     } while(overlapping);

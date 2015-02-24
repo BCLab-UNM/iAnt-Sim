@@ -29,22 +29,22 @@ using namespace cv;
 
 -(id) init {
     if(self = [super init]) {
-        teamCount = 100;
-        generationCount = 100;
+        teamCount = 25;
+        generationCount = 50;
         robotCount = 50;
-        tagCount = 256;
+        tagCount = 1280;
         evaluationCount = 8;
         evaluationLimit = -1;
         postEvaluations = 1000;
         tickCount = 7200;
         clusteringTagCutoff = -1;
-        volatilityRate = 0.1;
+        volatilityRate = 1.0;
         
-        useTravel =
-        useGiveUp =
-        useSiteFidelity =
-        useInformedWalk =
-        useRecruitment = YES;
+        useTravel = YES;
+        useGiveUp = NO;
+        useSiteFidelity = NO;
+        useInformedWalk = NO;
+        useRecruitment = NO;
         usePheromone = NO;
         
         distributionClustered = 1.;
@@ -52,7 +52,7 @@ using namespace cv;
         distributionRandom = 0.;
         
         pileRadius = 1;
-        numberOfClusteredPiles = 4;
+        numberOfClusteredPiles = 1;
         
         crossoverRate = 1.0;
         mutationRate = 0.1;
@@ -66,7 +66,7 @@ using namespace cv;
         
         parameterFile = nil;
         
-        observedError = YES;
+        observedError = NO;
     }
     return self;
 }
@@ -141,6 +141,7 @@ using namespace cv;
     
     //Main loop
     for(int generation = 0; generation < generationCount && evalCount < evaluationLimit; generation++) {
+        printf("Generation %d\n", generation+1);
         for(Team* team in teams) {
             [team setFitness:0.];
             [team setTimeToCompleteCollection:0.];
@@ -801,7 +802,6 @@ using namespace cv;
     distributionRandom = [[parameters objectForKey:@"distributionRandom"] floatValue];
     distributionPowerlaw = [[parameters objectForKey:@"distributionPowerlaw"] floatValue];
     distributionClustered = [[parameters objectForKey:@"distributionClustered"] floatValue];
-    
     
     pileRadius = [[parameters objectForKey:@"pileRadius"] intValue];
     numberOfClusteredPiles = [[parameters objectForKey:@"numberOfClusteredPiles"] intValue];

@@ -29,8 +29,8 @@ using namespace cv;
 
 -(id) init {
     if(self = [super init]) {
-        teamCount = 100;
-        generationCount = 100;
+        teamCount = 20;
+        generationCount = 50;
         robotCount = 50;
         tagCount = 2048;
         evaluationCount = 8;
@@ -42,17 +42,17 @@ using namespace cv;
         
         useTravel = NO;
         useGiveUp = YES;
-        useSiteFidelity =
-        useInformedWalk =
-        useRecruitment = YES;
-        usePheromone = NO;
+        useSiteFidelity = YES;
+        useInformedWalk = YES;
+        useRecruitment = NO;
+        usePheromone = YES;
         
         distributionClustered = 1.;
         distributionPowerlaw = 0.;
         distributionRandom = 0.;
         
-        pileRadius = 1;
-        numberOfClusteredPiles = 4;
+        pileRadius = 3;
+        numberOfClusteredPiles = 1;
         
         crossoverRate = 1.0;
         mutationRate = 0.1;
@@ -144,6 +144,7 @@ using namespace cv;
     
     //Main loop
     for(int generation = 0; generation < generationCount && evalCount < evaluationLimit; generation++) {
+        printf("Generation %d\n", generation+1);
         for(Team* team in teams) {
             [team setFitness:0.];
             [team setTimeToCompleteCollection:0.];
@@ -242,12 +243,13 @@ using namespace cv;
         
         volatilityCounter = 0.f;
         timeToCompleted = 0;
+        [team setCollectedTags:0];
         
         for(int tick = 0; tickCount >= 0 ? tick < tickCount : YES; tick++) {
             
             NSMutableArray* collectedTags = [self stateTransition:robots inTeam:team atTick:tick onGrid:grid withPheromones:pheromones andClusters:clusters andResting:resting];
             
-            [team setFitness:[team fitness] + [collectedTags count]];
+            [team setCollectedTags:[team collectedTags] + (int)[collectedTags count]];
             [totalCollectedTags addObjectsFromArray:collectedTags];
             
             if ((clusteringTagCutoff >= 0) && ([totalCollectedTags count] > [self clusteringTagCutoff]) && !clustered) {
@@ -263,10 +265,12 @@ using namespace cv;
                     Cluster* c = [[Cluster alloc] initWithCenter:p width:width andHeight:height];
                     [clusters addObject:c];
                 }
+                
+                [team setPredictedClusters:(int)[clusters count]];
                 clustered = YES;
             }
             
-            if ([team fitness] == [self tagCount]) {
+            if ([team collectedTags] == [self tagCount]) {
                 if (evaluationCount == 1) {
                     [team setTimeToCompleteCollection:tick];
                 }
@@ -296,11 +300,10 @@ using namespace cv;
         }
         
         if (timeToCompleted > 0) {
-            [team setFitness:(1.0/timeToCompleted)];
+            [team setFitness:[team fitness] + (tickCount*tagCount/timeToCompleted)];
         }
         else {
-            [team setFitness:(1.0/tickCount)*([team fitness]/tagCount)];
-            
+            [team setFitness:[team fitness] + [team collectedTags]];
         }
     }
 }
@@ -630,6 +633,7 @@ using namespace cv;
 -(NSMutableDictionary*) evaluateTeam:(Team*)team onGrid:(vector<vector<Cell*>>)grid{
     NSMutableArray* fitness = [[NSMutableArray alloc] init];
     NSMutableArray* time = [[NSMutableArray alloc] init];
+    NSMutableArray* clusters = [[NSMutableArray alloc] init];
     NSMutableArray* teams = [[NSMutableArray alloc] initWithObjects:averageTeam, nil];
     
     for (int i = 0; i < postEvaluations; i++) {
@@ -642,9 +646,10 @@ using namespace cv;
         [self evaluateTeams:teams onGrid:grid];
         [fitness addObject:@([averageTeam fitness])];
         [time addObject:@([averageTeam timeToCompleteCollection])];
+        [clusters addObject:@([averageTeam predictedClusters])];
     }
     
-    return [@{@"fitness":fitness, @"time":time} mutableCopy];
+    return [@{@"fitness":fitness, @"time":time, @"clusters":clusters} mutableCopy];
 }
 
 /*
@@ -855,7 +860,6 @@ using namespace cv;
     distributionRandom = [[parameters objectForKey:@"distributionRandom"] floatValue];
     distributionPowerlaw = [[parameters objectForKey:@"distributionPowerlaw"] floatValue];
     distributionClustered = [[parameters objectForKey:@"distributionClustered"] floatValue];
-    
     
     pileRadius = [[parameters objectForKey:@"pileRadius"] intValue];
     numberOfClusteredPiles = [[parameters objectForKey:@"numberOfClusteredPiles"] intValue];

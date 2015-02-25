@@ -80,6 +80,8 @@
 
 @property (nonatomic) int pileRadius;
 @property (nonatomic) int numberOfClusteredPiles;
+@property (nonatomic) NSMutableArray* xPointArray;
+@property (nonatomic) NSMutableArray* yPointArray;
 
 @property (nonatomic) float crossoverRate;
 @property (nonatomic) float mutationRate;

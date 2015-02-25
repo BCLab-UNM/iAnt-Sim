@@ -18,7 +18,7 @@ using namespace cv;
 @synthesize useTravel, useGiveUp, useSiteFidelity, usePheromone, useInformedWalk, useRecruitment;
 @synthesize distributionRandom, distributionPowerlaw, distributionClustered;
 @synthesize averageTeam, bestTeam;
-@synthesize pileRadius, numberOfClusteredPiles;
+@synthesize pileRadius, numberOfClusteredPiles, xPointArray, yPointArray;
 @synthesize crossoverRate, mutationRate, selectionOperator, crossoverOperator, mutationOperator, elitism;
 @synthesize gridSize, nest;
 @synthesize parameterFile;
@@ -67,6 +67,9 @@ using namespace cv;
         parameterFile = nil;
         
         observedError = NO;
+        
+        xPointArray = [[NSMutableArray alloc] initWithCapacity:100];
+        yPointArray = [[NSMutableArray alloc] initWithCapacity:100];
     }
     return self;
 }
@@ -193,13 +196,28 @@ using namespace cv;
     NSMutableArray* piles = [[NSMutableArray alloc] init];
     NSMutableArray* resting = [[NSMutableArray alloc] init];
     NSMutableArray* totalCollectedTags = [[NSMutableArray alloc] init];
-
+    
     float volatilityCounter;
     int timeToCompleted;
 
     for(int i = 0; i < robotCount; i++){[robots addObject:[[Robot alloc] init]];}
     
+    time_t seed = time(NULL);
+    
     for(Team* team in teams) {
+        srandom((unsigned int)seed);
+        
+        // Create a pool of locations immediately after the random seed is set to make sure
+        // the pile locations are consistent across teams.
+        [xPointArray removeAllObjects];
+        [yPointArray removeAllObjects];
+        for (int i=0; i<100; i++) {
+            NSNumber* tempX = [[NSNumber alloc] initWithInt:randomIntRange(pileRadius, gridSize.width - (pileRadius * 2))];
+            NSNumber* tempY = [[NSNumber alloc] initWithInt:randomIntRange(pileRadius, gridSize.height - (pileRadius * 2))];
+            [xPointArray addObject:tempX];
+            [yPointArray addObject:tempY];
+        }
+        
         [self initDistributionForArray:grid intoPiles:piles];
         
         for (vector<Cell*> v : grid) {
@@ -700,8 +718,16 @@ using namespace cv;
     int pileX, pileY;
     BOOL overlapping;
     do {
-        pileX = randomIntRange(pileRadius, gridSize.width - (pileRadius * 2));
-        pileY = randomIntRange(pileRadius, gridSize.height - (pileRadius * 2));
+        if ([xPointArray count] > 0 && [yPointArray count] > 0) {
+            pileX = [[xPointArray firstObject] intValue];
+            pileY = [[yPointArray firstObject] intValue];
+            [xPointArray removeObjectAtIndex:0];
+            [yPointArray removeObjectAtIndex:0];
+        }
+        else {
+            pileX = randomIntRange(pileRadius, gridSize.width - (pileRadius * 2));
+            pileY = randomIntRange(pileRadius, gridSize.height - (pileRadius * 2));
+        }
         
         //Make sure the place we picked isn't close to another pile.  Pretty naive.
         overlapping = NO;

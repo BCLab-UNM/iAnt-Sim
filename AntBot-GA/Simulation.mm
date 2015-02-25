@@ -219,7 +219,7 @@ using namespace cv;
             [team setFitness:[team fitness] + [collectedTags count]];
             [totalCollectedTags addObjectsFromArray:collectedTags];
             
-            if ((clusteringTagCutoff >= 0) && ([totalCollectedTags count] > [self clusteringTagCutoff]) && !clustered) {
+            if ((clusteringTagCutoff >= 0) && ([totalCollectedTags count] >= [self clusteringTagCutoff]) && !clustered) {
                 EM em = [Cluster trainOptimalEMWith:totalCollectedTags];
                 Mat means = em.get<Mat>("means");
                 vector<Mat> covs = em.get<vector<Mat>>("covs");

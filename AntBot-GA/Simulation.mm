@@ -642,6 +642,7 @@ using namespace cv;
               @"robotCount" : @(robotCount),
               @"tagCount" : @(tagCount),
               @"evaluationCount" : @(evaluationCount),
+              @"postEvaluations" : @(postEvaluations),
               @"tickCount" : @(tickCount),
               @"clusteringTagCutoff" : @(clusteringTagCutoff),
               
@@ -677,6 +678,7 @@ using namespace cv;
     robotCount = [[parameters objectForKey:@"robotCount"] intValue];
     tagCount = [[parameters objectForKey:@"tagCount"] intValue];
     evaluationCount = [[parameters objectForKey:@"evaluationCount"] intValue];
+    postEvaluations = [[parameters objectForKey:@"postEvaluations"] intValue];
     tickCount = [[parameters objectForKey:@"tickCount"] intValue];
     clusteringTagCutoff = [[parameters objectForKey:@"clusteringTagCutoff"] intValue];
  

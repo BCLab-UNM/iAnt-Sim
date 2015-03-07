@@ -524,6 +524,7 @@ using namespace cv;
     
     int pileCount = 0;
     NSPoint pilePoints[tagCount + 1];
+    int clusterID = 0;
     
     for(int size = 1; size <= tagCount; size++) { //For each distinct size of pile.
         if(pilesOf[size] == 0) {
@@ -538,15 +539,15 @@ using namespace cv;
                     tagY = randomInt(gridSize.height);
                 } while([grid[tagY][tagX] tag]);
                 
-                Tag* tag = [[Tag alloc] initWithX:tagX Y:tagY andCluster:1];
+                Tag* tag = [[Tag alloc] initWithX:tagX Y:tagY andCluster:clusterID++];
                 [grid[tagY][tagX] setTag:tag];
             }
         }
         else {
-            int cluster = 1;
-            for(int i = 0; i < pilesOf[size]; i++) { //Place each pile.
+            for(int i = 0; i < pilesOf[size]; i++) {
                 int pileX,pileY;
                 
+                //Place each pile.
                 int overlapping = 1;
                 while(overlapping) {
                     pileX = randomIntRange(pileRadius, gridSize.width - (pileRadius * 2));
@@ -575,12 +576,10 @@ using namespace cv;
                         maxRadius += 1;
                     } while([grid[tagY][tagX] tag]);
                     
-                    Tag* tag = [[Tag alloc] initWithX:tagX Y:tagY andCluster:cluster];
+                    Tag* tag = [[Tag alloc] initWithX:tagX Y:tagY andCluster:clusterID];
                     [grid[tagY][tagX] setTag:tag];
-                    if ((j+1) % (tagCount / numberOfClusteredPiles) == 0) {
-                        cluster++;
-                    }
                 }
+                clusterID++;
             }
         }
     }

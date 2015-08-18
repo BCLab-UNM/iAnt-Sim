@@ -11,12 +11,12 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		40ED65B616DABD31006F8494 /* libiAnt-GA.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libiAnt-GA.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		40ED65B616DABD31006F8494 /* libiAnt-Sim.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libiAnt-Sim.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		40ED65B916DABD31006F8494 /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = System/Library/Frameworks/Cocoa.framework; sourceTree = SDKROOT; };
 		40ED65BC16DABD31006F8494 /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = System/Library/Frameworks/AppKit.framework; sourceTree = SDKROOT; };
 		40ED65BD16DABD31006F8494 /* CoreData.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreData.framework; path = System/Library/Frameworks/CoreData.framework; sourceTree = SDKROOT; };
 		40ED65BE16DABD31006F8494 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
-		42DE5EF31B838E200058F413 /* iAnt-GA */ = {isa = PBXFileReference; lastKnownFileType = folder; path = "iAnt-GA"; sourceTree = "<group>"; };
+		42DE5EF31B838E200058F413 /* iAnt-Sim */ = {isa = PBXFileReference; lastKnownFileType = folder; path = "iAnt-Sim"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -34,7 +34,7 @@
 		40ED65AB16DABD31006F8494 = {
 			isa = PBXGroup;
 			children = (
-				42DE5EF31B838E200058F413 /* iAnt-GA */,
+				42DE5EF31B838E200058F413 /* iAnt-Sim */,
 				40ED65B816DABD31006F8494 /* Frameworks */,
 				40ED65B716DABD31006F8494 /* Products */,
 			);
@@ -43,7 +43,7 @@
 		40ED65B716DABD31006F8494 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				40ED65B616DABD31006F8494 /* libiAnt-GA.a */,
+				40ED65B616DABD31006F8494 /* libiAnt-Sim.a */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -80,9 +80,9 @@
 /* End PBXHeadersBuildPhase section */
 
 /* Begin PBXNativeTarget section */
-		40ED65B516DABD31006F8494 /* iAnt-GA */ = {
+		40ED65B516DABD31006F8494 /* iAnt-Sim */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 40ED65C716DABD31006F8494 /* Build configuration list for PBXNativeTarget "iAnt-GA" */;
+			buildConfigurationList = 40ED65C716DABD31006F8494 /* Build configuration list for PBXNativeTarget "iAnt-Sim" */;
 			buildPhases = (
 				40ED65B216DABD31006F8494 /* Sources */,
 				40ED65B316DABD31006F8494 /* Frameworks */,
@@ -92,9 +92,9 @@
 			);
 			dependencies = (
 			);
-			name = "iAnt-GA";
+			name = "iAnt-Sim";
 			productName = "AntBot-GA";
-			productReference = 40ED65B616DABD31006F8494 /* libiAnt-GA.a */;
+			productReference = 40ED65B616DABD31006F8494 /* libiAnt-Sim.a */;
 			productType = "com.apple.product-type.library.static";
 		};
 /* End PBXNativeTarget section */
@@ -106,7 +106,7 @@
 				LastUpgradeCheck = 0500;
 				ORGANIZATIONNAME = AntBot;
 			};
-			buildConfigurationList = 40ED65B016DABD31006F8494 /* Build configuration list for PBXProject "iAnt-GA" */;
+			buildConfigurationList = 40ED65B016DABD31006F8494 /* Build configuration list for PBXProject "iAnt-Sim" */;
 			compatibilityVersion = "Xcode 3.2";
 			developmentRegion = English;
 			hasScannedForEncodings = 0;
@@ -118,7 +118,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				40ED65B516DABD31006F8494 /* iAnt-GA */,
+				40ED65B516DABD31006F8494 /* iAnt-Sim */,
 			);
 		};
 /* End PBXProject section */
@@ -194,14 +194,14 @@
 				COMBINE_HIDPI_IMAGES = YES;
 				GCC_INLINES_ARE_PRIVATE_EXTERN = YES;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
-				GCC_PREFIX_HEADER = "iAnt-GA/iAnt-GA-Prefix.pch";
+				GCC_PREFIX_HEADER = "iAnt-Sim/iAnt-Sim-Prefix.pch";
 				GCC_SYMBOLS_PRIVATE_EXTERN = YES;
-				HEADER_SEARCH_PATHS = "\"$(SRCROOT)/iAnt-GA/OpenCV/include\"";
+				HEADER_SEARCH_PATHS = "\"$(SRCROOT)/iAnt-Sim/OpenCV/include\"";
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
-					"\"$(SRCROOT)/iAnt-GA/OpenCV/lib\"",
+					"\"$(SRCROOT)/iAnt-Sim/OpenCV/lib\"",
 				);
-				PRODUCT_NAME = "iAnt-GA";
+				PRODUCT_NAME = "iAnt-Sim";
 				PUBLIC_HEADERS_FOLDER_PATH = "include/$(TARGET_NAME)";
 			};
 			name = Debug;
@@ -212,14 +212,14 @@
 				COMBINE_HIDPI_IMAGES = YES;
 				GCC_INLINES_ARE_PRIVATE_EXTERN = YES;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
-				GCC_PREFIX_HEADER = "iAnt-GA/iAnt-GA-Prefix.pch";
+				GCC_PREFIX_HEADER = "iAnt-Sim/iAnt-Sim-Prefix.pch";
 				GCC_SYMBOLS_PRIVATE_EXTERN = YES;
-				HEADER_SEARCH_PATHS = "\"$(SRCROOT)/iAnt-GA/OpenCV/include\"";
+				HEADER_SEARCH_PATHS = "\"$(SRCROOT)/iAnt-Sim/OpenCV/include\"";
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
-					"\"$(SRCROOT)/iAnt-GA/OpenCV/lib\"",
+					"\"$(SRCROOT)/iAnt-Sim/OpenCV/lib\"",
 				);
-				PRODUCT_NAME = "iAnt-GA";
+				PRODUCT_NAME = "iAnt-Sim";
 				PUBLIC_HEADERS_FOLDER_PATH = "include/$(TARGET_NAME)";
 			};
 			name = Release;
@@ -227,7 +227,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		40ED65B016DABD31006F8494 /* Build configuration list for PBXProject "iAnt-GA" */ = {
+		40ED65B016DABD31006F8494 /* Build configuration list for PBXProject "iAnt-Sim" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				40ED65C516DABD31006F8494 /* Debug */,
@@ -236,7 +236,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		40ED65C716DABD31006F8494 /* Build configuration list for PBXNativeTarget "iAnt-GA" */ = {
+		40ED65C716DABD31006F8494 /* Build configuration list for PBXNativeTarget "iAnt-Sim" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				40ED65C816DABD31006F8494 /* Debug */,

@@ -1,5 +1,5 @@
-#ifndef __ANTBOT_GA_CONSTANTS_H
-#define __ANTBOT_GA_CONSTANTS_H
+#ifndef __IANT_GA_CONSTANTS_H
+#define __IANT_GA_CONSTANTS_H
 
 static const float M_2PI = 2 * M_PI;
 static const NSPoint NSNullPoint = {-1, -1};

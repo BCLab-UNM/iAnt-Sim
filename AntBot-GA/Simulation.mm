@@ -61,8 +61,8 @@ using namespace cv;
         mutationOperator = FixedVarMutId;
         elitism = YES;
         
-        gridSize = NSMakeSize(200, 200);
-        nest = NSMakePoint(100, 100);
+        gridSize = NSMakeSize(280, 280);
+        nest = NSMakePoint(140, 140);
         
         parameterFile = nil;
         
@@ -200,10 +200,10 @@ using namespace cv;
     
     float volatilityCounter;
     int timeToCompleted;
-
+    
     for(int i = 0; i < robotCount; i++){[robots addObject:[[Robot alloc] init]];}
     
-    time_t seed = time(NULL);
+//    time_t seed = time(NULL);
     
     for(Team* team in teams) {
 //        srandom((unsigned int)seed);
@@ -290,7 +290,7 @@ using namespace cv;
             if(delegate && [delegate respondsToSelector:@selector(simulation:didFinishTick:)]) {
                 [delegate simulation:self didFinishTick:tick];
             }
-  
+            
             
             volatilityCounter += volatilityRate;
             while (volatilityCounter >= 1.0) {
@@ -317,7 +317,7 @@ using namespace cv;
     Pile* newPile;
     Tag* tempTag;
     int size;
-
+    
     while ([[[piles firstObject] tagArray] count] == 0 && [piles count] > 0) {
         [piles removeObjectAtIndex:0];
     }
@@ -357,10 +357,10 @@ using namespace cv;
     for (Robot* robot in robots) {
         switch([robot status]) {
                 
-            /*
-             * The robot hasn't been initialized yet.
-             * Give it some basic starting values and then fall-through to the next state.
-             */
+                /*
+                 * The robot hasn't been initialized yet.
+                 * Give it some basic starting values and then fall-through to the next state.
+                 */
             case ROBOT_STATUS_INACTIVE: {
                 [robot setStatus:ROBOT_STATUS_DEPARTING];
                 [robot setPosition:nest];
@@ -373,12 +373,12 @@ using namespace cv;
                 //Fallthrough to ROBOT_STATUS_RESTING or ROBOT_STATUS_DEPARTING.
             }
                 
-            /*
-             * The robot is waiting inside the nest.
-             * This should only happen when useRecruitment is true.
-             * Robots leave the nest to forage at a low resting probability.
-             * Robots leave the nest to visit a specific location if they are recruited.
-             */
+                /*
+                 * The robot is waiting inside the nest.
+                 * This should only happen when useRecruitment is true.
+                 * Robots leave the nest to forage at a low resting probability.
+                 * Robots leave the nest to visit a specific location if they are recruited.
+                 */
             case ROBOT_STATUS_RESTING: {
                 
                 //Delay to emulate physical robot
@@ -386,7 +386,7 @@ using namespace cv;
                     [robot setDelay:[robot delay] - 1];
                     break;
                 }
-
+                
                 if (useRecruitment) {
                     // Leave the nest at a fixed probability
                     if (randomFloat(1.) < team.leaveNestProbability) {
@@ -398,16 +398,16 @@ using namespace cv;
                 // Fallthrough to ROBOT_STATUS_DEPARTING if useRecruitment is false.
             }
                 
-            /*
-             * The robot is either:
-             *  -Moving in a random direction away from the nest (not site-fidelity-ing or pheromone-ing).
-             *  -Moving towards a specific point where a tag was last found (site-fidelity-ing).
-             *  -Moving towards a specific point due to pheromones.
-             *
-             * For each of the cases, we have to ultimately decide on a direction for the robot to travel in,
-             * then decide which 'cell' best accomplishes traveling in this direction.  We then move the robot,
-             * and may change the robot/world state based on certain criteria (i.e. it reaches its destination).
-             */
+                /*
+                 * The robot is either:
+                 *  -Moving in a random direction away from the nest (not site-fidelity-ing or pheromone-ing).
+                 *  -Moving towards a specific point where a tag was last found (site-fidelity-ing).
+                 *  -Moving towards a specific point due to pheromones.
+                 *
+                 * For each of the cases, we have to ultimately decide on a direction for the robot to travel in,
+                 * then decide which 'cell' best accomplishes traveling in this direction.  We then move the robot,
+                 * and may change the robot/world state based on certain criteria (i.e. it reaches its destination).
+                 */
             case ROBOT_STATUS_DEPARTING: {
                 
                 //Delay to emulate physical robot
@@ -427,12 +427,12 @@ using namespace cv;
                 break;
             }
                 
-            /*
-             * The robot is performing a random walk.
-             * It will randomly change its direction based on how long it has been searching and move in this direction.
-             * If it finds a tag, its state changes to ROBOT_STATUS_RETURNING (it brings the tag back to the nest.
-             * All site fidelity and pheromone work, however, is taken care of once the robot actually arrives at the nest.
-             */
+                /*
+                 * The robot is performing a random walk.
+                 * It will randomly change its direction based on how long it has been searching and move in this direction.
+                 * If it finds a tag, its state changes to ROBOT_STATUS_RETURNING (it brings the tag back to the nest.
+                 * All site fidelity and pheromone work, however, is taken care of once the robot actually arrives at the nest.
+                 */
             case ROBOT_STATUS_SEARCHING: {
                 
                 //Delay to emulate physical robot
@@ -440,7 +440,7 @@ using namespace cv;
                     [robot setDelay:[robot delay] - 1];
                     break;
                 }
-
+                
                 //Probabilistically give up searching and return to the nest
                 if(useGiveUp && (randomFloat(1.) < [team searchGiveUpProbability])) {
                     [robot setTarget:nest];
@@ -484,7 +484,7 @@ using namespace cv;
                         
                         [robot setDiscoveredTags:[[NSMutableArray alloc] initWithObjects:tagCopy, nil]];
                         [foundTag setPickedUp:YES];
-//                        [foundTag removeFromPile];
+                        [foundTag removeFromPile];
                         
                         //Sum up all non-picked-up seeds in the moore neighbor.
                         for(int dx = -1; dx <= 1; dx++) {
@@ -519,11 +519,11 @@ using namespace cv;
                 break;
             }
                 
-            /*
-             * The robot is on its way back to the nest.
-             * It is either carrying food, or it gave up on its search and is returning to base for further instruction.
-             * Stuff like laying/assigning of pheromones is handled here.
-             */
+                /*
+                 * The robot is on its way back to the nest.
+                 * It is either carrying food, or it gave up on its search and is returning to base for further instruction.
+                 * Stuff like laying/assigning of pheromones is handled here.
+                 */
             case ROBOT_STATUS_RETURNING: {
                 
                 //Delay to emulate physical robot
@@ -702,10 +702,10 @@ using namespace cv;
         
         // Clustered Piles: pilesOf[size] == the number of piles
         else {
-//            int cluster = 1;
+            //            int cluster = 1;
             Pile* currentPile;
             NSPoint pileLocation;
-//            pileArray = [[NSMutableArray alloc] init];
+            //            pileArray = [[NSMutableArray alloc] init];
             
             // Place each pile. +1 to create an empty pile to be the new patch.
             for(int i = 0; i < pilesOf[size]+1; i++) {
@@ -740,7 +740,7 @@ using namespace cv;
         
         //Make sure the place we picked isn't close to another pile.  Pretty naive.
         overlapping = NO;
-
+        
         if (pointDistance(pileX, pileY, nest.x, nest.y) < (float)min(gridSize.width, gridSize.height) / 5.0) {
             overlapping = YES;
         }
@@ -853,7 +853,7 @@ using namespace cv;
     tickCount = [[parameters objectForKey:@"tickCount"] intValue];
     clusteringTagCutoff = [[parameters objectForKey:@"clusteringTagCutoff"] intValue];
     volatilityRate = [[parameters objectForKey:@"volatilityRate"] floatValue];
- 
+    
     useTravel = [[parameters objectForKey:@"useTravel"] boolValue];
     useGiveUp = [[parameters objectForKey:@"useGiveUp"] boolValue];
     useSiteFidelity = [[parameters objectForKey:@"useSiteFidelity"] boolValue];

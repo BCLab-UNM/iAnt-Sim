@@ -31,28 +31,28 @@ using namespace cv;
     if(self = [super init]) {
         teamCount = 20;
         generationCount = 50;
-        robotCount = 50;
-        tagCount = 2048;
+        robotCount = 64;
+        tagCount = 1280;
         evaluationCount = 8;
         evaluationLimit = -1;
         postEvaluations = 1000;
         tickCount = 7200;
         clusteringTagCutoff = -1;
-        volatilityRate = 1.0;
+        volatilityRate = 0.;
         
         useTravel = NO;
-        useGiveUp = YES;
-        useSiteFidelity = YES;
-        useInformedWalk = YES;
+        useGiveUp = NO;
+        useSiteFidelity = NO;
+        useInformedWalk = NO;
         useRecruitment = NO;
-        usePheromone = YES;
+        usePheromone = NO;
         
         distributionClustered = 1.;
         distributionPowerlaw = 0.;
         distributionRandom = 0.;
         
         pileRadius = 3;
-        numberOfClusteredPiles = 1;
+        numberOfClusteredPiles = 1280;
         
         crossoverRate = 1.0;
         mutationRate = 0.1;
@@ -162,7 +162,7 @@ using namespace cv;
         
         //Number of evaluations performed is the number of teams times the number of evaluations per team.
         evalCount = evalCount + teamCount*evaluationCount;
-        
+
         //Set average and best teams
         [self setAverageTeamFrom:teams];
         [self setBestTeamFrom:teams];
@@ -206,7 +206,7 @@ using namespace cv;
     time_t seed = time(NULL);
     
     for(Team* team in teams) {
-        srandom((unsigned int)seed);
+//        srandom((unsigned int)seed);
         
         // Create a pool of locations immediately after the random seed is set to make sure
         // the pile locations are consistent across teams.
@@ -637,6 +637,10 @@ using namespace cv;
     NSMutableArray* teams = [[NSMutableArray alloc] initWithObjects:averageTeam, nil];
     
     for (int i = 0; i < postEvaluations; i++) {
+        
+        if (i && !(i%100)) {
+            printf("%d\n", i);
+        }
         
         //Reset
         [averageTeam setFitness:0.];

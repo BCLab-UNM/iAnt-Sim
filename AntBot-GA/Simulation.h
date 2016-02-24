@@ -42,6 +42,7 @@
 -(void) evaluateTeams:(NSMutableArray*)teams onGrid:(std::vector<std::vector<Cell*>>)grid;
 -(NSMutableDictionary*) evaluateTeam:(Team*)team onGrid:(std::vector<std::vector<Cell*>>)grid;
 -(void) swapPilesOnGrid:(std::vector<std::vector<Cell*>>&)grid fromPiles:(NSMutableArray*)piles;
+-(void) resetTag:(Tag*)tag onGrid:(std::vector<std::vector<Cell*>>&)grid fromPiles:(NSMutableArray*)piles;
 -(NSMutableArray*) stateTransition:(NSMutableArray*)robots inTeam:(Team*)team atTick:(int)tick onGrid:(std::vector<std::vector<Cell*>>&)grid
                     withPheromones:(NSMutableArray*)pheromones
                        andClusters:(NSMutableArray*)clusters andResting:(NSMutableArray*)resting;

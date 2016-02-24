@@ -71,6 +71,7 @@ using namespace std;
     [tagArray removeObjectIdenticalTo:_tag];
 }
 
+
 -(BOOL) containsPointX:(float)_x andY:(float)_y {
     return pointDistance(position.x, position.y, _x, _y) < radius;
 }

@@ -213,8 +213,13 @@ using namespace cv;
         [xPointArray removeAllObjects];
         [yPointArray removeAllObjects];
         for (int i=0; i<100; i++) {
-            NSNumber* tempX = [[NSNumber alloc] initWithInt:randomIntRange(pileRadius, gridSize.width - (pileRadius * 2))];
-            NSNumber* tempY = [[NSNumber alloc] initWithInt:randomIntRange(pileRadius, gridSize.height - (pileRadius * 2))];
+//            NSNumber* tempX = [[NSNumber alloc] initWithInt:randomIntRange(pileRadius, gridSize.width - (pileRadius * 2))];
+//            NSNumber* tempY = [[NSNumber alloc] initWithInt:randomIntRange(pileRadius, gridSize.height - (pileRadius * 2))];
+
+            float theta = randomFloat(2*M_PI);
+            NSNumber* tempX = [[NSNumber alloc] initWithInt: (int)((randomIntRange(1.9, 2.1)*cos(theta)/3.)*gridSize.width)];
+            NSNumber* tempY = [[NSNumber alloc] initWithInt: (int)((randomIntRange(1.9, 2.1)*sin(theta)/3.)*gridSize.width)];
+            
             [xPointArray addObject:tempX];
             [yPointArray addObject:tempY];
         }
@@ -318,10 +323,11 @@ using namespace cv;
     Tag* tempTag;
     int size;
     
+    // Remove all empty piles at the start of the pile list
     while ([[[piles firstObject] tagArray] count] == 0 && [piles count] > 0) {
         [piles removeObjectAtIndex:0];
     }
-    
+
     if ([piles count] >= 2 && [[[piles firstObject] tagArray] count] > 0) {
         // If a tag has been picked up, move it to the new pile, but leave it in the same spot
         if ([[[[piles firstObject] tagArray] firstObject] pickedUp]) {
@@ -336,9 +342,44 @@ using namespace cv;
         }
     }
     
-    if ([[[piles firstObject] tagArray] count] <= 0 && [piles count] > 0) {
+    // If a pile has been cleared, remove it and (maybe) add a new one to the end of the list
+//    if ([[[piles firstObject] tagArray] count] <= 0 && [piles count] > 0) {
+//        [piles removeObjectAtIndex:0];
+//
+//        loc = [self findNewPileLocationInPiles:piles];
+//        size = roundf(tagCount / (distributionPowerlaw + (numberOfClusteredPiles * distributionClustered)));
+//        newPile = [[Pile alloc] initAtX:loc.x andY:loc.y withCapacity:size andRadius:pileRadius];
+//        [piles addObject:newPile];
+//    }
+    
+    // If the final pile is full, add a new one to the list
+    if ([[[piles lastObject] tagArray] count] >= tagCount / numberOfClusteredPiles) {
+        loc = [self findNewPileLocationInPiles:piles];
+        size = roundf(tagCount / (distributionPowerlaw + (numberOfClusteredPiles * distributionClustered)));
+        newPile = [[Pile alloc] initAtX:loc.x andY:loc.y withCapacity:size andRadius:pileRadius];
+        [piles addObject:newPile];
+    }
+}
+
+-(void) resetTag:(Tag*)tag onGrid:(vector<vector<Cell*>>&)grid fromPiles:(NSMutableArray*)piles {
+
+    NSPoint loc;
+    Pile* newPile;
+    int size;
+    
+    // Remove old tag
+    [tag.pile removeSpecificTag:tag];
+    
+    // If the first pile has been cleared, remove it
+    if ([[[piles firstObject] tagArray] count] <= 0) {
         [piles removeObjectAtIndex:0];
-        
+    }
+    
+    // Add new tag
+    [[piles lastObject] addTagtoGrid:grid ofSize:gridSize];
+
+    // If the last pile is full, start a new one
+    if ([[[piles lastObject] tagArray] count] >= tagCount / numberOfClusteredPiles) {
         loc = [self findNewPileLocationInPiles:piles];
         size = roundf(tagCount / (distributionPowerlaw + (numberOfClusteredPiles * distributionClustered)));
         newPile = [[Pile alloc] initAtX:loc.x andY:loc.y withCapacity:size andRadius:pileRadius];
@@ -483,8 +524,8 @@ using namespace cv;
                         [tagCopy setPosition:perturbedTagPosition];
                         
                         [robot setDiscoveredTags:[[NSMutableArray alloc] initWithObjects:tagCopy, nil]];
-                        [foundTag setPickedUp:YES];
-                        [foundTag removeFromPile];
+//                        [foundTag setPickedUp:YES];
+//                        [foundTag removeFromPile];
                         
                         //Sum up all non-picked-up seeds in the moore neighbor.
                         for(int dx = -1; dx <= 1; dx++) {
@@ -734,8 +775,11 @@ using namespace cv;
             [yPointArray removeObjectAtIndex:0];
         }
         else {
-            pileX = randomIntRange(pileRadius, gridSize.width - (pileRadius * 2));
-            pileY = randomIntRange(pileRadius, gridSize.height - (pileRadius * 2));
+            float theta = randomFloat(2*M_PI);
+            pileX = (int)((randomIntRange(1.9, 2.1)*gridSize.width/3.)*cos(theta));
+            pileY = (int)((randomIntRange(1.9, 2.1)*gridSize.width/3.)*sin(theta));
+//            pileX = randomIntRange(pileRadius, gridSize.width - (pileRadius * 2));
+//            pileY = randomIntRange(pileRadius, gridSize.height - (pileRadius * 2));
         }
         
         //Make sure the place we picked isn't close to another pile.  Pretty naive.

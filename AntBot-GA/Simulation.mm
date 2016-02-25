@@ -32,7 +32,7 @@ using namespace cv;
         teamCount = 20;
         generationCount = 50;
         robotCount = 64;
-        tagCount = 1280;
+        tagCount = 256;
         evaluationCount = 8;
         evaluationLimit = -1;
         postEvaluations = 1000;
@@ -52,7 +52,7 @@ using namespace cv;
         distributionRandom = 0.;
         
         pileRadius = 3;
-        numberOfClusteredPiles = 1280;
+        numberOfClusteredPiles = 1;
         
         crossoverRate = 1.0;
         mutationRate = 0.1;
@@ -217,8 +217,8 @@ using namespace cv;
 //            NSNumber* tempY = [[NSNumber alloc] initWithInt:randomIntRange(pileRadius, gridSize.height - (pileRadius * 2))];
 
             float theta = randomFloat(2*M_PI);
-            NSNumber* tempX = [[NSNumber alloc] initWithInt: (int)((randomIntRange(1.9, 2.1)*cos(theta)/3.)*gridSize.width)];
-            NSNumber* tempY = [[NSNumber alloc] initWithInt: (int)((randomIntRange(1.9, 2.1)*sin(theta)/3.)*gridSize.width)];
+            NSNumber* tempX = [[NSNumber alloc] initWithInt: nest.x+(int)((randomFloatRange(.9, 1.1)*cos(theta)/3.)*gridSize.width)];
+            NSNumber* tempY = [[NSNumber alloc] initWithInt: nest.y+(int)((randomFloatRange(.9, 1.1)*sin(theta)/3.)*gridSize.width)];
             
             [xPointArray addObject:tempX];
             [yPointArray addObject:tempY];
@@ -252,7 +252,7 @@ using namespace cv;
         
         for(int tick = 0; tickCount >= 0 ? tick < tickCount : YES; tick++) {
             
-            NSMutableArray* collectedTags = [self stateTransition:robots inTeam:team atTick:tick onGrid:grid withPheromones:pheromones andClusters:clusters andResting:resting];
+            NSMutableArray* collectedTags = [self stateTransition:robots inTeam:team atTick:tick onGrid:grid withPheromones:pheromones andClusters:clusters andResting:resting andPiles:piles];
             
             [team setCollectedTags:[team collectedTags] + (int)[collectedTags count]];
             [totalCollectedTags addObjectsFromArray:collectedTags];
@@ -391,7 +391,7 @@ using namespace cv;
  * State transition case statement for robots using central-place foraging algorithm
  */
 -(NSMutableArray*) stateTransition:(NSMutableArray*)robots inTeam:(Team*)team atTick:(int)tick onGrid:(vector<vector<Cell*>>&)grid
-                    withPheromones:(NSMutableArray*)pheromones andClusters:(NSMutableArray*)clusters andResting:(NSMutableArray*)resting {
+                    withPheromones:(NSMutableArray*)pheromones andClusters:(NSMutableArray*)clusters andResting:(NSMutableArray*)resting andPiles:(NSMutableArray *)piles{
     
     NSMutableArray* collectedTags = [[NSMutableArray alloc] init];
     
@@ -526,6 +526,7 @@ using namespace cv;
                         [robot setDiscoveredTags:[[NSMutableArray alloc] initWithObjects:tagCopy, nil]];
 //                        [foundTag setPickedUp:YES];
 //                        [foundTag removeFromPile];
+                        [self resetTag:foundTag onGrid:grid fromPiles:piles];
                         
                         //Sum up all non-picked-up seeds in the moore neighbor.
                         for(int dx = -1; dx <= 1; dx++) {
@@ -776,8 +777,8 @@ using namespace cv;
         }
         else {
             float theta = randomFloat(2*M_PI);
-            pileX = (int)((randomIntRange(1.9, 2.1)*gridSize.width/3.)*cos(theta));
-            pileY = (int)((randomIntRange(1.9, 2.1)*gridSize.width/3.)*sin(theta));
+            pileX = nest.x+(int)((randomFloatRange(.9, 1.1)*gridSize.width/3.)*cos(theta));
+            pileY = nest.y+(int)((randomFloatRange(.9, 1.1)*gridSize.width/3.)*sin(theta));
 //            pileX = randomIntRange(pileRadius, gridSize.width - (pileRadius * 2));
 //            pileY = randomIntRange(pileRadius, gridSize.height - (pileRadius * 2));
         }

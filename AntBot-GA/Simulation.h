@@ -45,7 +45,8 @@
 -(void) resetTag:(Tag*)tag onGrid:(std::vector<std::vector<Cell*>>&)grid fromPiles:(NSMutableArray*)piles;
 -(NSMutableArray*) stateTransition:(NSMutableArray*)robots inTeam:(Team*)team atTick:(int)tick onGrid:(std::vector<std::vector<Cell*>>&)grid
                     withPheromones:(NSMutableArray*)pheromones
-                       andClusters:(NSMutableArray*)clusters andResting:(NSMutableArray*)resting;
+                       andClusters:(NSMutableArray*)clusters andResting:(NSMutableArray*)resting
+                          andPiles:(NSMutableArray*)piles;
 -(void) initDistributionForArray:(std::vector<std::vector<Cell*>>&)grid intoPiles:(NSMutableArray*)piles;
 #endif
 -(NSPoint) findNewPileLocationInPiles:(NSMutableArray*)piles;
